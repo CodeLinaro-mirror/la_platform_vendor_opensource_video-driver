@@ -469,6 +469,11 @@ struct msm_vidc_format_desc vdec_output_formats[] = {
 		.fourcc = V4L2_PIX_FMT_NV12_UBWC,
 	},
 	{
+		.name = "YCbCr Semiplanar 4:2:0 128 aligned",
+		.description = "Y/CbCr 4:2:0 128 aligned",
+		.fourcc = V4L2_PIX_FMT_NV12_128,
+	},
+	{
 		.name = "UBWC YCbCr Semiplanar 4:2:0 10bit",
 		.description = "UBWC Y/CbCr 4:2:0 10bit",
 		.fourcc = V4L2_PIX_FMT_NV12_TP10_UBWC,
@@ -516,6 +521,14 @@ struct msm_vidc_format_constraint dec_pix_format_constraints[] = {
 		.uv_buffer_alignment = 256,
 	},
 	{
+		.fourcc = V4L2_PIX_FMT_NV12_128,
+		.num_planes = 2,
+		.y_max_stride = 8192,
+		.y_buffer_alignment = 128,
+		.uv_max_stride = 8192,
+		.uv_buffer_alignment = 32,
+	},
+	{
 		.fourcc = V4L2_PIX_FMT_NV21,
 		.num_planes = 2,
 		.y_max_stride = 8192,
@@ -559,7 +572,7 @@ int msm_vdec_update_stream_output_mode(struct msm_vidc_inst *inst)
 	format = f->fmt.pix_mp.pixelformat;
 	stream_output_mode = HAL_VIDEO_DECODER_PRIMARY;
 	if ((format == V4L2_PIX_FMT_SDE_Y_CBCR_H2V2_P010_VENUS) ||
-		(format == V4L2_PIX_FMT_NV12)) {
+		(format == V4L2_PIX_FMT_NV12) || (format == V4L2_PIX_FMT_NV12_128)) {
 		stream_output_mode = HAL_VIDEO_DECODER_SECONDARY;
 	}
 
