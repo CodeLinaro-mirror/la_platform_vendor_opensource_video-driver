@@ -5,6 +5,7 @@
 
 #include <linux/module.h>
 #include <linux/of_platform.h>
+#include <linux/suspend.h>
 #include "msm_vidc.h"
 #include "msm_vidc_common.h"
 #include "msm_vidc_debug.h"
@@ -688,7 +689,19 @@ static int msm_vidc_pm_suspend(struct device *dev)
 		return -EINVAL;
 	}
 
+#ifdef CONFIG_DEEPSLEEP
+	if (mem_sleep_current == PM_SUSPEND_MEM)
+	{
+		d_vpr_l("%s : deepsleep is triggered\n", __func__);
+		rc = msm_vidc_unload_core(core);
+	}
+	else
+	{
+		rc = msm_vidc_suspend(core->id);
+	}
+#else
 	rc = msm_vidc_suspend(core->id);
+#endif
 	if (rc == -ENOTSUPP)
 		rc = 0;
 	else if (rc)
