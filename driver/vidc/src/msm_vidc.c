@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/types.h>
@@ -17,6 +17,7 @@
 #include "msm_vidc_debug.h"
 #include "msm_vidc_control.h"
 #include "msm_vidc_power.h"
+#include "msm_vidc_fence.h"
 #include "msm_vidc_memory.h"
 #include "venus_hfi_response.h"
 #include "msm_vidc.h"
@@ -923,6 +924,10 @@ void *msm_vidc_open(void *vidc_core, u32 session_type)
 		goto error;
 
 	rc = msm_vidc_event_queue_init(inst);
+	if (rc)
+		goto error;
+
+	rc = msm_vidc_fence_init(inst);
 	if (rc)
 		goto error;
 
