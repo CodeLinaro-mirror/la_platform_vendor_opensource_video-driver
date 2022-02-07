@@ -3482,9 +3482,19 @@ int venus_hfi_queue_buffer(struct msm_vidc_inst *inst,
 			goto unlock;
 	}
 
-	if (inst->capabilities->cap[SW_FENCE_ENABLE].value &&
+	if (inst->capabilities->cap[INPUT_META_OUTBUF_FENCE].value &&
 		is_output_buffer(buffer->type)) {
-		/* TODO(AS): create fence property packet to send to fw */
+		rc = hfi_create_packet(inst->packet,
+			inst->packet_size,
+			HFI_PROP_FENCE,
+			0,
+			HFI_PAYLOAD_U64,
+			HFI_PORT_RAW,
+			core->packet_id++,
+			&buffer->fence_id,
+			sizeof(u64));
+		if (rc)
+			goto unlock;
 	}
 
 	rc = __iface_cmdq_write(inst->core, inst->packet);

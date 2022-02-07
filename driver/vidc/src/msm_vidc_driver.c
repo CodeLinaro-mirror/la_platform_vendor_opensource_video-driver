@@ -83,7 +83,7 @@ static const struct msm_vidc_cap_name cap_name_arr[] = {
 	{MB_CYCLES_FW,                   "MB_CYCLES_FW"               },
 	{MB_CYCLES_FW_VPP,               "MB_CYCLES_FW_VPP"           },
 	{SECURE_MODE,                    "SECURE_MODE"                },
-	{SW_FENCE_ENABLE,                "SW_FENCE_ENABLE"            },
+	{INPUT_META_OUTBUF_FENCE,        "INPUT_META_OUTBUF_FENCE"    },
 	{FENCE_ID,                       "FENCE_ID"                   },
 	{FENCE_FD,                       "FENCE_FD"                   },
 	{TS_REORDER,                     "TS_REORDER"                 },
@@ -1561,6 +1561,14 @@ bool msm_vidc_allow_property(struct msm_vidc_inst *inst, u32 hfi_id)
 			is_allowed = false;
 		}
 		break;
+	case HFI_PROP_FENCE:
+		if (!inst->capabilities->cap[INPUT_META_OUTBUF_FENCE].value) {
+			i_vpr_h(inst,
+				"%s: cap: %24s not enabled, hence not allowed to subscribe\n",
+				__func__, cap_name(INPUT_META_OUTBUF_FENCE));
+			is_allowed = false;
+		}
+		break;
 	default:
 		is_allowed = true;
 		break;
@@ -2166,6 +2174,46 @@ int msm_vidc_state_change_last_flag(struct msm_vidc_inst *inst)
 	return rc;
 }
 
+int msm_vidc_get_fence_fd(struct msm_vidc_inst *inst, int *fence_fd)
+{
+	int rc = 0;
+	struct msm_vidc_fence *fence, *dummy_fence;
+	bool found = false;
+
+	*fence_fd = INVALID_FD;
+
+	if (!inst || !inst->capabilities) {
+		d_vpr_e("%s: invalid params\n", __func__);
+		return -EINVAL;
+	}
+
+	list_for_each_entry_safe(fence, dummy_fence, &inst->fence_list, list) {
+		if (fence->dma_fence.seqno ==
+			(u64)inst->capabilities->cap[FENCE_ID].value) {
+			found = true;
+			break;
+		}
+	}
+
+	if (!found) {
+		i_vpr_e(inst, "%s: could not find matching fence for fence id: %d\n",
+			__func__, inst->capabilities->cap[FENCE_ID].value);
+		rc = -EINVAL;
+		goto exit;
+	}
+
+	if (fence->fd == INVALID_FD) {
+		rc = msm_vidc_create_fence_fd(inst, fence);
+		if (rc)
+			goto exit;
+	}
+
+	*fence_fd = fence->fd;
+
+exit:
+	return rc;
+}
+
 int msm_vidc_get_control(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 {
 	int rc = 0;
@@ -2186,6 +2234,11 @@ int msm_vidc_get_control(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 			inst->buffers.input.extra_count;
 		i_vpr_h(inst, "g_min: input buffers %d\n", ctrl->val);
 		break;
+	case V4L2_CID_MPEG_VIDC_SW_FENCE_FD:
+		rc = msm_vidc_get_fence_fd(inst, &ctrl->val);
+		if (!rc)
+			i_vpr_l(inst, "%s: fence fd: %d\n", __func__, ctrl->val);
+		break;	
 	default:
 		break;
 	}
@@ -3432,7 +3485,7 @@ int msm_vidc_queue_buffer_single(struct msm_vidc_inst *inst, struct vb2_buffer *
 	if (!buf)
 		return -EINVAL;
 
-	if (inst->capabilities->cap[SW_FENCE_ENABLE].value &&
+	if (inst->capabilities->cap[INPUT_META_OUTBUF_FENCE].value &&
 		is_output_buffer(buf->type)) {
 		fence = msm_vidc_fence_create(inst);
 		if (!fence)
@@ -5331,7 +5384,7 @@ void msm_vidc_destroy_buffers(struct msm_vidc_inst *inst)
 	}
 
 	list_for_each_entry_safe(fence, dummy_fence, &inst->fence_list, list) {
-		i_vpr_e(inst, "%s: destroying fence id: %llu",
+		i_vpr_e(inst, "%s: destroying fence id: %llu\n",
 			__func__, fence->dma_fence.seqno);
 		msm_vidc_fence_destroy(inst, fence);
 	}

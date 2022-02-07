@@ -149,8 +149,8 @@ enum v4l2_mpeg_vidc_blur_types {
 /* Encoder Disable VUI Timing Info */
 #define V4L2_CID_MPEG_VIDC_VUI_TIMING_INFO                                   \
 	(V4L2_CID_MPEG_VIDC_BASE + 0x32)
-/* Control to enable software fence feature */
-#define V4L2_CID_MPEG_VIDC_SW_FENCE_ENABLE                                   \
+/* Enables Output buffer fence id via input metadata */
+#define V4L2_CID_MPEG_VIDC_INPUT_METADATA_OUTBUF_FENCE                       \
 	(V4L2_CID_MPEG_VIDC_BASE + 0x38)
 /* Control to set fence id to driver in order get corresponding fence fd */
 #define V4L2_CID_MPEG_VIDC_SW_FENCE_ID                                       \
@@ -290,6 +290,7 @@ enum v4l2_mpeg_vidc_metadata {
 	METADATA_ROI_INFO                     = 0x03000173,
 	METADATA_DPB_TAG_LIST                 = 0x03000179,
 	METADATA_MAX_NUM_REORDER_FRAMES       = 0x03000127,
+	METADATA_FENCE                        = 0x0300018B,
 };
 enum meta_interlace_info {
 	META_INTERLACE_INFO_NONE                            = 0x00000000,
