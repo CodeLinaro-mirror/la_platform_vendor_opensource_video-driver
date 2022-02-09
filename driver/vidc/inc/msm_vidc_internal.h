@@ -366,6 +366,9 @@ enum msm_vidc_inst_capability_type {
 	MB_CYCLES_FW,
 	MB_CYCLES_FW_VPP,
 	SECURE_MODE,
+	SW_FENCE_ENABLE,
+	FENCE_ID,
+	FENCE_FD,
 	TS_REORDER,
 	HFLIP,
 	VFLIP,
@@ -782,11 +785,12 @@ struct msm_vidc_fence_context {
 };
 
 struct msm_vidc_fence {
-        struct dma_fence dma_fence;
-        char name[MAX_NAME_LENGTH];
-        spinlock_t lock;
-        struct sync_file *sync_file;
-        int fd;
+	struct list_head            list;
+	struct dma_fence            dma_fence;
+	char                        name[MAX_NAME_LENGTH];
+	spinlock_t                  lock;
+	struct sync_file            *sync_file;
+	int                         fd;
 };
 
 struct msm_vidc_alloc {
@@ -842,7 +846,7 @@ struct msm_vidc_buffer {
 	u32                                flags;
 	u64                                timestamp;
 	enum msm_vidc_buffer_attributes    attr;
-	struct msm_vidc_fence             *fence;
+	u64                                fence_id;
 };
 
 struct msm_vidc_buffers {

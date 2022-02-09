@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef __V4l2_VIDC_EXTENSIONS_H__
@@ -149,7 +149,18 @@ enum v4l2_mpeg_vidc_blur_types {
 /* Encoder Disable VUI Timing Info */
 #define V4L2_CID_MPEG_VIDC_VUI_TIMING_INFO                                   \
 	(V4L2_CID_MPEG_VIDC_BASE + 0x32)
-
+/* Control to enable software fence feature */
+#define V4L2_CID_MPEG_VIDC_SW_FENCE_ENABLE                                   \
+	(V4L2_CID_MPEG_VIDC_BASE + 0x38)
+/* Control to set fence id to driver in order get corresponding fence fd */
+#define V4L2_CID_MPEG_VIDC_SW_FENCE_ID                                       \
+	(V4L2_CID_MPEG_VIDC_BASE + 0x39)
+/*
+ * Control to get fence fd from driver for the fence id
+ * set via V4L2_CID_MPEG_VIDC_SW_FENCE_ID
+ */
+#define V4L2_CID_MPEG_VIDC_SW_FENCE_FD                                       \
+	(V4L2_CID_MPEG_VIDC_BASE + 0x3A)
 /* Deprecate below controls once availble in gki and gsi bionic header */
 #ifndef V4L2_CID_MPEG_VIDEO_BASELAYER_PRIORITY_ID
 #define V4L2_CID_MPEG_VIDEO_BASELAYER_PRIORITY_ID                            \
