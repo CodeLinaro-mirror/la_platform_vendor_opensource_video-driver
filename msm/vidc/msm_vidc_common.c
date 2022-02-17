@@ -3083,23 +3083,21 @@ int msm_vidc_unload_core(struct msm_vidc_core *core)
 		return 0;
 	}
 
-	if (!core->resources.never_unload_fw) {
-		cancel_delayed_work(&core->fw_unload_work);
+	cancel_delayed_work(&core->fw_unload_work);
 
-		/*
-		 * Delay unloading of firmware. This is useful
-		 * in avoiding firmware download delays in cases where we
-		 * will have a burst of back to back video playback sessions
-		 * e.g. thumbnail generation.
-		 */
-		schedule_delayed_work(&core->fw_unload_work,
-			msecs_to_jiffies(core->state == VIDC_CORE_INIT_DONE ?
-			core->resources.msm_vidc_firmware_unload_delay : 0));
+	/*
+	 * Delay unloading of firmware. This is useful
+	 * in avoiding firmware download delays in cases where we
+	 * will have a burst of back to back video playback sessions
+	 * e.g. thumbnail generation.
+	 */
+	schedule_delayed_work(&core->fw_unload_work,
+		msecs_to_jiffies(core->state == VIDC_CORE_INIT_DONE ?
+		core->resources.msm_vidc_firmware_unload_delay : 0));
 
-		d_vpr_h("firmware unload delayed by %u ms\n",
-			core->state == VIDC_CORE_INIT_DONE ?
-			core->resources.msm_vidc_firmware_unload_delay : 0);
-	}
+	d_vpr_h("firmware unload delayed by %u ms\n",
+		core->state == VIDC_CORE_INIT_DONE ?
+		core->resources.msm_vidc_firmware_unload_delay : 0);
 	return 0;
 }
 
