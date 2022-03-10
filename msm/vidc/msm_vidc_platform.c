@@ -2199,7 +2199,7 @@ static struct msm_vidc_common_data scuba_common_data[] = {
 static struct msm_vidc_common_data monaco_common_data[] = {
 	{
 		.key = "qcom,never-unload-fw",
-		.value = 1,
+		.value = 0,
 	},
 	{
 		.key = "qcom,fw-unload-delay",
