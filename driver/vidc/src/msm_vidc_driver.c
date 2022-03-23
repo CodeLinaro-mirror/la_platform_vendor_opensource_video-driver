@@ -186,6 +186,7 @@ static const struct msm_vidc_cap_name cap_name_arr[] = {
 	{META_TIMESTAMP,                 "META_TIMESTAMP"             },
 	{META_CONCEALED_MB_CNT,          "META_CONCEALED_MB_CNT"      },
 	{META_HIST_INFO,                 "META_HIST_INFO"             },
+	{META_PICTURE_TYPE,              "META_PICTURE_TYPE"          },
 	{META_SEI_MASTERING_DISP,        "META_SEI_MASTERING_DISP"    },
 	{META_SEI_CLL,                   "META_SEI_CLL"               },
 	{META_HDR10PLUS,                 "META_HDR10PLUS"             },
@@ -1452,6 +1453,7 @@ bool msm_vidc_allow_s_ctrl(struct msm_vidc_inst *inst, u32 id)
 			case V4L2_CID_MPEG_VIDC_CODEC_CONFIG:
 			case V4L2_CID_MPEG_VIDC_PRIORITY:
 			case V4L2_CID_MPEG_VIDC_LOWLATENCY_REQUEST:
+			case V4L2_CID_MPEG_VIDC_SW_FENCE_ID:
 				allow = true;
 				break;
 			default:
@@ -2196,9 +2198,8 @@ int msm_vidc_get_fence_fd(struct msm_vidc_inst *inst, int *fence_fd)
 	}
 
 	if (!found) {
-		i_vpr_e(inst, "%s: could not find matching fence for fence id: %d\n",
+		i_vpr_h(inst, "%s: could not find matching fence for fence id: %d\n",
 			__func__, inst->capabilities->cap[FENCE_ID].value);
-		rc = -EINVAL;
 		goto exit;
 	}
 

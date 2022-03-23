@@ -1665,12 +1665,12 @@ static int __handle_session_response(struct msm_vidc_inst *inst,
 		}
 	}
 
-	memset(&inst->hfi_frame_info, 0, sizeof(struct msm_vidc_hfi_frame_info));
 	if (dequeue) {
 		rc = handle_dequeue_buffers(inst);
 		if (rc)
 			return rc;
 	}
+	memset(&inst->hfi_frame_info, 0, sizeof(struct msm_vidc_hfi_frame_info));
 
 	return rc;
 }

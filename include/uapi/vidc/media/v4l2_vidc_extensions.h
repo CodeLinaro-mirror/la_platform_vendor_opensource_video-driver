@@ -161,6 +161,9 @@ enum v4l2_mpeg_vidc_blur_types {
  */
 #define V4L2_CID_MPEG_VIDC_SW_FENCE_FD                                       \
 	(V4L2_CID_MPEG_VIDC_BASE + 0x3A)
+#define V4L2_CID_MPEG_VIDC_METADATA_PICTURE_TYPE                             \
+	(V4L2_CID_MPEG_VIDC_BASE + 0x3B)
+
 /* Deprecate below controls once availble in gki and gsi bionic header */
 #ifndef V4L2_CID_MPEG_VIDEO_BASELAYER_PRIORITY_ID
 #define V4L2_CID_MPEG_VIDEO_BASELAYER_PRIORITY_ID                            \
@@ -279,6 +282,7 @@ enum v4l2_mpeg_vidc_metadata {
 	METADATA_TIMESTAMP                    = 0x0300015c,
 	METADATA_CONCEALED_MB_COUNT           = 0x0300015f,
 	METADATA_HISTOGRAM_INFO               = 0x03000161,
+	METADATA_PICTURE_TYPE                 = 0x03000162,
 	METADATA_SEI_MASTERING_DISPLAY_COLOUR = 0x03000163,
 	METADATA_SEI_CONTENT_LIGHT_LEVEL      = 0x03000164,
 	METADATA_HDR10PLUS                    = 0x03000165,
