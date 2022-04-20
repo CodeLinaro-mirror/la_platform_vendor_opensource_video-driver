@@ -1114,7 +1114,7 @@ static int msm_vdec_subscribe_metadata(struct msm_vidc_inst *inst,
 	u32 i, count = 0;
 	struct msm_vidc_inst_capability *capability;
 	const u32 metadata_input_list[] = {
-		INPUT_META_OUTBUF_FENCE,
+		META_OUTBUF_FENCE,
 		/*
 		 * when fence enabled, client needs output buffer_tag
 		 * in input metadata buffer done.
@@ -1249,7 +1249,7 @@ static int msm_vdec_set_delivery_mode_property(struct msm_vidc_inst *inst,
 	u32 i, count = 0;
 	struct msm_vidc_inst_capability *capability;
 	const u32 property_output_list[] = {
-		INPUT_META_OUTBUF_FENCE,
+		META_OUTBUF_FENCE,
 	};
 	const u32 property_input_list[] = {};
 
@@ -1387,7 +1387,7 @@ static int msm_vdec_read_input_subcr_params(struct msm_vidc_inst *inst)
 	u32 video_signal_type_present_flag = 0;
 	u32 bit_depth;
 
-	if (!inst || !inst->core) {
+	if (!inst || !inst->core || !inst->capabilities) {
 		d_vpr_e("%s: invalid params\n", __func__);
 		return -EINVAL;
 	}
@@ -1486,6 +1486,13 @@ static int msm_vdec_read_input_subcr_params(struct msm_vidc_inst *inst)
 		msm_vidc_update_cap_value(inst, CODED_FRAMES, CODED_FRAMES_PROGRESSIVE, __func__);
 	else
 		msm_vidc_update_cap_value(inst, CODED_FRAMES, CODED_FRAMES_INTERLACE, __func__);
+
+	/* disable META_OUTBUF_FENCE if session is Interlace type */
+	if (inst->capabilities->cap[CODED_FRAMES].value ==
+		CODED_FRAMES_INTERLACE) {
+		msm_vidc_update_cap_value(inst, META_OUTBUF_FENCE,
+			V4L2_MPEG_MSM_VIDC_DISABLE, __func__);
+	}
 
 	return 0;
 }

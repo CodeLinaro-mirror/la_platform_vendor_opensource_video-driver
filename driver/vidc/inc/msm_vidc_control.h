@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2020-2021,, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef _MSM_VIDC_CONTROL_H_
@@ -43,7 +43,10 @@ int msm_vidc_adjust_blur_resolution(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_cac(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_bitrate_boost(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_min_quality(void *instance, struct v4l2_ctrl *ctrl);
-int msm_vidc_adjust_lowlatency_mode(void *instance, struct v4l2_ctrl *ctrl);
+int msm_vidc_adjust_enc_lowlatency_mode(void *instance, struct v4l2_ctrl *ctrl);
+int msm_vidc_adjust_dec_lowlatency_mode(void *instance, struct v4l2_ctrl *ctrl);
+int msm_vidc_adjust_dec_outbuf_fence(void *instance, struct v4l2_ctrl *ctrl);
+int msm_vidc_adjust_output_order(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_v4l2_properties(struct msm_vidc_inst *inst);
 int msm_vidc_adjust_session_priority(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_roi_info(void *instance, struct v4l2_ctrl *ctrl);

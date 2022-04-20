@@ -209,14 +209,17 @@ static struct msm_platform_inst_capability instance_data_blair[] = {
 		NULL, msm_vidc_set_u32},
 
 	/*
-	 * Client will enable V4L2_CID_MPEG_VIDC_INPUT_METADATA_OUTBUF_FENCE
+	 * Client will enable V4L2_CID_MPEG_VIDC_METADATA_OUTBUF_FENCE
 	 * to get fence_id in input metadata buffer done.
 	 */
-	{INPUT_META_OUTBUF_FENCE, DEC, CODECS_ALL,
+	{META_OUTBUF_FENCE, DEC, H264|HEVC|VP9,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
 		1, V4L2_MPEG_MSM_VIDC_DISABLE,
-		V4L2_CID_MPEG_VIDC_INPUT_METADATA_OUTBUF_FENCE,
-		HFI_PROP_FENCE},
+		V4L2_CID_MPEG_VIDC_METADATA_OUTBUF_FENCE,
+		HFI_PROP_FENCE,
+		CAP_FLAG_NONE,
+		{OUTPUT_ORDER},
+		{LOWLATENCY_MODE}},
 
 	/*
 	 * Client to do set_ctrl with FENCE_ID to set fence_id
@@ -492,14 +495,17 @@ static struct msm_platform_inst_capability instance_data_blair[] = {
 		CAP_FLAG_NONE,
 		{BITRATE_MODE},
 		{STAGE},
-		msm_vidc_adjust_lowlatency_mode, NULL},
+		msm_vidc_adjust_enc_lowlatency_mode, NULL},
 
 	{LOWLATENCY_MODE, DEC, H264|HEVC|VP9,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
 		1, V4L2_MPEG_MSM_VIDC_DISABLE,
 		V4L2_CID_MPEG_VIDC_LOWLATENCY_REQUEST,
 		HFI_PROP_SEQ_CHANGE_AT_SYNC_FRAME,
-		CAP_FLAG_INPUT_PORT},
+		CAP_FLAG_INPUT_PORT,
+		{META_OUTBUF_FENCE},
+		{STAGE},
+		msm_vidc_adjust_dec_lowlatency_mode},
 
 	{LTR_COUNT, ENC, H264|HEVC,
 		0, 2, 1, 0,
@@ -1209,13 +1215,32 @@ static struct msm_platform_inst_capability instance_data_blair[] = {
 		1, V4L2_MPEG_MSM_VIDC_DISABLE,
 		V4L2_CID_MPEG_VIDEO_DEC_DISPLAY_DELAY_ENABLE,
 		HFI_PROP_DECODE_ORDER_OUTPUT,
-		CAP_FLAG_ROOT | CAP_FLAG_INPUT_PORT},
+		CAP_FLAG_ROOT | CAP_FLAG_INPUT_PORT,
+		{0},
+		{OUTPUT_ORDER},
+		NULL,
+		NULL},
 
 	{DISPLAY_DELAY, DEC, H264|HEVC|VP9,
 		0, 1, 1, 0,
 		V4L2_CID_MPEG_VIDEO_DEC_DISPLAY_DELAY,
 		HFI_PROP_DECODE_ORDER_OUTPUT,
-		CAP_FLAG_ROOT | CAP_FLAG_INPUT_PORT},
+		CAP_FLAG_ROOT | CAP_FLAG_INPUT_PORT,
+		{0},
+		{OUTPUT_ORDER},
+		NULL,
+		NULL},
+
+	 {OUTPUT_ORDER, DEC, H264|HEVC|VP9,
+		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
+		1, V4L2_MPEG_MSM_VIDC_DISABLE,
+		0,
+		HFI_PROP_DECODE_ORDER_OUTPUT,
+		CAP_FLAG_ROOT | CAP_FLAG_INPUT_PORT,
+		{THUMBNAIL_MODE, DISPLAY_DELAY, DISPLAY_DELAY_ENABLE},
+		{META_OUTBUF_FENCE},
+		msm_vidc_adjust_output_order,
+		msm_vidc_set_u32},
 
 	/* conceal color */
 	{CONCEAL_COLOR_8BIT, DEC, CODECS_ALL, 0x0, 0xff3fcff, 1,
@@ -1251,7 +1276,10 @@ static struct msm_platform_inst_capability instance_data_blair[] = {
 		MSM_VIDC_PIPE_NONE,
 		0},
 
-	{POC, DEC, H264, 0, 18, 1, 1},
+	{POC, DEC, H264,
+		0, 18, 1, 1,
+		0,
+		HFI_PROP_PIC_ORDER_CNT_TYPE},
 
 	{QUALITY_MODE, ENC, CODECS_ALL,
 		MSM_VIDC_MAX_QUALITY_MODE,
@@ -1279,7 +1307,12 @@ static struct msm_platform_inst_capability instance_data_blair[] = {
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
 		1, V4L2_MPEG_MSM_VIDC_DISABLE,
 		V4L2_CID_MPEG_VIDC_THUMBNAIL_MODE,
-		HFI_PROP_THUMBNAIL_MODE},
+		HFI_PROP_THUMBNAIL_MODE,
+		CAP_FLAG_NONE,
+		{0},
+		{OUTPUT_ORDER},
+		NULL,
+		msm_vidc_set_u32},
 
 	{DEFAULT_HEADER, DEC, CODECS_ALL,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,

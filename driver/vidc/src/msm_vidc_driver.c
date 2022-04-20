@@ -83,7 +83,8 @@ static const struct msm_vidc_cap_name cap_name_arr[] = {
 	{MB_CYCLES_FW,                   "MB_CYCLES_FW"               },
 	{MB_CYCLES_FW_VPP,               "MB_CYCLES_FW_VPP"           },
 	{SECURE_MODE,                    "SECURE_MODE"                },
-	{INPUT_META_OUTBUF_FENCE,        "INPUT_META_OUTBUF_FENCE"    },
+	{META_OUTBUF_FENCE,              "META_OUTBUF_FENCE"          },
+	{OUTPUT_ORDER,                   "OUTPUT_ORDER"               },
 	{FENCE_ID,                       "FENCE_ID"                   },
 	{FENCE_FD,                       "FENCE_FD"                   },
 	{TS_REORDER,                     "TS_REORDER"                 },
@@ -1564,10 +1565,10 @@ bool msm_vidc_allow_property(struct msm_vidc_inst *inst, u32 hfi_id)
 		}
 		break;
 	case HFI_PROP_FENCE:
-		if (!inst->capabilities->cap[INPUT_META_OUTBUF_FENCE].value) {
+		if (!inst->capabilities->cap[META_OUTBUF_FENCE].value) {
 			i_vpr_h(inst,
 				"%s: cap: %24s not enabled, hence not allowed to subscribe\n",
-				__func__, cap_name(INPUT_META_OUTBUF_FENCE));
+				__func__, cap_name(META_OUTBUF_FENCE));
 			is_allowed = false;
 		}
 		break;
@@ -3486,7 +3487,7 @@ int msm_vidc_queue_buffer_single(struct msm_vidc_inst *inst, struct vb2_buffer *
 	if (!buf)
 		return -EINVAL;
 
-	if (inst->capabilities->cap[INPUT_META_OUTBUF_FENCE].value &&
+	if (inst->capabilities->cap[META_OUTBUF_FENCE].value &&
 		is_output_buffer(buf->type)) {
 		fence = msm_vidc_fence_create(inst);
 		if (!fence)
@@ -3514,7 +3515,8 @@ int msm_vidc_queue_buffer_single(struct msm_vidc_inst *inst, struct vb2_buffer *
 exit:
 	if (rc) {
 		i_vpr_e(inst, "%s: qbuf failed\n", __func__);
-		msm_vidc_fence_destroy(inst, fence);
+		if (fence)
+			msm_vidc_fence_destroy(inst, (u32)fence->dma_fence.seqno);
 	}
 	return rc;
 }
@@ -5387,7 +5389,7 @@ void msm_vidc_destroy_buffers(struct msm_vidc_inst *inst)
 	list_for_each_entry_safe(fence, dummy_fence, &inst->fence_list, list) {
 		i_vpr_e(inst, "%s: destroying fence id: %llu\n",
 			__func__, fence->dma_fence.seqno);
-		msm_vidc_fence_destroy(inst, fence);
+		msm_vidc_fence_destroy(inst, (u32)fence->dma_fence.seqno);
 	}
 
 	/* destroy buffers from pool */

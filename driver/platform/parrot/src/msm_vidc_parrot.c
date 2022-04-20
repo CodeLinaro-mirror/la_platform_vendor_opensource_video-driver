@@ -619,7 +619,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v0[] = {
 		CAP_FLAG_NONE,
 		{BITRATE_MODE},
 		{STAGE},
-		msm_vidc_adjust_lowlatency_mode, NULL},
+		msm_vidc_adjust_enc_lowlatency_mode, NULL},
 
 	{LOWLATENCY_MODE, DEC, H264|HEVC|VP9,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
@@ -2160,7 +2160,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v1[] = {
 		CAP_FLAG_NONE,
 		{BITRATE_MODE},
 		{STAGE},
-		msm_vidc_adjust_lowlatency_mode, NULL},
+		msm_vidc_adjust_enc_lowlatency_mode, NULL},
 
 	{LOWLATENCY_MODE, DEC, H264|HEVC|VP9,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
@@ -3696,7 +3696,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v2[] = {
 		CAP_FLAG_NONE,
 		{BITRATE_MODE},
 		{STAGE},
-		msm_vidc_adjust_lowlatency_mode, NULL},
+		msm_vidc_adjust_enc_lowlatency_mode, NULL},
 
 	{LOWLATENCY_MODE, DEC, H264|HEVC|VP9,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,

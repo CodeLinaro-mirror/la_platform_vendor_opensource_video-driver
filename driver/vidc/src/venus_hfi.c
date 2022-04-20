@@ -3482,7 +3482,7 @@ int venus_hfi_queue_buffer(struct msm_vidc_inst *inst,
 			goto unlock;
 	}
 
-	if (inst->capabilities->cap[INPUT_META_OUTBUF_FENCE].value &&
+	if (inst->capabilities->cap[META_OUTBUF_FENCE].value &&
 		is_output_buffer(buffer->type)) {
 		if (!buffer->fence_id) {
 			i_vpr_e(inst, "%s: fence id cannot be 0\n", __func__);

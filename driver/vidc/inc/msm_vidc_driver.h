@@ -152,6 +152,11 @@ static inline bool is_meta_enabled(struct msm_vidc_inst *inst, unsigned int type
 	return enabled;
 }
 
+static inline bool is_outbuf_fence_enabled(struct msm_vidc_inst *inst)
+{
+	return !!(inst->capabilities->cap[META_OUTBUF_FENCE].value);
+}
+
 static inline bool is_linear_yuv_colorformat(enum msm_vidc_colorformat_type colorformat)
 {
 	return colorformat == MSM_VIDC_FMT_NV12 ||

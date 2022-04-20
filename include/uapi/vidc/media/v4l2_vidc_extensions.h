@@ -150,7 +150,7 @@ enum v4l2_mpeg_vidc_blur_types {
 #define V4L2_CID_MPEG_VIDC_VUI_TIMING_INFO                                   \
 	(V4L2_CID_MPEG_VIDC_BASE + 0x32)
 /* Enables Output buffer fence id via input metadata */
-#define V4L2_CID_MPEG_VIDC_INPUT_METADATA_OUTBUF_FENCE                       \
+#define V4L2_CID_MPEG_VIDC_METADATA_OUTBUF_FENCE                       \
 	(V4L2_CID_MPEG_VIDC_BASE + 0x38)
 /* Control to set fence id to driver in order get corresponding fence fd */
 #define V4L2_CID_MPEG_VIDC_SW_FENCE_ID                                       \
@@ -304,6 +304,16 @@ enum meta_interlace_info {
 	META_INTERLACE_FRAME_INTERLEAVE_BOTTOMFIELD_FIRST   = 0x00000008,
 	META_INTERLACE_FRAME_INTERLACE_TOPFIELD_FIRST       = 0x00000010,
 	META_INTERLACE_FRAME_INTERLACE_BOTTOMFIELD_FIRST    = 0x00000020,
+};
+
+enum meta_picture_type {
+	META_PICTURE_TYPE_IDR                            = 0x00000001,
+	META_PICTURE_TYPE_P                              = 0x00000002,
+	META_PICTURE_TYPE_B                              = 0x00000004,
+	META_PICTURE_TYPE_I                              = 0x00000008,
+	META_PICTURE_TYPE_CRA                            = 0x00000010,
+	META_PICTURE_TYPE_BLA                            = 0x00000020,
+	META_PICTURE_TYPE_NOSHOW                         = 0x00000040,
 };
 
 /* vendor controls end */

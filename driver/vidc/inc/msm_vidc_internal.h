@@ -367,7 +367,8 @@ enum msm_vidc_inst_capability_type {
 	MB_CYCLES_FW,
 	MB_CYCLES_FW_VPP,
 	SECURE_MODE,
-	INPUT_META_OUTBUF_FENCE,
+	META_OUTBUF_FENCE,
+	OUTPUT_ORDER,
 	FENCE_ID,
 	FENCE_FD,
 	TS_REORDER,
@@ -722,6 +723,7 @@ struct msm_vidc_hfi_frame_info {
 	u32                    cf;
 	u32                    data_corrupt;
 	u32                    overflow;
+	u32                    fence_id;
 };
 
 struct msm_vidc_decode_vpp_delay {
