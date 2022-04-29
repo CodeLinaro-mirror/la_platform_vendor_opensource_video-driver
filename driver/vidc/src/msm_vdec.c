@@ -2253,18 +2253,6 @@ int msm_vdec_qbuf(struct msm_vidc_inst *inst, struct vb2_buffer *vb2)
 		}
 	}
 
-	if (vb2->type == OUTPUT_META_PLANE) {
-		if (inst->capabilities->cap[META_DPB_TAG_LIST].value) {
-			/*
-			 * vb2 is not allowing client to pass data in output meta plane.
-			 * adjust the bytesused as client will send buffer tag metadata
-			 * in output meta plane if DPB_TAG_LIST metadata enabled.
-			 */
-			if (!vb2->planes[0].bytesused)
-				vb2->planes[0].bytesused = 1024;
-		}
-	}
-
 	if (inst->firmware_priority != (inst->priority_level +
 					inst->capabilities->cap[PRIORITY].value * 2))
 		msm_vidc_set_session_priority(inst, PRIORITY);

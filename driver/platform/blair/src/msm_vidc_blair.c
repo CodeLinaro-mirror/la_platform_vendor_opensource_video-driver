@@ -1277,7 +1277,7 @@ static struct msm_platform_inst_capability instance_data_blair[] = {
 		0},
 
 	{POC, DEC, H264,
-		0, 18, 1, 1,
+		0, 2, 1, 1,
 		0,
 		HFI_PROP_PIC_ORDER_CNT_TYPE},
 
