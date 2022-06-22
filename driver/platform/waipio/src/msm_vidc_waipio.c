@@ -255,6 +255,10 @@ static struct msm_platform_inst_capability instance_data_waipio[] = {
 		{0},
 		NULL, msm_vidc_set_u32},
 
+	{CLIENT_ID, ENC|DEC, CODECS_ALL,
+		INVALID_CLIENT_ID, INT_MAX, 1, INVALID_CLIENT_ID,
+		V4L2_CID_MPEG_VIDC_CLIENT_ID},
+
 	{TS_REORDER, DEC, H264|HEVC,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
 		1, V4L2_MPEG_MSM_VIDC_DISABLE,
@@ -1880,6 +1884,10 @@ static struct msm_platform_inst_capability instance_data_tofino[] = {
 		{0},
 		{0},
 		NULL, msm_vidc_set_u32},
+
+	{CLIENT_ID, ENC|DEC, CODECS_ALL,
+		INVALID_CLIENT_ID, INT_MAX, 1, INVALID_CLIENT_ID,
+		V4L2_CID_MPEG_VIDC_CLIENT_ID},
 
 	{TS_REORDER, DEC, H264 | HEVC,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,

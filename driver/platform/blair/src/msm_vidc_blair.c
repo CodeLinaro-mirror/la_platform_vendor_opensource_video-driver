@@ -208,6 +208,10 @@ static struct msm_platform_inst_capability instance_data_blair[] = {
 		{0},
 		NULL, msm_vidc_set_u32},
 
+	{CLIENT_ID, ENC|DEC, CODECS_ALL,
+		INVALID_CLIENT_ID, INT_MAX, 1, INVALID_CLIENT_ID,
+		V4L2_CID_MPEG_VIDC_CLIENT_ID},
+
 	/*
 	 * Client will enable V4L2_CID_MPEG_VIDC_METADATA_OUTBUF_FENCE
 	 * to get fence_id in input metadata buffer done.

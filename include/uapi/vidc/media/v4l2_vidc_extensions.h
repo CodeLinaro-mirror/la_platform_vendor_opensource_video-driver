@@ -164,6 +164,9 @@ enum v4l2_mpeg_vidc_blur_types {
 #define V4L2_CID_MPEG_VIDC_METADATA_PICTURE_TYPE                             \
 	(V4L2_CID_MPEG_VIDC_BASE + 0x3B)
 
+#define V4L2_CID_MPEG_VIDC_CLIENT_ID                                          \
+	(V4L2_CID_MPEG_VIDC_BASE + 0x41)
+	
 /* Deprecate below controls once availble in gki and gsi bionic header */
 #ifndef V4L2_CID_MPEG_VIDEO_BASELAYER_PRIORITY_ID
 #define V4L2_CID_MPEG_VIDEO_BASELAYER_PRIORITY_ID                            \

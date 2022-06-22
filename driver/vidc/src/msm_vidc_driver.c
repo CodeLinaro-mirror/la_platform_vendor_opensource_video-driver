@@ -82,6 +82,7 @@ static const struct msm_vidc_cap_name cap_name_arr[] = {
 	{MB_CYCLES_LP,                   "MB_CYCLES_LP"               },
 	{MB_CYCLES_FW,                   "MB_CYCLES_FW"               },
 	{MB_CYCLES_FW_VPP,               "MB_CYCLES_FW_VPP"           },
+	{CLIENT_ID,                      "CLIENT_ID"                  },
 	{SECURE_MODE,                    "SECURE_MODE"                },
 	{META_OUTBUF_FENCE,              "META_OUTBUF_FENCE"          },
 	{OUTPUT_ORDER,                   "OUTPUT_ORDER"               },
@@ -5689,8 +5690,8 @@ void msm_vidc_schedule_core_deinit(struct msm_vidc_core *core)
 static const char *get_codec_str(enum msm_vidc_codec_type type)
 {
 	switch (type) {
-	case MSM_VIDC_H264: return "h264";
-	case MSM_VIDC_HEVC: return "h265";
+	case MSM_VIDC_H264: return " avc";
+	case MSM_VIDC_HEVC: return "hevc";
 	case MSM_VIDC_VP9:  return " vp9";
 	case MSM_VIDC_HEIC: return "heic";
 	}
@@ -5701,8 +5702,8 @@ static const char *get_codec_str(enum msm_vidc_codec_type type)
 static const char *get_domain_str(enum msm_vidc_domain_type type)
 {
 	switch (type) {
-	case MSM_VIDC_ENCODER: return "e";
-	case MSM_VIDC_DECODER: return "d";
+	case MSM_VIDC_ENCODER: return "E";
+	case MSM_VIDC_DECODER: return "D";
 	}
 
 	return ".";
@@ -5711,6 +5712,7 @@ static const char *get_domain_str(enum msm_vidc_domain_type type)
 int msm_vidc_update_debug_str(struct msm_vidc_inst *inst)
 {
 	u32 sid;
+	int client_id = INVALID_CLIENT_ID;
 	const char *codec;
 	const char *domain;
 
@@ -5718,10 +5720,20 @@ int msm_vidc_update_debug_str(struct msm_vidc_inst *inst)
 		d_vpr_e("%s: Invalid params\n", __func__);
 		return -EINVAL;
 	}
+
+	if (inst->capabilities)
+		client_id = inst->capabilities->cap[CLIENT_ID].value;
+
 	sid = inst->session_id;
 	codec = get_codec_str(inst->codec);
 	domain = get_domain_str(inst->domain);
-	snprintf(inst->debug_str, sizeof(inst->debug_str), "%08x: %s%s", sid, codec, domain);
+	if (client_id != INVALID_CLIENT_ID) {
+		snprintf(inst->debug_str, sizeof(inst->debug_str), "%08x: %s%s_%d",
+			sid, codec, domain, client_id);
+	} else {
+		snprintf(inst->debug_str, sizeof(inst->debug_str), "%08x: %s%s",
+			sid, codec, domain);
+	}
 	d_vpr_h("%s: sid: %08x, codec: %s, domain: %s, final: %s\n",
 		__func__, sid, codec, domain, inst->debug_str);
 
