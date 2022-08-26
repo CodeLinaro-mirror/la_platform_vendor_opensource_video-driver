@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022. Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024. Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/dma-buf.h>
@@ -19,6 +19,10 @@
 #include "msm_vidc_core.h"
 #include "msm_vidc_events.h"
 #include "venus_hfi.h"
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 16, 0))
+	MODULE_IMPORT_NS(DMA_BUF);
+#endif
 
 struct msm_vidc_buf_region_name {
 	enum msm_vidc_buffer_region region;
