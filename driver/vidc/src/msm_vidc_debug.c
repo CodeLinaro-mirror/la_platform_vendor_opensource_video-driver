@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 #define CREATE_TRACE_POINTS
 #include "msm_vidc_debug.h"
@@ -339,7 +339,7 @@ static const struct file_operations stability_fops = {
 	.write = trigger_stability_write,
 };
 
-struct dentry* msm_vidc_debugfs_init_drv()
+struct dentry *msm_vidc_debugfs_init_drv(void)
 {
 	struct dentry *dir = NULL;
 

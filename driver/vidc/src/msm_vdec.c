@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <media/v4l2_vidc_extensions.h>
@@ -2177,7 +2177,7 @@ int msm_vdec_qbuf(struct msm_vidc_inst *inst, struct vb2_buffer *vb2)
 	return rc;
 }
 
-static msm_vdec_alloc_and_queue_additional_dpb_buffers(struct msm_vidc_inst *inst)
+static int msm_vdec_alloc_and_queue_additional_dpb_buffers(struct msm_vidc_inst *inst)
 {
 	struct msm_vidc_buffers *buffers;
 	struct msm_vidc_buffer *buffer = NULL;

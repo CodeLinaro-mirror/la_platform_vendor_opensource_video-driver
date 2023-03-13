@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include "msm_vidc_control.h"
@@ -3302,7 +3302,7 @@ int msm_vidc_set_blur_resolution(void *instance,
 	return rc;
 }
 
-static msm_venc_set_csc_coeff(struct msm_vidc_inst *inst,
+static int msm_venc_set_csc_coeff(struct msm_vidc_inst *inst,
 	const char *prop_name, u32 hfi_id, void *payload,
 	u32 payload_size, u32 row_count, u32 column_count)
 {
@@ -3326,6 +3326,7 @@ static msm_venc_set_csc_coeff(struct msm_vidc_inst *inst,
 
 	return rc;
 }
+
 int msm_vidc_set_csc_custom_matrix(void *instance,
 	enum msm_vidc_inst_capability_type cap_id)
 {

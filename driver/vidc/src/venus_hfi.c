@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
  */
 
@@ -2539,7 +2539,7 @@ int __load_fw(struct msm_vidc_core *core)
 	/* configure interface_queues memory to firmware */
 	rc = call_venus_op(core, setup_ucregion_memmap, core);
 	if (rc) {
-		d_vpr_e("%s: failed to setup ucregion\n");
+		d_vpr_e("%s: failed to setup ucregion\n", __func__);
 		goto fail_setup_ucregion;
 	}
 
