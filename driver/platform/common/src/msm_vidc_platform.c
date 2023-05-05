@@ -36,6 +36,9 @@
 #if defined(CONFIG_MSM_VIDC_RAVELIN)
 #include "msm_vidc_ravelin.h"
 #endif
+#if defined(CONFIG_MSM_VIDC_BLAIR)
+#include "msm_vidc_blair.h"
+#endif
 #if defined(CONFIG_MSM_VIDC_NEO)
 #include "msm_vidc_neo.h"
 #endif
@@ -269,6 +272,15 @@ static int msm_vidc_deinit_platform_variant(struct msm_vidc_core *core, struct d
 		return rc;
 	}
 #endif
+#if defined(CONFIG_MSM_VIDC_BLAIR)
+	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-blair")) {
+		rc = msm_vidc_deinit_platform_blair(core, dev);
+		if (rc)
+			d_vpr_e("%s: failed msm-vidc-blair with %d\n",
+				__func__, rc);
+		return rc;
+	}
+#endif
 
 	return rc;
 }
@@ -317,6 +329,16 @@ static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct dev
 		rc = msm_vidc_init_platform_ravelin(core, dev);
 		if (rc)
 			d_vpr_e("%s: failed msm-vidc-ravelin with %d\n",
+				__func__, rc);
+		return rc;
+	}
+#endif
+
+#if defined(CONFIG_MSM_VIDC_BLAIR)
+	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-blair")) {
+		rc = msm_vidc_init_platform_blair(core, dev);
+		if (rc)
+			d_vpr_e("%s: failed msm-vidc-blair with %d\n",
 				__func__, rc);
 		return rc;
 	}
