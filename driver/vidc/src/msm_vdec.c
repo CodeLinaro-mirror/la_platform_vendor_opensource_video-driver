@@ -1119,7 +1119,8 @@ static int msm_vdec_subscribe_metadata(struct msm_vidc_inst *inst,
 		 * when fence enabled, client needs output buffer_tag
 		 * in input metadata buffer done.
 		 */
-		META_OUTPUT_BUF_TAG,
+		META_BUF_TAG,
+		META_PICTURE_TYPE,
 	};
 	const u32 metadata_output_list[] = {
 		META_DPB_MISR,
@@ -1149,7 +1150,13 @@ static int msm_vdec_subscribe_metadata(struct msm_vidc_inst *inst,
 
 	capability = inst->capabilities;
 	payload[0] = HFI_MODE_METADATA;
-	if (port == INPUT_PORT) {
+	/*
+	 * TODO
+	 * Currently I/P port Meta data subscription is required only when
+	 * SW fence enable case, so suppose if any new use-case needs I/P
+	 * port Meta data subscription then need to remove below check.
+	 */
+	if (port == INPUT_PORT && is_outbuf_fence_enabled(inst)) {
 		for (i = 0; i < ARRAY_SIZE(metadata_input_list); i++) {
 			if (capability->cap[metadata_input_list[i]].value &&
 				msm_vidc_allow_metadata(inst, metadata_input_list[i])) {
