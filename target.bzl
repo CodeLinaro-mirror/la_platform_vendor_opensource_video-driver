@@ -10,5 +10,6 @@ def define_blair():
         ],
         config_options = [
             "CONFIG_MSM_VIDC_BLAIR",
+            "CONFIG_MSM_VIDC_AR50LT",
         ],
     )

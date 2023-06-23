@@ -26,9 +26,9 @@ module_entry(
         ],
     config_srcs = {
         "CONFIG_MSM_VIDC_BLAIR" : [
-            "driver/variant/iris33/src/msm_vidc_power_ar50lt.c",
-            "driver/variant/iris33/src/msm_vidc_buffer_ar50lt.c",
-            "driver/platform/blair/src/msm_vidc_ar50lt.c",
+            "driver/variant/ar50lt/src/msm_vidc_power_ar50lt.c",
+            "driver/variant/ar50lt/src/msm_vidc_buffer_ar50lt.c",
+            "driver/variant/ar50lt/src/msm_vidc_ar50lt.c",
             "driver/platform/blair/src/msm_vidc_blair.c",
         ],
     },
