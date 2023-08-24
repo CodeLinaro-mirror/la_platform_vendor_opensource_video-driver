@@ -1156,7 +1156,12 @@ static int msm_vdec_subscribe_metadata(struct msm_vidc_inst *inst,
 	 * SW fence enable case, so suppose if any new use-case needs I/P
 	 * port Meta data subscription then need to remove below check.
 	 */
-	if (port == INPUT_PORT && is_outbuf_fence_enabled(inst)) {
+	if (port == INPUT_PORT && !is_outbuf_fence_enabled(inst)) {
+		i_vpr_l(inst, "%s: I/P port meta-data subscription not allowed!", __func__);
+		return rc;
+	}
+
+	if (port == INPUT_PORT) {
 		for (i = 0; i < ARRAY_SIZE(metadata_input_list); i++) {
 			if (capability->cap[metadata_input_list[i]].value &&
 				msm_vidc_allow_metadata(inst, metadata_input_list[i])) {
