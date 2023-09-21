@@ -487,6 +487,7 @@ enum msm_vidc_inst_capability_type {
 	META_DEC_QP_METADATA,
 	COMPLEXITY,
 	META_MAX_NUM_REORDER_FRAMES,
+	SIGNAL_COLOR_INFO,
 	INST_CAP_MAX,
 };
 
