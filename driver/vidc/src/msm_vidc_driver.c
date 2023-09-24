@@ -20,6 +20,7 @@
 #include "msm_vidc.h"
 #include "msm_vdec.h"
 #include "msm_venc.h"
+#include "msm_vidc_fence.h"
 #include "venus_hfi.h"
 #include "venus_hfi_response.h"
 #include "hfi_packet.h"
@@ -81,7 +82,12 @@ static const struct msm_vidc_cap_name cap_name_arr[] = {
 	{MB_CYCLES_LP,                   "MB_CYCLES_LP"               },
 	{MB_CYCLES_FW,                   "MB_CYCLES_FW"               },
 	{MB_CYCLES_FW_VPP,               "MB_CYCLES_FW_VPP"           },
+	{CLIENT_ID,                      "CLIENT_ID"                  },
 	{SECURE_MODE,                    "SECURE_MODE"                },
+	{META_OUTBUF_FENCE,              "META_OUTBUF_FENCE"          },
+	{OUTPUT_ORDER,                   "OUTPUT_ORDER"               },
+	{FENCE_ID,                       "FENCE_ID"                   },
+	{FENCE_FD,                       "FENCE_FD"                   },
 	{TS_REORDER,                     "TS_REORDER"                 },
 	{HFLIP,                          "HFLIP"                      },
 	{VFLIP,                          "VFLIP"                      },
@@ -182,6 +188,7 @@ static const struct msm_vidc_cap_name cap_name_arr[] = {
 	{META_TIMESTAMP,                 "META_TIMESTAMP"             },
 	{META_CONCEALED_MB_CNT,          "META_CONCEALED_MB_CNT"      },
 	{META_HIST_INFO,                 "META_HIST_INFO"             },
+	{META_PICTURE_TYPE,              "META_PICTURE_TYPE"          },
 	{META_SEI_MASTERING_DISP,        "META_SEI_MASTERING_DISP"    },
 	{META_SEI_CLL,                   "META_SEI_CLL"               },
 	{META_HDR10PLUS,                 "META_HDR10PLUS"             },
@@ -1448,6 +1455,7 @@ bool msm_vidc_allow_s_ctrl(struct msm_vidc_inst *inst, u32 id)
 			case V4L2_CID_MPEG_VIDC_CODEC_CONFIG:
 			case V4L2_CID_MPEG_VIDC_PRIORITY:
 			case V4L2_CID_MPEG_VIDC_LOWLATENCY_REQUEST:
+			case V4L2_CID_MPEG_VIDC_SW_FENCE_ID:
 				allow = true;
 				break;
 			default:
@@ -1554,6 +1562,14 @@ bool msm_vidc_allow_property(struct msm_vidc_inst *inst, u32 hfi_id)
 			i_vpr_h(inst,
 				"%s: cap: %24s not allowed for split mode\n",
 				__func__, cap_name(DPB_LIST));
+			is_allowed = false;
+		}
+		break;
+	case HFI_PROP_FENCE:
+		if (!inst->capabilities->cap[META_OUTBUF_FENCE].value) {
+			i_vpr_h(inst,
+				"%s: cap: %24s not enabled, hence not allowed to subscribe\n",
+				__func__, cap_name(META_OUTBUF_FENCE));
 			is_allowed = false;
 		}
 		break;
@@ -2162,6 +2178,45 @@ int msm_vidc_state_change_last_flag(struct msm_vidc_inst *inst)
 	return rc;
 }
 
+int msm_vidc_get_fence_fd(struct msm_vidc_inst *inst, int *fence_fd)
+{
+	int rc = 0;
+	struct msm_vidc_fence *fence, *dummy_fence;
+	bool found = false;
+
+	*fence_fd = INVALID_FD;
+
+	if (!inst || !inst->capabilities) {
+		d_vpr_e("%s: invalid params\n", __func__);
+		return -EINVAL;
+	}
+
+	list_for_each_entry_safe(fence, dummy_fence, &inst->fence_list, list) {
+		if (fence->dma_fence.seqno ==
+			(u64)inst->capabilities->cap[FENCE_ID].value) {
+			found = true;
+			break;
+		}
+	}
+
+	if (!found) {
+		i_vpr_h(inst, "%s: could not find matching fence for fence id: %d\n",
+			__func__, inst->capabilities->cap[FENCE_ID].value);
+		goto exit;
+	}
+
+	if (fence->fd == INVALID_FD) {
+		rc = msm_vidc_create_fence_fd(inst, fence);
+		if (rc)
+			goto exit;
+	}
+
+	*fence_fd = fence->fd;
+
+exit:
+	return rc;
+}
+
 int msm_vidc_get_control(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 {
 	int rc = 0;
@@ -2182,6 +2237,11 @@ int msm_vidc_get_control(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 			inst->buffers.input.extra_count;
 		i_vpr_h(inst, "g_min: input buffers %d\n", ctrl->val);
 		break;
+	case V4L2_CID_MPEG_VIDC_SW_FENCE_FD:
+		rc = msm_vidc_get_fence_fd(inst, &ctrl->val);
+		if (!rc)
+			i_vpr_l(inst, "%s: fence fd: %d\n", __func__, ctrl->val);
+		break;	
 	default:
 		break;
 	}
@@ -3416,9 +3476,10 @@ int msm_vidc_queue_buffer_single(struct msm_vidc_inst *inst, struct vb2_buffer *
 {
 	int rc = 0;
 	struct msm_vidc_buffer *buf;
+	struct msm_vidc_fence *fence;
 	enum msm_vidc_allow allow;
 
-	if (!inst || !vb2) {
+	if (!inst || !vb2 || !inst->capabilities) {
 		d_vpr_e("%s: invalid params\n", __func__);
 		return -EINVAL;
 	}
@@ -3427,21 +3488,37 @@ int msm_vidc_queue_buffer_single(struct msm_vidc_inst *inst, struct vb2_buffer *
 	if (!buf)
 		return -EINVAL;
 
+	if (inst->capabilities->cap[META_OUTBUF_FENCE].value &&
+		is_output_buffer(buf->type)) {
+		fence = msm_vidc_fence_create(inst);
+		if (!fence)
+			return rc;
+		buf->fence_id = fence->dma_fence.seqno;
+	}
+
 	allow = msm_vidc_allow_qbuf(inst, vb2->type);
 	if (allow == MSM_VIDC_DISALLOW) {
 		i_vpr_e(inst, "%s: qbuf not allowed\n", __func__);
-		return -EINVAL;
+		rc = -EINVAL;
+		goto exit;
 	} else if (allow == MSM_VIDC_DEFER) {
 		print_vidc_buffer(VIDC_LOW, "low ", "qbuf deferred", inst, buf);
-		return 0;
+		rc = 0;
+		goto exit;
 	}
 
 	msm_vidc_scale_power(inst, is_input_buffer(buf->type));
 
 	rc = msm_vidc_queue_buffer(inst, buf);
 	if (rc)
-		return rc;
+		goto exit;
 
+exit:
+	if (rc) {
+		i_vpr_e(inst, "%s: qbuf failed\n", __func__);
+		if (fence)
+			msm_vidc_fence_destroy(inst, (u32)fence->dma_fence.seqno);
+	}
 	return rc;
 }
 
@@ -5136,8 +5213,10 @@ int msm_vidc_flush_buffers(struct msm_vidc_inst *inst,
 			if (buf->attr & MSM_VIDC_ATTR_QUEUED ||
 				buf->attr & MSM_VIDC_ATTR_DEFERRED) {
 				print_vidc_buffer(VIDC_HIGH, "high", "flushing buffer", inst, buf);
-				if (!(buf->attr & MSM_VIDC_ATTR_BUFFER_DONE))
+				if (!(buf->attr & MSM_VIDC_ATTR_BUFFER_DONE)) {
+					buf->data_size = 0;
 					msm_vidc_vb2_buffer_done(inst, buf);
+				}
 				msm_vidc_put_driver_buf(inst, buf);
 			}
 		}
@@ -5218,6 +5297,7 @@ void msm_vidc_destroy_buffers(struct msm_vidc_inst *inst)
 	struct msm_vidc_timestamp *ts, *dummy_ts;
 	struct msm_memory_dmabuf *dbuf, *dummy_dbuf;
 	struct response_work *work, *dummy_work = NULL;
+	struct msm_vidc_fence *fence, *dummy_fence;
 	static const enum msm_vidc_buffer_type ext_buf_types[] = {
 		MSM_VIDC_BUF_INPUT,
 		MSM_VIDC_BUF_OUTPUT,
@@ -5309,6 +5389,11 @@ void msm_vidc_destroy_buffers(struct msm_vidc_inst *inst)
 		msm_vidc_vmem_free((void **)&work);
 	}
 
+	list_for_each_entry_safe(fence, dummy_fence, &inst->fence_list, list) {
+		i_vpr_e(inst, "%s: destroying fence %s\n", __func__, fence->name);
+		msm_vidc_fence_destroy(inst, (u32)fence->dma_fence.seqno);
+	}
+
 	/* destroy buffers from pool */
 	msm_memory_pools_deinit(inst);
 }
@@ -5319,6 +5404,7 @@ static void msm_vidc_close_helper(struct kref *kref)
 		struct msm_vidc_inst, kref);
 
 	i_vpr_h(inst, "%s()\n", __func__);
+	msm_vidc_fence_deinit(inst);
 	msm_vidc_event_queue_deinit(inst);
 	msm_vidc_vb2_queue_deinit(inst);
 	msm_vidc_debugfs_deinit_inst(inst);
@@ -5592,8 +5678,8 @@ void msm_vidc_schedule_core_deinit(struct msm_vidc_core *core)
 static const char *get_codec_str(enum msm_vidc_codec_type type)
 {
 	switch (type) {
-	case MSM_VIDC_H264: return "h264";
-	case MSM_VIDC_HEVC: return "h265";
+	case MSM_VIDC_H264: return " avc";
+	case MSM_VIDC_HEVC: return "hevc";
 	case MSM_VIDC_VP9:  return " vp9";
 	case MSM_VIDC_HEIC: return "heic";
 	}
@@ -5604,8 +5690,8 @@ static const char *get_codec_str(enum msm_vidc_codec_type type)
 static const char *get_domain_str(enum msm_vidc_domain_type type)
 {
 	switch (type) {
-	case MSM_VIDC_ENCODER: return "e";
-	case MSM_VIDC_DECODER: return "d";
+	case MSM_VIDC_ENCODER: return "E";
+	case MSM_VIDC_DECODER: return "D";
 	}
 
 	return ".";
@@ -5614,6 +5700,7 @@ static const char *get_domain_str(enum msm_vidc_domain_type type)
 int msm_vidc_update_debug_str(struct msm_vidc_inst *inst)
 {
 	u32 sid;
+	int client_id = INVALID_CLIENT_ID;
 	const char *codec;
 	const char *domain;
 
@@ -5621,10 +5708,20 @@ int msm_vidc_update_debug_str(struct msm_vidc_inst *inst)
 		d_vpr_e("%s: Invalid params\n", __func__);
 		return -EINVAL;
 	}
+
+	if (inst->capabilities)
+		client_id = inst->capabilities->cap[CLIENT_ID].value;
+
 	sid = inst->session_id;
 	codec = get_codec_str(inst->codec);
 	domain = get_domain_str(inst->domain);
-	snprintf(inst->debug_str, sizeof(inst->debug_str), "%08x: %s%s", sid, codec, domain);
+	if (client_id != INVALID_CLIENT_ID) {
+		snprintf(inst->debug_str, sizeof(inst->debug_str), "%08x: %s%s_%d",
+			sid, codec, domain, client_id);
+	} else {
+		snprintf(inst->debug_str, sizeof(inst->debug_str), "%08x: %s%s",
+			sid, codec, domain);
+	}
 	d_vpr_h("%s: sid: %08x, codec: %s, domain: %s, final: %s\n",
 		__func__, sid, codec, domain, inst->debug_str);
 

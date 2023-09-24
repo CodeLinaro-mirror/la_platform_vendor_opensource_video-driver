@@ -702,21 +702,21 @@ int msm_memory_cache_operations(struct msm_vidc_inst *inst,
 		return -EINVAL;
 	}
 
+	// TODO gdoddabe: need to review DMA buf CMO's according to kernel version
 	switch (cache_type) {
 	case MSM_MEM_CACHE_CLEAN_INVALIDATE:
-		rc = dma_buf_begin_cpu_access_partial(dbuf, DMA_TO_DEVICE,
+		rc = dma_buf_end_cpu_access_partial(dbuf, DMA_FROM_DEVICE,
 				offset, size);
 		if (rc)
 			break;
-		rc = dma_buf_end_cpu_access_partial(dbuf, DMA_FROM_DEVICE,
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
+		rc = dma_buf_begin_cpu_access_partial(dbuf, DMA_FROM_DEVICE,
 				offset, size);
+#endif
 		break;
 	case MSM_MEM_CACHE_INVALIDATE:
 		rc = dma_buf_begin_cpu_access_partial(dbuf, DMA_FROM_DEVICE,
-				offset, size);
-		if (rc)
-			break;
-		rc = dma_buf_end_cpu_access_partial(dbuf, DMA_FROM_DEVICE,
 				offset, size);
 		break;
 	default:

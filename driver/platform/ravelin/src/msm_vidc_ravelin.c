@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/of.h>
@@ -207,6 +207,10 @@ static struct msm_platform_inst_capability instance_data_ravelin[] = {
 		{0},
 		{0},
 		NULL, msm_vidc_set_u32},
+
+	{CLIENT_ID, ENC|DEC, CODECS_ALL,
+		INVALID_CLIENT_ID, INT_MAX, 1, INVALID_CLIENT_ID,
+		V4L2_CID_MPEG_VIDC_CLIENT_ID},
 
 	{TS_REORDER, DEC, H264|HEVC,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
@@ -467,7 +471,7 @@ static struct msm_platform_inst_capability instance_data_ravelin[] = {
 		CAP_FLAG_NONE,
 		{BITRATE_MODE},
 		{STAGE},
-		msm_vidc_adjust_lowlatency_mode, NULL},
+		msm_vidc_adjust_enc_lowlatency_mode, NULL},
 
 	{LOWLATENCY_MODE, DEC, H264|HEVC|VP9,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,

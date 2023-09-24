@@ -22,6 +22,7 @@ module_entry(
         "driver/vidc/src/venus_hfi.c",
         "driver/vidc/src/hfi_packet.c",
         "driver/vidc/src/venus_hfi_response.c",
+        "driver/vidc/src/msm_vidc_fence.c",
         "driver/platform/common/src/msm_vidc_platform.c",
         ],
     config_srcs = {
