@@ -649,20 +649,22 @@ int __set_clk_rate(struct msm_vidc_core *core,
 		struct clock_info *cl, u64 rate)
 {
 	int rc = 0, src_clk_scale_ratio = 1;
+#ifdef CONFIG_MSM_MMRM
 	struct mmrm_client_data client_data;
 	struct mmrm_client *client;
-
+#endif
 	/* not registered */
 	if (!core || !cl || !core->capabilities) {
 		d_vpr_e("%s: invalid params\n", __func__);
 		return -EINVAL;
 	}
 
+#ifdef CONFIG_MSM_MMRM
 	if (core->capabilities[MMRM].value && !cl->mmrm_client) {
 		d_vpr_e("%s: invalid mmrm client\n", __func__);
 		return -EINVAL;
 	}
-
+#endif
 	/*
 	 * This conversion is necessary since we are scaling clock values based on
 	 * the branch clock. However, mmrm driver expects source clock to be registered
@@ -678,6 +680,7 @@ int __set_clk_rate(struct msm_vidc_core *core,
 
 	d_vpr_p("Scaling clock %s to %llu, prev %llu\n", cl->name, rate, cl->prev);
 
+#ifdef CONFIG_MSM_MMRM
 	if (core->capabilities[MMRM].value) {
 		/* set clock rate to mmrm driver */
 		client = cl->mmrm_client;
@@ -689,7 +692,9 @@ int __set_clk_rate(struct msm_vidc_core *core,
 				__func__, rate, cl->name, rc);
 			return rc;
 		}
-	} else {
+	} else
+#endif
+	{
 		/* set clock rate to clock driver */
 		rc = clk_set_rate(cl->clk, rate);
 		if (rc) {
@@ -1429,6 +1434,7 @@ err_clk_get:
 	return rc;
 }
 
+#ifdef CONFIG_MSM_MMRM
 static void __deregister_mmrm(struct msm_vidc_core *core)
 {
 	struct clock_info *cl;
@@ -1525,6 +1531,7 @@ err_register_mmrm:
 	__deregister_mmrm(core);
 	return rc;
 }
+#endif
 
 static int __handle_reset_clk(struct msm_vidc_core *core,
 			int reset_index, enum reset_state state)
@@ -1788,13 +1795,14 @@ static int __init_resources(struct msm_vidc_core *core)
 		rc = -ENODEV;
 		goto err_init_clocks;
 	}
-
+#ifdef CONFIG_MSM_MMRM
 	rc = __register_mmrm(core);
 	if (rc) {
 		d_vpr_e("Failed to register mmrm\n");
 		rc = -ENODEV;
 		goto err_init_mmrm;
 	}
+#endif
 
 	for (i = 0; i < core->dt->reset_set.count; i++) {
 		rc = __handle_reset_clk(core, i, INIT);
@@ -1819,8 +1827,10 @@ static int __init_resources(struct msm_vidc_core *core)
 
 err_init_reset_clk:
 err_init_bus:
+#ifdef CONFIG_MSM_MMRM
 	__deregister_mmrm(core);
 err_init_mmrm:
+#endif
 	__deinit_clocks(core);
 err_init_clocks:
 	__deinit_regulators(core);
@@ -1831,7 +1841,9 @@ static void __deinit_resources(struct msm_vidc_core *core)
 {
 	__deinit_subcaches(core);
 	__deinit_bus(core);
+#ifdef CONFIG_MSM_MMRM
 	__deregister_mmrm(core);
+#endif
 	__deinit_clocks(core);
 	__deinit_regulators(core);
 }
