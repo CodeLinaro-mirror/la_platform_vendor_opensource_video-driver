@@ -46,6 +46,12 @@ LINUXINCLUDE    += -include $(VIDEO_ROOT)/config/blair_video.h \
                    -I$(VIDEO_ROOT)/driver/platform/blair/inc
 endif
 
+ifeq ($(CONFIG_ARCH_PITTI), y)
+include $(VIDEO_ROOT)/config/blair_video.conf
+LINUXINCLUDE    += -include $(VIDEO_ROOT)/config/blair_video.h \
+                   -I$(VIDEO_ROOT)/driver/platform/blair/inc
+endif
+
 ifeq ($(CONFIG_ARCH_MONACO), y)
 include $(VIDEO_ROOT)/config/monaco_video.conf
 LINUXINCLUDE    += -include $(VIDEO_ROOT)/config/monaco_video.h \

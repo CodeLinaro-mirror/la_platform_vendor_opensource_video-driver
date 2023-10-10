@@ -46,3 +46,6 @@ ddk_headers(
 
 load(":target.bzl", "define_blair")
 define_blair()
+
+load(":target.bzl", "define_pitti")
+define_pitti()
