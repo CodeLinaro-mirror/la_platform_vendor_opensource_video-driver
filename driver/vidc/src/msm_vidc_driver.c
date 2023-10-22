@@ -202,6 +202,7 @@ static const struct msm_vidc_cap_name cap_name_arr[] = {
 	{META_DEC_QP_METADATA,           "META_DEC_QP_METADATA"       },
 	{COMPLEXITY,                     "COMPLEXITY"                 },
 	{META_MAX_NUM_REORDER_FRAMES,    "META_MAX_NUM_REORDER_FRAMES"},
+	{SIGNAL_COLOR_INFO,              "SIGNAL_COLOR_INFO"          },
 	{INST_CAP_MAX,                   "INST_CAP_MAX"               },
 };
 
@@ -1499,6 +1500,7 @@ bool msm_vidc_allow_s_ctrl(struct msm_vidc_inst *inst, u32 id)
 			case V4L2_CID_MPEG_VIDC_ENC_INPUT_COMPRESSION_RATIO:
 			case V4L2_CID_MPEG_VIDEO_BITRATE_PEAK:
 			case V4L2_CID_MPEG_VIDC_PRIORITY:
+			case V4L2_CID_MPEG_VIDC_SIGNAL_COLOR_INFO:
 				allow = true;
 				break;
 			default:

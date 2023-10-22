@@ -121,5 +121,7 @@ int msm_vidc_update_cap_value(struct msm_vidc_inst *inst, u32 cap,
 	s32 adjusted_val, const char *func);
 int msm_vidc_set_vui_timing_info(void *instance,
 	enum msm_vidc_inst_capability_type cap_id);
+int msm_vidc_set_signal_color_info(void *instance,
+		enum msm_vidc_inst_capability_type cap_id);
 
 #endif
