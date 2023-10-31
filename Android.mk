@@ -9,7 +9,9 @@ TARGET_VIDC_ENABLE := true
 endif
 
 ifeq ($(TARGET_VIDC_ENABLE),true)
-VIDEO_BLD_DIR := $(shell pwd)/vendor/qcom/opensource/video-driver
+BOARD_OPENSOURCE_DIR ?= vendor/qcom/opensource
+BOARD_COMMON_DIR ?= device/qcom/common
+VIDEO_BLD_DIR := $(shell pwd)/$(BOARD_OPENSOURCE_DIR)/video-driver
 VIDEO_SELECT := CONFIG_MSM_VIDC_V4L2=m
 
 # Build msm_video.ko
@@ -19,10 +21,9 @@ KBUILD_OPTIONS := VIDEO_ROOT=$(VIDEO_BLD_DIR)
 
 KBUILD_OPTIONS += $(VIDEO_SELECT)
 
-KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(shell pwd)/$(call intermediates-dir-for,DLKM,mmrm-module-symvers)/Module.symvers
 ###########################################################
 
-DLKM_DIR   := device/qcom/common/dlkm
+DLKM_DIR   := $(BOARD_COMMON_DIR)/dlkm
 
 LOCAL_PATH := $(call my-dir)
 
@@ -36,9 +37,6 @@ LOCAL_MODULE_DEBUG_ENABLE := true
 LOCAL_MODULE_PATH         := $(KERNEL_MODULES_OUT)
 LOCAL_MODULE_DDK_BUILD    := true
 LOCAL_MODULE_KO_DIRS      := msm_video.ko
-
-LOCAL_REQUIRED_MODULES    := mmrm-module-symvers
-LOCAL_ADDITIONAL_DEPENDENCIES := $(call intermediates-dir-for,DLKM,mmrm-module-symvers)/Module.symvers
 
 include $(DLKM_DIR)/Build_external_kernelmodule.mk
 endif
