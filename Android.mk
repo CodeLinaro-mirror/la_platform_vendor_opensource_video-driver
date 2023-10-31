@@ -9,7 +9,9 @@ TARGET_VIDC_ENABLE := true
 endif
 
 ifeq ($(TARGET_VIDC_ENABLE),true)
-VIDEO_BLD_DIR := $(shell pwd)/vendor/qcom/opensource/video-driver
+BOARD_OPENSOURCE_DIR ?= vendor/qcom/opensource
+BOARD_COMMON_DIR ?= device/qcom/common
+VIDEO_BLD_DIR := $(shell pwd)/$(BOARD_OPENSOURCE_DIR)/video-driver
 VIDEO_SELECT := CONFIG_MSM_VIDC_V4L2=m
 
 # Build msm_video.ko
@@ -24,7 +26,7 @@ KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(shell pwd)/$(call intermediates-dir-for
 endif
 ###########################################################
 
-DLKM_DIR   := device/qcom/common/dlkm
+DLKM_DIR   := $(BOARD_COMMON_DIR)/dlkm
 
 LOCAL_PATH := $(call my-dir)
 
