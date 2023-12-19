@@ -16,7 +16,7 @@ def define_blair():
 
 def define_pitti():
     define_consolidate_gki_perf_modules(
-        target = "blair",
+        target = "pitti",
         registry = video_driver_modules,
         modules = [
             "msm_video",

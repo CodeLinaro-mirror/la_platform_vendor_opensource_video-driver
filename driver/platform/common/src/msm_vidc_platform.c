@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/of_platform.h>
@@ -273,7 +273,8 @@ static int msm_vidc_deinit_platform_variant(struct msm_vidc_core *core, struct d
 	}
 #endif
 #if defined(CONFIG_MSM_VIDC_BLAIR)
-	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-blair")) {
+	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-blair") ||
+			of_device_is_compatible(dev->of_node, "qcom,msm-vidc-pitti")) {
 		rc = msm_vidc_deinit_platform_blair(core, dev);
 		if (rc)
 			d_vpr_e("%s: failed msm-vidc-blair with %d\n",
@@ -335,7 +336,8 @@ static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct dev
 #endif
 
 #if defined(CONFIG_MSM_VIDC_BLAIR)
-	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-blair")) {
+	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-blair") ||
+			of_device_is_compatible(dev->of_node, "qcom,msm-vidc-pitti")) {
 		rc = msm_vidc_init_platform_blair(core, dev);
 		if (rc)
 			d_vpr_e("%s: failed msm-vidc-blair with %d\n",
