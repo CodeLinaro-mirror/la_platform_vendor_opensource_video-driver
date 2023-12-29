@@ -22,6 +22,14 @@ ddk_headers(
 )
 
 ddk_headers(
+    name = "pitti_headers",
+    hdrs = glob([
+      "driver/platform/blair/inc/*.h",
+    ]),
+    includes = ["driver/platform/blair/inc"]
+)
+
+ddk_headers(
     name = "ar50lt_headers",
     hdrs = glob([
       "driver/variant/ar50lt/inc/*.h",
@@ -46,3 +54,6 @@ ddk_headers(
 
 load(":target.bzl", "define_blair")
 define_blair()
+
+load(":target.bzl", "define_pitti")
+define_pitti()
