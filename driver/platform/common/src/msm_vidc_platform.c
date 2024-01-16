@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/of_platform.h>
@@ -289,6 +289,8 @@ static int msm_vidc_deinit_platform_variant(struct msm_vidc_core *core, struct d
 static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct device *dev)
 {
 	int rc = -EINVAL;
+	struct msm_platform_core_capability *platform_data;
+	int i, num_platform_caps;
 
 	if (!core || !dev) {
 		d_vpr_e("%s: Invalid params\n", __func__);
@@ -339,11 +341,35 @@ static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct dev
 	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-blair") ||
 			of_device_is_compatible(dev->of_node, "qcom,msm-vidc-pitti")) {
 		rc = msm_vidc_init_platform_blair(core, dev);
-		if (rc)
+		if (rc) {
 			d_vpr_e("%s: failed msm-vidc-blair with %d\n",
 				__func__, rc);
-		return rc;
+			return rc;
+		}
 	}
+	// Update number of max supported session for pitti_32go
+	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-pitti-32go")) {
+		rc = msm_vidc_init_platform_blair(core, dev);
+		if (rc) {
+			d_vpr_e("%s: failed msm-vidc-blair with %d\n",
+				__func__, rc);
+			return rc;
+		}
+		if (!core || !core->platform) {
+			d_vpr_e("%s: Invalid params\n", __func__);
+			return -EINVAL;
+		}
+		platform_data = core->platform->data.core_data;
+		num_platform_caps = core->platform->data.core_data_size;
+		for (i = 0; i < num_platform_caps && i < CORE_CAP_MAX; i++) {
+			if (platform_data[i].type == MAX_SESSION_COUNT) {
+				platform_data[i].value = 4;
+				break;
+			}
+		}
+	}
+
+		return rc;
 #endif
 
 #if defined(CONFIG_MSM_VIDC_NEO)
