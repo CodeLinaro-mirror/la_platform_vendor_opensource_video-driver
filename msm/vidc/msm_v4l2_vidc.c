@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2012-2021, The Linux Foundation. All rights reserved.
+ * ​​​​Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/module.h>
@@ -544,6 +545,14 @@ static int msm_vidc_probe_vidc_device(struct platform_device *pdev)
 			d_vpr_e("Failed to register video CVP\n");
 			goto err_cvp;
 		}
+	}
+
+	/* setup the encoder device with cma */
+	rc = msm_vidc_register_video_device(MSM_VIDC_ENCODER_CMA,
+				nr + 3, core, dev);
+	if (rc) {
+		d_vpr_e("Failed to register video cma encoder\n");
+		goto err_enc;
 	}
 
 	/* finish setting up the 'core' */

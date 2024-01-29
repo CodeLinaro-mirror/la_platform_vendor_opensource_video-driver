@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
+ * ​​​​Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include "msm_vidc.h"
@@ -14,6 +15,7 @@
 #include "vidc_hfi_helper.h"
 #include "vidc_hfi_api.h"
 #include "msm_vidc_clocks.h"
+#include "msm_vidc_res_parse.h"
 #include "msm_vidc_buffer_calculations.h"
 
 #define MAX_EVENTS 30
@@ -1553,6 +1555,9 @@ void *msm_vidc_open(int core_id, int session_type)
 	struct msm_vidc_core *core = NULL;
 	int rc = 0;
 	int i = 0;
+	bool reconfig_core = false;
+	bool is_cma_enabled = false;
+	struct hfi_device *hdev = NULL;
 
 	if (core_id >= MSM_VIDC_CORES_MAX ||
 			session_type >= MSM_VIDC_MAX_DEVICES) {
@@ -1563,6 +1568,12 @@ void *msm_vidc_open(int core_id, int session_type)
 	core = get_vidc_core(core_id);
 	if (!core) {
 		d_vpr_e("Failed to find core for core_id = %d\n", core_id);
+		goto err_invalid_core;
+	}
+
+	if ((session_type == MSM_VIDC_ENCODER_CMA)
+				&& !core->resources.cma_exist) {
+		d_vpr_e("Failed cma not enabled\n");
 		goto err_invalid_core;
 	}
 
@@ -1605,6 +1616,19 @@ void *msm_vidc_open(int core_id, int session_type)
 
 	INIT_DELAYED_WORK(&inst->batch_work, msm_vidc_batch_handler);
 	kref_init(&inst->kref);
+
+	is_cma_enabled = core->resources.cma_status;
+	reconfig_core = ((!is_cma_enabled &&
+			session_type == MSM_VIDC_ENCODER_CMA) ||
+			(is_cma_enabled && session_type
+				!= MSM_VIDC_ENCODER_CMA)) ?
+			true : false;
+
+	s_vpr_h(inst->sid,"reconfig_core %d , cma_status %d , session_type %d ",
+		reconfig_core, core->resources.cma_status, session_type);
+
+	if (session_type == MSM_VIDC_ENCODER_CMA)
+		session_type = MSM_VIDC_ENCODER;
 
 	inst->session_type = session_type;
 	inst->state = MSM_VIDC_CORE_UNINIT_DONE;
@@ -1665,6 +1689,46 @@ void *msm_vidc_open(int core_id, int session_type)
 	}
 
 	setup_event_queue(inst, &core->vdev[session_type].vdev);
+	if (reconfig_core) {
+		mutex_lock(&core->lock);
+		if (!list_empty(&core->instances)) {
+			s_vpr_e(inst->sid,
+				"Failed due to pending instances in core");
+
+			mutex_unlock(&core->lock);
+			goto fail_toggle_cma;
+		}
+		mutex_unlock(&core->lock);
+
+		rc = msm_comm_try_state(inst, MSM_VIDC_CORE_UNINIT);
+		if (rc)
+			s_vpr_e(inst->sid,
+				"MSM_VIDC_CORE_UNINIT failed\n");
+		cancel_delayed_work(&core->fw_unload_work);
+
+		mutex_lock(&core->lock);
+		hdev = core->device;
+		rc = call_hfi_op(hdev, core_release, hdev->hfi_device_data);
+		if (rc) {
+			s_vpr_e(inst->sid,
+				"Failed to release core, id = %d\n", core->id);
+			mutex_unlock(&core->lock);
+			goto fail_toggle_cma;
+		}
+		core->state = VIDC_CORE_UNINIT;
+		kfree(core->capabilities);
+		core->capabilities = NULL;
+		msm_vidc_enable_cma(&core->resources, !is_cma_enabled);
+		if (rc) {
+			s_vpr_e(inst->sid,
+				"%s CMA failed\n", is_cma_enabled ?
+							"enable":"disable");
+			mutex_unlock(&core->lock);
+			goto fail_toggle_cma;
+		}
+		core->resources.cma_status = !is_cma_enabled;
+		mutex_unlock(&core->lock);
+	}
 
 	mutex_lock(&core->lock);
 	list_add_tail(&inst->list, &core->instances);
@@ -1704,9 +1768,11 @@ fail_init:
 	mutex_lock(&core->lock);
 	list_del(&inst->list);
 	mutex_unlock(&core->lock);
-
+fail_toggle_cma:
+	mutex_lock(&core->lock);
 	v4l2_fh_del(&inst->event_handler);
 	v4l2_fh_exit(&inst->event_handler);
+	mutex_unlock(&core->lock);
 	vb2_queue_release(&inst->bufq[INPUT_PORT].vb2_bufq);
 fail_bufq_output:
 	vb2_queue_release(&inst->bufq[OUTPUT_PORT].vb2_bufq);

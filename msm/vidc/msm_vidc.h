@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
+ * ​​​​Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef _MSM_VIDC_H_
@@ -105,6 +106,7 @@ enum session_type {
 	MSM_VIDC_ENCODER = 0,
 	MSM_VIDC_DECODER,
 	MSM_VIDC_CVP,
+	MSM_VIDC_ENCODER_CMA,
 	MSM_VIDC_UNKNOWN,
 	MSM_VIDC_MAX_DEVICES = MSM_VIDC_UNKNOWN,
 };

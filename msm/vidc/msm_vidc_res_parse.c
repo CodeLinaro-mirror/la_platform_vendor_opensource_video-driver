@@ -9,9 +9,18 @@
 #include <linux/of.h>
 #include <linux/sort.h>
 #include <linux/of_reserved_mem.h>
+#include <linux/io.h>
+#include <linux/dma-mapping.h>
+#include <linux/dma-buf.h>
+#include <linux/qcom_scm.h>
 #include "msm_vidc_debug.h"
 #include "msm_vidc_resources.h"
 #include "msm_vidc_res_parse.h"
+#include <soc/qcom/qseecom_scm.h>
+#include <soc/qcom/secure_buffer.h>
+#include <asm/cacheflush.h>
+
+#define VENUS_DEVICE_ID 0x0
 
 enum clock_properties {
 	CLOCK_PROP_HAS_SCALING = 1 << 0,
@@ -950,6 +959,56 @@ err_load_reg_table:
 	return rc;
 }
 
+static int get_secure_vmid(struct context_bank_info *cb)
+{
+	if (!strcasecmp(cb->name, "venus_sec_bitstream"))
+		return VMID_CP_BITSTREAM;
+	else if (!strcasecmp(cb->name, "venus_sec_pixel"))
+		return VMID_CP_PIXEL;
+	else if (!strcasecmp(cb->name, "venus_sec_non_pixel"))
+		return VMID_CP_NON_PIXEL;
+
+	d_vpr_h("%s: No matching secure vmid for cb name: %s\n",
+		__func__, cb->name);
+	return VMID_INVAL;
+}
+
+static int msm_vidc_switch_vmid(int vmid, struct context_bank_info *cb)
+{
+	uint32_t *sid_info = NULL;
+	int rc = 0;
+	phys_addr_t mem_addr;
+	u64 mem_size;
+
+	if (!cb) {
+		d_vpr_e(
+			"%s: invalid context bank device\n", __func__);
+		return -EIO;
+	}
+
+	sid_info = kzalloc(sizeof(uint32_t) * cb->num_sids, GFP_KERNEL);
+	if (!sid_info) {
+		d_vpr_e("%s: memory allocation failred\n", __func__);
+		return -ENOMEM;
+	}
+
+	memcpy(sid_info, &cb->sids, sizeof(uint32_t) * cb->num_sids);
+
+	mem_addr = SCM_BUFFER_PHYS(sid_info);
+	mem_size = sizeof(uint32_t) * cb->num_sids;
+
+	__dma_flush_area(sid_info, 1);
+	if (qcom_scm_mem_protect_sd_ctrl(VENUS_DEVICE_ID,SCM_BUFFER_PHYS(sid_info),sizeof(uint32_t) * cb->num_sids,vmid)) {
+		d_vpr_e("call to hypervisor failed\n");
+		rc = -EINVAL;
+	}
+
+	d_vpr_h("%s switched to 0x%x vmid\n", cb->name, vmid);
+	kfree(sid_info);
+
+	return rc;
+}
+
 static int msm_vidc_setup_context_bank(struct msm_vidc_platform_resources *res,
 		struct context_bank_info *cb, struct device *dev)
 {
@@ -1212,6 +1271,43 @@ static int msm_vidc_populate_legacy_context_bank(
 
 err_setup_cb:
 	list_del(&cb->list);
+	return rc;
+}
+
+int msm_vidc_enable_cma(struct msm_vidc_platform_resources *res, bool enable)
+{
+	int rc;
+	int secure_vmid = VMID_INVAL;
+	struct context_bank_info *cb = NULL;
+
+	d_vpr_h("%s: In enable status %d\n", __func__, enable);
+
+	list_for_each_entry(cb, &res->context_banks, list) {
+		if (cb->is_secure && cb->cma.s1_bypass) {
+			if (enable) {
+				rc = msm_vidc_switch_vmid
+				(VMID_CP_CAMERA_ENCODE, cb);
+				if (rc) {
+					d_vpr_e(
+						"Failed SID switching\n");
+					goto detach_cb;
+				}
+			} else {
+				secure_vmid = get_secure_vmid(cb);
+				rc = msm_vidc_switch_vmid(secure_vmid, cb);
+				if (rc)
+					goto detach_cb;
+			}
+		}
+		rc = msm_vidc_setup_context_bank(res, cb, cb->dev);
+		if (rc)
+			goto detach_cb;
+	}
+
+	return rc;
+
+detach_cb:
+	d_vpr_h("%s: failed to enable cma \n", __func__);
 	return rc;
 }
 

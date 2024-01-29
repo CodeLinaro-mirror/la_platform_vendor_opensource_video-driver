@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
+ * ​​​​Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include "hfi_common.h"
@@ -3969,6 +3970,7 @@ static int __protect_cp_mem(struct venus_hfi_device *device)
 	struct tzbsp_memprot memprot;
 	int rc = 0;
 	struct context_bank_info *cb;
+	bool is_cma_enabled = false;
 
 	if (!device)
 		return -EINVAL;
@@ -3978,18 +3980,19 @@ static int __protect_cp_mem(struct venus_hfi_device *device)
 	memprot.cp_nonpixel_start = 0x0;
 	memprot.cp_nonpixel_size = 0x0;
 
+	is_cma_enabled = device->res->cma_status;
 	mutex_lock(&device->res->cb_lock);
 	list_for_each_entry(cb, &device->res->context_banks, list) {
 		if (!strcmp(cb->name, "venus_ns")) {
-			memprot.cp_size = cb->addr_range.start;
+			memprot.cp_size = is_cma_enabled ? cb->cma.addr_range.start : cb->addr_range.start;
 
 			d_vpr_h("%s: memprot.cp_size: %#x\n",
 				__func__, memprot.cp_size);
 		}
 
 		if (!strcmp(cb->name, "venus_sec_non_pixel")) {
-			memprot.cp_nonpixel_start = cb->addr_range.start;
-			memprot.cp_nonpixel_size = cb->addr_range.size;
+			memprot.cp_nonpixel_start = is_cma_enabled ? cb->cma.addr_range.start : cb->addr_range.start;
+			memprot.cp_nonpixel_size = is_cma_enabled ? cb->cma.addr_range.size : cb->addr_range.size;
 
 			d_vpr_h("%s: cp_nonpixel_start: %#x size: %#x\n",
 				__func__, memprot.cp_nonpixel_start,
