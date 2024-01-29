@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
+ * ​​​​Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.​
  */
 
 #include <linux/dma-buf.h>
@@ -384,8 +385,23 @@ static int alloc_dma_mem(size_t size, u32 align, u32 flags,
 			goto fail_shared_mem_alloc;
 		}
 
+		if (res->cma_status) {
+			if (secure_flag == ION_FLAG_CP_PIXEL) {
+				heap_mask = ION_HEAP(ION_VIDEO_HEAP_ID);
+				secure_flag = ION_FLAG_CP_CAMERA_ENCODE;
+			} else if (secure_flag == ION_FLAG_CP_NON_PIXEL) {
+				heap_mask = ION_HEAP(ION_NON_PIXEL_HEAP_ID);
+				secure_flag = ION_FLAG_CP_CAMERA_ENCODE;
+			} else {
+				s_vpr_e(sid,"invalid flag %d\n",secure_flag);
+				rc = -EINVAL;
+				goto fail_shared_mem_alloc;
+			}
+		} else {
+			heap_mask = ION_HEAP(ION_SECURE_HEAP_ID);
+		}
+
 		ion_flags |= ION_FLAG_SECURE | secure_flag;
-		heap_mask = ION_HEAP(ION_SECURE_HEAP_ID);
 
 		if (res->slave_side_cp) {
 			heap_mask = ION_HEAP(ION_CP_MM_HEAP_ID);

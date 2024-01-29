@@ -208,6 +208,7 @@ struct msm_vidc_platform_resources {
 	uint32_t has_vpp_delay;
 	bool enc_auto_dynamic_fps;
 	bool no_cvp;
+	bool cma_status;
 };
 
 static inline bool is_iommu_present(struct msm_vidc_platform_resources *res)
