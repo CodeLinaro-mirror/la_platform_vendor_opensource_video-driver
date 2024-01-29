@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
+ * ​​​​Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/iommu.h>
@@ -1036,6 +1037,8 @@ static int msm_vidc_populate_context_bank(struct device *dev,
 	int rc = 0;
 	struct context_bank_info *cb = NULL;
 	struct device_node *np = NULL;
+	unsigned int i = 0, j = 0, count = 0;
+	u32 mask = 0;
 
 	if (!dev || !core) {
 		d_vpr_e("%s: invalid inputs\n", __func__);
@@ -1062,6 +1065,22 @@ static int msm_vidc_populate_context_bank(struct device *dev,
 	}
 
 	d_vpr_h("%s: context bank has name %s\n", __func__, cb->name);
+	of_get_property(np, "iommus", &count);
+	memset(&cb->sids, -1, sizeof(cb->sids));
+	count /= 4;
+	for (i = 1, j = 0 ; i < count; i = i+2, j++) {
+		rc = of_property_read_u32_index
+			(dev->of_node, "iommus", i, &cb->sids[j]);
+		if (rc < 0)
+			d_vpr_e("can't fetch SID\n");
+		rc = of_property_read_u32_index
+					(dev->of_node, "iommus", i+1, &mask);
+		cb->sids[j] = (mask << 16 | cb->sids[j]);
+		d_vpr_h("%s sid[%d]:0x%x\n",
+				cb->name, j, cb->sids[j]);
+	}
+	cb->num_sids = j;
+
 	rc = of_property_read_u32_array(np, "virtual-addr-pool",
 			(u32 *)&cb->addr_range, 2);
 	if (rc) {

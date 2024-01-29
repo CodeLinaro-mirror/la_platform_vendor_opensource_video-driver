@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2013-2020, The Linux Foundation. All rights reserved.
+ * ​​​​Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef __MSM_VIDC_RESOURCES_H__
@@ -11,6 +12,7 @@
 #include <linux/soc/qcom/llcc-qcom.h>
 
 #define MAX_BUFFER_TYPES 32
+#define VENUS_SID_MAX 32
 
 struct reg_value_pair {
 	u32 reg;
@@ -41,6 +43,8 @@ struct context_bank_info {
 	struct addr_range addr_range;
 	struct device *dev;
 	struct iommu_domain *domain;
+	u32 sids[VENUS_SID_MAX];
+	int num_sids;
 };
 
 struct buffer_usage_table {
