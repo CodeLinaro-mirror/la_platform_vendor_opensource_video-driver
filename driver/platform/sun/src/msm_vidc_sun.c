@@ -704,11 +704,12 @@ static struct msm_platform_inst_capability instance_cap_data_sun[] = {
 
 	{SLICE_DECODE, DEC, H264 | HEVC | AV1,
 		V4L2_MPEG_MSM_VIDC_DISABLE,
-		V4L2_MPEG_MSM_VIDC_DISABLE,
-		0,
+		V4L2_MPEG_MSM_VIDC_ENABLE,
+		1,
 		V4L2_MPEG_MSM_VIDC_DISABLE,
 		V4L2_CID_MPEG_VIDEO_DECODER_SLICE_INTERFACE,
-		0},
+		HFI_PROP_SLICE_DECODE,
+		CAP_FLAG_INPUT_PORT},
 
 	{HEADER_MODE, ENC, CODECS_ALL,
 		V4L2_MPEG_VIDEO_HEADER_MODE_SEPARATE,
@@ -2188,8 +2189,13 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_sun[
 		NULL,
 		msm_vidc_set_u32},
 
-	{META_OUTBUF_FENCE, DEC, H264 | HEVC | AV1 | VP9,
-		{OUTBUF_FENCE_TYPE, OUTBUF_FENCE_DIRECTION},
+	{META_OUTBUF_FENCE, DEC, H264 | HEVC | AV1,
+		{LOWLATENCY_MODE, OUTBUF_FENCE_TYPE, OUTBUF_FENCE_DIRECTION, SLICE_DECODE},
+		NULL,
+		NULL},
+
+	{META_OUTBUF_FENCE, DEC, VP9,
+		{LOWLATENCY_MODE, OUTBUF_FENCE_TYPE, OUTBUF_FENCE_DIRECTION},
 		NULL,
 		NULL},
 
@@ -2240,8 +2246,8 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_sun[
 
 	{SLICE_DECODE, DEC, H264 | HEVC | AV1,
 		{0},
-		NULL,
-		NULL},
+		msm_vidc_adjust_dec_slice_mode,
+		msm_vidc_set_u32},
 
 	{HEADER_MODE, ENC, CODECS_ALL,
 		{0},
@@ -2353,7 +2359,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_sun[
 		NULL},
 
 	{LOWLATENCY_MODE, DEC, H264 | HEVC | VP9 | AV1,
-		{STAGE},
+		{STAGE, SLICE_DECODE},
 		NULL,
 		NULL},
 
@@ -2622,7 +2628,12 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_sun[
 		NULL,
 		NULL},
 
-	{OUTPUT_ORDER, DEC, H264 | HEVC | AV1 | VP9,
+	{OUTPUT_ORDER, DEC, H264 | HEVC | AV1,
+		{SLICE_DECODE},
+		msm_vidc_adjust_output_order,
+		msm_vidc_set_u32},
+
+	{OUTPUT_ORDER, DEC, VP9,
 		{0},
 		msm_vidc_adjust_output_order,
 		msm_vidc_set_u32},
