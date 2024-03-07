@@ -7,6 +7,7 @@
 #ifndef DT_PARSE
 #define DT_PARSE
 #include <linux/of.h>
+#include <linux/of_device.h>
 #include "msm_vidc_resources.h"
 #include "msm_vidc_common.h"
 void msm_vidc_free_platform_resources(

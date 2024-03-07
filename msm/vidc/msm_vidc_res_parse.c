@@ -11,6 +11,7 @@
 #include <linux/of_reserved_mem.h>
 #include <linux/io.h>
 #include <linux/dma-mapping.h>
+#include <linux/msm_dma_iommu_mapping.h>
 #include <linux/dma-buf.h>
 #include <linux/qcom_scm.h>
 #include "msm_vidc_debug.h"
@@ -1009,11 +1010,32 @@ static int msm_vidc_switch_vmid(int vmid, struct context_bank_info *cb)
 	return rc;
 }
 
+static void msm_vidc_detach_context_banks(
+			struct msm_vidc_platform_resources *res)
+{
+	struct context_bank_info *cb = NULL;
+
+	list_for_each_entry(cb, &res->context_banks, list) {
+		msm_dma_unmap_all_for_dev(cb->dev);
+		iommu_detach_device(cb->domain, cb->dev);
+		iommu_release_device(cb->dev);
+		d_vpr_h("%s Context bank %s detached\n", __func__, cb->name);
+		if(cb->domain != NULL)
+		{
+			d_vpr_h("%s Freeing domain\n",__func__);
+			cb->domain = NULL;
+		}
+	}
+}
+
 static int msm_vidc_setup_context_bank(struct msm_vidc_platform_resources *res,
-		struct context_bank_info *cb, struct device *dev)
+		struct context_bank_info *cb, struct device *dev, int cma_enable)
 {
 	int rc = 0;
 	struct bus_type *bus;
+	int secure_vmid = VMID_INVAL;
+	int s1_bypass = 0;
+
 
 	if (!dev || !cb || !res) {
 		d_vpr_e("%s: Invalid Input params\n", __func__);
@@ -1028,7 +1050,37 @@ static int msm_vidc_setup_context_bank(struct msm_vidc_platform_resources *res,
 		goto remove_cb;
 	}
 
-	 cb->domain = iommu_get_domain_for_dev(cb->dev);
+	if(cma_enable) {
+
+		rc = of_dma_configure(dev, dev->of_node, true);
+		if(rc) {
+			d_vpr_e("%s of_dma_configure call failed with return %d", __func__, rc);
+			goto release_device;
+		}
+
+		cb->domain = iommu_domain_alloc(bus);
+		if(cb->domain == NULL) {
+			d_vpr_e("%s Failed allocate iommu domain", __func__);
+			rc = -ENOMEM;
+			goto detach_device;
+		}
+
+		if (cb->is_secure) {
+			secure_vmid = get_secure_vmid(cb);
+			if (cma_enable && cb->cma.s1_bypass) {
+					secure_vmid = VMID_CP_CAMERA_ENCODE;
+					s1_bypass = cb->cma.s1_bypass;
+				}
+
+			rc = iommu_domain_set_attr(cb->domain, DOMAIN_ATTR_SECURE_VMID, &secure_vmid);
+			if (rc) {
+				d_vpr_e("%s - programming secure vmid failed: %s 0x%x\n", __func__, dev_name(dev), rc);
+				goto detach_device;
+			}
+		}
+	}
+	else
+		cb->domain = iommu_get_domain_for_dev(cb->dev);
 
 	 /*
 	  * When memory is fragmented, below configuration increases the
@@ -1052,6 +1104,15 @@ static int msm_vidc_setup_context_bank(struct msm_vidc_platform_resources *res,
 		"Context bank: %s, buffer_type: %#x, is_secure: %d, address range start: %#x, size: %#x, dev: %pK, domain: %pK",
 		cb->name, cb->buffer_type, cb->is_secure, cb->addr_range.start,
 		cb->addr_range.size, cb->dev, cb->domain);
+
+	return rc;
+
+detach_device:
+iommu_detach_device(cb->domain, cb->dev);
+msm_dma_unmap_all_for_dev(cb->dev);
+
+release_device:
+iommu_release_device(cb->dev);
 
 remove_cb:
 	return rc;
@@ -1173,7 +1234,7 @@ static int msm_vidc_populate_context_bank(struct device *dev,
 		cb->cma.addr_range.size,
 		cb->cma.s1_bypass, cb->buffer_type);
 
-	rc = msm_vidc_setup_context_bank(&core->resources, cb, dev);
+	rc = msm_vidc_setup_context_bank(&core->resources, cb, dev, false);
 	if (rc) {
 		d_vpr_e("Cannot setup context bank %d\n", rc);
 		goto err_setup_cb;
@@ -1267,7 +1328,7 @@ static int msm_vidc_populate_legacy_context_bank(
 			goto err_setup_cb;
 		}
 
-		rc = msm_vidc_setup_context_bank(res, cb, cb->dev);
+		rc = msm_vidc_setup_context_bank(res, cb, cb->dev, false);
 		if (rc) {
 			d_vpr_e("Cannot setup context bank %d\n", rc);
 			goto err_setup_cb;
@@ -1292,6 +1353,7 @@ int msm_vidc_enable_cma(struct msm_vidc_platform_resources *res, bool enable)
 
 	d_vpr_h("%s: In enable status %d\n", __func__, enable);
 
+	msm_vidc_detach_context_banks(res);
 	list_for_each_entry(cb, &res->context_banks, list) {
 		if (cb->is_secure && cb->cma.s1_bypass) {
 			if (enable) {
@@ -1309,7 +1371,7 @@ int msm_vidc_enable_cma(struct msm_vidc_platform_resources *res, bool enable)
 					goto detach_cb;
 			}
 		}
-		rc = msm_vidc_setup_context_bank(res, cb, cb->dev);
+		rc = msm_vidc_setup_context_bank(res, cb, cb->dev, true);
 		if (rc)
 			goto detach_cb;
 	}
@@ -1318,6 +1380,7 @@ int msm_vidc_enable_cma(struct msm_vidc_platform_resources *res, bool enable)
 
 detach_cb:
 	d_vpr_h("%s: failed to enable cma \n", __func__);
+	msm_vidc_detach_context_banks(res);
 	return rc;
 }
 
