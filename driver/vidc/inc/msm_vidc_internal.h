@@ -383,7 +383,6 @@ enum msm_vidc_inst_capability_type {
 	META_SEI_CLL,
 	META_HDR10PLUS,
 	META_BUF_TAG,
-	META_MULTI_VIEW_ID,
 	META_DPB_TAG_LIST,
 	META_SUBFRAME_OUTPUT,
 	META_ENC_QP_METADATA,
@@ -394,6 +393,7 @@ enum msm_vidc_inst_capability_type {
 	META_SALIENCY_INFO,
 	META_TRANSCODING_STAT_INFO,
 	META_DOLBY_RPU,
+	META_MULTI_VIEW_ID,
 	META_CAP_MAX,
 	/* end of metadata caps */
 	FRAME_WIDTH,
