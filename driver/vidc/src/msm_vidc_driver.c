@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2022, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/iommu.h>
@@ -29,7 +29,7 @@
 extern struct msm_vidc_core *g_core;
 
 #define is_odd(val) ((val) % 2 == 1)
-#define in_range(val, min, max) (((min) <= (val)) && ((val) <= (max)))
+#define is_in_range(val, min, max) (((min) <= (val)) && ((val) <= (max)))
 #define COUNT_BITS(a, out) {       \
 	while ((a) >= 1) {          \
 		(out) += (a) & (1); \
@@ -2682,7 +2682,7 @@ int msm_vidc_ts_reorder_get_first_timestamp(struct msm_vidc_inst *inst, u64 *tim
 
 	/* check if list empty */
 	if (list_empty(&inst->ts_reorder.list)) {
-		i_vpr_e(inst, "%s: list empty. ts %lld\n", __func__, timestamp);
+		i_vpr_e(inst, "%s: list empty. ts %lld\n", __func__, *timestamp);
 		return -EINVAL;
 	}
 
@@ -2747,7 +2747,7 @@ int msm_vidc_put_delayed_unmap(struct msm_vidc_inst *inst, struct msm_vidc_map *
 	}
 
 	if (!map->skip_delayed_unmap) {
-		i_vpr_e(inst, "%s: no delayed unmap, addr %#x\n",
+		i_vpr_e(inst, "%s: no delayed unmap, addr %#llx\n",
 			__func__, map->device_addr);
 		return -EINVAL;
 	}
@@ -3554,7 +3554,7 @@ int msm_vidc_destroy_internal_buffer(struct msm_vidc_inst *inst,
 		return 0;
 	}
 
-	i_vpr_h(inst, "%s: destroy: type: %8s, size: %9u, device_addr %#x\n", __func__,
+	i_vpr_h(inst, "%s: destroy: type: %8s, size: %9u, device_addr %#llx\n", __func__,
 		buf_name(buffer->type), buffer->buffer_size, buffer->device_addr);
 
 	buffers = msm_vidc_get_buffers(inst, buffer->type, __func__);
@@ -3714,7 +3714,7 @@ int msm_vidc_create_internal_buffer(struct msm_vidc_inst *inst,
 
 	buffer->dmabuf = alloc->dmabuf;
 	buffer->device_addr = map->device_addr;
-	i_vpr_h(inst, "%s: create: type: %8s, size: %9u, device_addr %#x\n", __func__,
+	i_vpr_h(inst, "%s: create: type: %8s, size: %9u, device_addr %#llx\n", __func__,
 		buf_name(buffer_type), buffers->size, buffer->device_addr);
 
 	return 0;
@@ -3789,7 +3789,7 @@ int msm_vidc_queue_internal_buffers(struct msm_vidc_inst *inst,
 		/* mark queued */
 		buffer->attr |= MSM_VIDC_ATTR_QUEUED;
 
-		i_vpr_h(inst, "%s: queue: type: %8s, size: %9u, device_addr %#x\n", __func__,
+		i_vpr_h(inst, "%s: queue: type: %8s, size: %9u, device_addr %#llx\n", __func__,
 			buf_name(buffer->type), buffer->buffer_size, buffer->device_addr);
 	}
 
@@ -3870,7 +3870,7 @@ int msm_vidc_release_internal_buffers(struct msm_vidc_inst *inst,
 		/* mark pending release */
 		buffer->attr |= MSM_VIDC_ATTR_PENDING_RELEASE;
 
-		i_vpr_h(inst, "%s: release: type: %8s, size: %9u, device_addr %#x\n", __func__,
+		i_vpr_h(inst, "%s: release: type: %8s, size: %9u, device_addr %#llx\n", __func__,
 			buf_name(buffer->type), buffer->buffer_size, buffer->device_addr);
 	}
 
@@ -5289,7 +5289,7 @@ int msm_vidc_flush_delayed_unmap_buffers(struct msm_vidc_inst *inst,
 			if (!found) {
 				if (map->refcount > 1) {
 					i_vpr_e(inst,
-						"%s: unexpected map refcount: %u device addr %#x\n",
+						"%s: unexpected map refcount: %u device addr %#llx\n",
 						__func__, map->refcount, map->device_addr);
 					msm_vidc_change_inst_state(inst, MSM_VIDC_ERROR, __func__);
 				}
@@ -5338,7 +5338,7 @@ void msm_vidc_destroy_buffers(struct msm_vidc_inst *inst)
 			continue;
 		list_for_each_entry_safe(buf, dummy, &buffers->list, list) {
 			i_vpr_h(inst,
-				"destroying internal buffer: type %d idx %d fd %d addr %#x size %d\n",
+				"destroying internal buffer: type %d idx %d fd %d addr %#llx size %d\n",
 				buf->type, buf->index, buf->fd, buf->device_addr, buf->buffer_size);
 			msm_vidc_destroy_internal_buffer(inst, buf);
 		}
@@ -5389,7 +5389,7 @@ void msm_vidc_destroy_buffers(struct msm_vidc_inst *inst)
 	}
 
 	list_for_each_entry_safe(dbuf, dummy_dbuf, &inst->dmabuf_tracker, list) {
-		i_vpr_e(inst, "%s: removing dma_buf %#x, refcount %u\n",
+		i_vpr_e(inst, "%s: removing dma_buf %p, refcount %u\n",
 			__func__, dbuf->dmabuf, dbuf->refcount);
 		msm_vidc_memory_put_dmabuf_completely(inst, dbuf);
 	}

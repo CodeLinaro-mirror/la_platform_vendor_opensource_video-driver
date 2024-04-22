@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/devcoredump.h>
@@ -16,7 +16,7 @@
 #include "msm_vidc_memory.h"
 #include "msm_vidc_fence.h"
 
-#define in_range(range, val) (((range.begin) < (val)) && ((range.end) > (val)))
+#define is_in_range(range, val) (((range.begin) < (val)) && ((range.end) > (val)))
 
 extern struct msm_vidc_core *g_core;
 struct msm_vidc_core_hfi_range {
@@ -729,7 +729,7 @@ static int handle_input_buffer(struct msm_vidc_inst *inst,
 		}
 	}
 	if (!found) {
-		i_vpr_e(inst, "%s: invalid buffer idx %d addr %#x data_offset %d\n",
+		i_vpr_e(inst, "%s: invalid buffer idx %d addr %#llx data_offset %d\n",
 			__func__, buffer->index, buffer->base_address,
 			buffer->data_offset);
 		return -EINVAL;
@@ -957,7 +957,7 @@ static int handle_input_metadata_buffer(struct msm_vidc_inst *inst,
 		}
 	}
 	if (!found) {
-		i_vpr_e(inst, "%s: invalid idx %d daddr %#x data_offset %d\n",
+		i_vpr_e(inst, "%s: invalid idx %d daddr %#llx data_offset %d\n",
 			__func__, buffer->index, buffer->base_address,
 			buffer->data_offset);
 		return -EINVAL;
@@ -1014,7 +1014,7 @@ static int handle_output_metadata_buffer(struct msm_vidc_inst *inst,
 		}
 	}
 	if (!found) {
-		i_vpr_e(inst, "%s: invalid idx %d daddr %#x data_offset %d\n",
+		i_vpr_e(inst, "%s: invalid idx %d daddr %#llx data_offset %d\n",
 			__func__, buffer->index, buffer->base_address,
 			buffer->data_offset);
 		return -EINVAL;
@@ -1118,7 +1118,7 @@ static int handle_release_internal_buffer(struct msm_vidc_inst *inst,
 		if (rc)
 			return rc;
 	} else {
-		i_vpr_e(inst, "%s: invalid idx %d daddr %#x\n",
+		i_vpr_e(inst, "%s: invalid idx %d daddr %#llx\n",
 			__func__, buffer->index, buffer->base_address);
 		return -EINVAL;
 	}
@@ -1139,7 +1139,7 @@ static int handle_release_output_buffer(struct msm_vidc_inst *inst,
 		}
 	}
 	if (!found) {
-		i_vpr_e(inst, "%s: invalid idx %d daddr %#x\n",
+		i_vpr_e(inst, "%s: invalid idx %d daddr %#llx\n",
 			__func__, buffer->index, buffer->base_address);
 		return -EINVAL;
 	}
@@ -1609,7 +1609,7 @@ static int handle_system_response(struct msm_vidc_core *core,
 					goto exit;
 				goto exit;
 			}
-			if (in_range(be[i], packet->type)) {
+			if (is_in_range(be[i], packet->type)) {
 				rc = be[i].handle(core, packet);
 				if (rc)
 					goto exit;
@@ -1655,7 +1655,7 @@ static int __handle_session_response(struct msm_vidc_inst *inst,
 					__func__, packet->type);
 				handle_session_error(inst, packet);
 			}
-			if (in_range(be[i], packet->type)) {
+			if (is_in_range(be[i], packet->type)) {
 				dequeue |= (packet->type == HFI_CMD_BUFFER);
 				rc = be[i].handle(inst, packet);
 				if (rc)

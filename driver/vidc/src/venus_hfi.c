@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/iommu.h>
-#include <linux/qcom_scm.h>
 #include <linux/soc/qcom/smem.h>
 #include <linux/irqreturn.h>
 #include <linux/reset.h>
@@ -16,7 +15,7 @@
 #endif
 #include <linux/of_address.h>
 #include <linux/firmware.h>
-#include <linux/qcom_scm.h>
+#include <linux/firmware/qcom/qcom_scm.h>
 #include <linux/soc/qcom/mdt_loader.h>
 #include <linux/iopoll.h>
 
@@ -2450,7 +2449,7 @@ static int __load_fw_to_memory(struct platform_device *pdev,
 
 	virt = memremap(phys, res_size, MEMREMAP_WC);
 	if (!virt) {
-		d_vpr_e("%s: failed to remap fw memory phys %pa[p]\n",
+		d_vpr_e("%s: failed to remap fw memory phys %llu[p]\n",
 				__func__, phys);
 		return -ENOMEM;
 	}

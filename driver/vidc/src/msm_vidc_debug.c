@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 #define CREATE_TRACE_POINTS
 #include "msm_vidc_debug.h"
@@ -138,7 +138,7 @@ void msm_vidc_show_stats(void *inst)
 	for (x = 0; x < MAX_PROFILING_POINTS; x++) {
 		if (i->debug.pdata[x].name[0]) {
 			if (i->debug.samples) {
-				i_vpr_p(i, "%s averaged %d ms/sample\n",
+				i_vpr_p(i, "%s averaged %llu ms/sample\n",
 						i->debug.pdata[x].name,
 						i->debug.pdata[x].cumulative /
 						i->debug.samples);

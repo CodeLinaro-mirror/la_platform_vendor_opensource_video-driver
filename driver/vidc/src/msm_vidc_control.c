@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include "msm_vidc_control.h"
@@ -184,7 +184,7 @@ static int msm_vidc_packetize_control(struct msm_vidc_inst *inst,
 
 	if (payload_size <= sizeof(u64))
 		i_vpr_h(inst,
-			"set cap: name: %24s, cap value: %#10x, hfi: %#10x\n",
+			"set cap: name: %24s, cap value: %#10x, hfi: %#llx\n",
 			cap_name(cap_id), inst->capabilities->cap[cap_id].value, payload);
 	else
 		i_vpr_h(inst,
