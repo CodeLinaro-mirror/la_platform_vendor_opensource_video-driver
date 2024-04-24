@@ -2331,36 +2331,6 @@ int msm_vidc_adjust_enc_lowlatency_mode(void *instance, struct v4l2_ctrl *ctrl)
 	return 0;
 }
 
-int msm_vidc_adjust_dec_lowlatency_mode(void *instance, struct v4l2_ctrl *ctrl)
-{
-	struct msm_vidc_inst_capability *capability;
-	s32 adjusted_value;
-	struct msm_vidc_inst *inst = (struct msm_vidc_inst *) instance;
-	s32 outbuf_fence = V4L2_MPEG_MSM_VIDC_DISABLE;
-
-	if (!inst || !inst->capabilities) {
-		d_vpr_e("%s: invalid params\n", __func__);
-		return -EINVAL;
-	}
-	capability = inst->capabilities;
-
-	adjusted_value = ctrl ? ctrl->val :
-		capability->cap[LOWLATENCY_MODE].value;
-
-	if (msm_vidc_get_parent_value(inst, LOWLATENCY_MODE, META_OUTBUF_FENCE,
-		&outbuf_fence, __func__))
-		return -EINVAL;
-
-	/* enable lowlatency if outbuf fence is enabled */
-	if (outbuf_fence == V4L2_MPEG_MSM_VIDC_ENABLE)
-		adjusted_value = 1;
-
-	msm_vidc_update_cap_value(inst, LOWLATENCY_MODE,
-		adjusted_value, __func__);
-
-	return 0;
-}
-
 int msm_vidc_adjust_output_order(void *instance, struct v4l2_ctrl *ctrl)
 {
 	struct msm_vidc_inst *inst = (struct msm_vidc_inst *) instance;
