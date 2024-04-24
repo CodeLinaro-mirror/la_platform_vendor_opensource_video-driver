@@ -367,9 +367,9 @@ static u32 msm_vidc_encoder_bin_size_iris3(struct msm_vidc_inst *inst)
 
 static u32 msm_vidc_get_recon_buf_count(struct msm_vidc_inst *inst)
 {
-	u32 num_buf_recon = 0;
+	u32 num_buf_recon = 0, profile;
 	s32 n_bframe, ltr_count, hp_layers = 0, hb_layers = 0;
-	bool is_hybrid_hp = false;
+	bool is_hybrid_hp = false, is_multi_view = false;
 	u32 hfi_codec = 0;
 
 	n_bframe = inst->capabilities->cap[B_FRAME].value;
@@ -388,8 +388,14 @@ static u32 msm_vidc_get_recon_buf_count(struct msm_vidc_inst *inst)
 	else if (inst->codec == MSM_VIDC_HEVC || inst->codec == MSM_VIDC_HEIC)
 		hfi_codec = HFI_CODEC_ENCODE_HEVC;
 
+	profile = inst->capabilities->cap[PROFILE].value;
+	if (hfi_codec == HFI_CODEC_ENCODE_HEVC &&
+		profile == V4L2_MPEG_VIDEO_HEVC_PROFILE_MULTIVIEW_MAIN) {
+		is_multi_view = true;
+	}
+
 	HFI_IRIS3_ENC_RECON_BUF_COUNT(num_buf_recon, n_bframe, ltr_count,
-			hp_layers, hb_layers, is_hybrid_hp, hfi_codec);
+			hp_layers, hb_layers, is_hybrid_hp, hfi_codec, is_multi_view);
 
 	return num_buf_recon;
 }
@@ -674,8 +680,9 @@ exit:
 
 static int msm_vidc_input_min_count_iris3(struct msm_vidc_inst* inst)
 {
-	u32 input_min_count = 0;
+	u32 input_min_count = 0, profile;
 	u32 total_hb_layer = 0;
+	bool is_multi_view =  false;
 
 	if (!inst || !inst->capabilities) {
 		d_vpr_e("%s: invalid params\n", __func__);
@@ -691,8 +698,14 @@ static int msm_vidc_input_min_count_iris3(struct msm_vidc_inst* inst)
 			!inst->capabilities->cap[LAYER_ENABLE].value) {
 			total_hb_layer = 0;
 		}
+
+		profile = inst->capabilities->cap[PROFILE].value;
+		if (inst->codec == MSM_VIDC_HEVC &&
+			profile == V4L2_MPEG_VIDEO_HEVC_PROFILE_MULTIVIEW_MAIN) {
+			is_multi_view = true;
+		}
 		HFI_IRIS3_ENC_MIN_INPUT_BUF_COUNT(input_min_count,
-			total_hb_layer);
+			total_hb_layer, is_multi_view);
 	} else {
 		i_vpr_e(inst, "%s: invalid domain %d\n", __func__, inst->domain);
 		return 0;
