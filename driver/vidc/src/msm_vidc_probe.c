@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2022, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/workqueue.h>
@@ -10,6 +11,7 @@
 #include <linux/of_platform.h>
 #include <linux/component.h>
 #include <linux/interrupt.h>
+#include <linux/stringify.h>
 
 #include "msm_vidc_internal.h"
 #include "msm_vidc_debug.h"
@@ -19,14 +21,13 @@
 #include "msm_vidc_core.h"
 #include "msm_vidc_memory.h"
 #include "venus_hfi.h"
-#include "video_generated_h"
 
 #define BASE_DEVICE_NUMBER 32
 
 struct msm_vidc_core *g_core;
 
-const char video_banner[] = "Video-Banner: (" VIDEO_COMPILE_BY "@"
-	VIDEO_COMPILE_HOST ") (" VIDEO_COMPILE_TIME ")";
+const char video_banner[] = "Video-Banner: (" __stringify(VIDEO_COMPILE_BY) "@"
+       __stringify(VIDEO_COMPILE_HOST) ") (" __stringify(VIDEO_COMPILE_TIME) ")";
 
 static int msm_vidc_deinit_irq(struct msm_vidc_core *core)
 {
