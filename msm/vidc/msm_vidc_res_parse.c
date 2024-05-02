@@ -1052,6 +1052,12 @@ static int msm_vidc_setup_context_bank(struct msm_vidc_platform_resources *res,
 
 	if(cma_enable) {
 
+		/*
+		* cma_enable_supported is flag checked by iommu driver to pick up cma address
+		* from video device tree.
+		*/
+		cma_enable_supported = true;
+
 		rc = of_dma_configure(dev, dev->of_node, true);
 		if(rc) {
 			d_vpr_e("%s of_dma_configure call failed with return %d", __func__, rc);
