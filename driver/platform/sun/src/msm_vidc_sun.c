@@ -711,6 +711,27 @@ static struct msm_platform_inst_capability instance_cap_data_sun[] = {
 		HFI_PROP_SLICE_DECODE,
 		CAP_FLAG_INPUT_PORT},
 
+	{EARLY_NOTIFY_ENABLE, DEC, H264 | HEVC | AV1,
+		V4L2_MPEG_MSM_VIDC_DISABLE,
+		V4L2_MPEG_MSM_VIDC_ENABLE,
+		1,
+		V4L2_MPEG_MSM_VIDC_DISABLE,
+		V4L2_CID_MPEG_VIDC_EARLY_NOTIFY_ENABLE,
+		HFI_PROP_EARLY_NOTIFY_ENABLE,
+		CAP_FLAG_INPUT_PORT},
+
+	{EARLY_NOTIFY_LINE_COUNT, DEC, H264 | HEVC | AV1,
+		0, 1, 1, 0,
+		V4L2_CID_MPEG_VIDC_EARLY_NOTIFY_LINE_COUNT,
+		HFI_PROP_EARLY_NOTIFY_LINE_COUNT,
+		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
+
+	{EARLY_NOTIFY_FENCE_COUNT, DEC, H264 | HEVC | AV1,
+		0, MAX_FENCE_COUNT, 1, 0,
+		0,
+		HFI_PROP_EARLY_NOTIFY_FENCE_COUNT,
+		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
+
 	{HEADER_MODE, ENC, CODECS_ALL,
 		V4L2_MPEG_VIDEO_HEADER_MODE_SEPARATE,
 		V4L2_MPEG_VIDEO_HEADER_MODE_JOINED_WITH_1ST_FRAME,
@@ -2190,7 +2211,8 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_sun[
 		msm_vidc_set_u32},
 
 	{META_OUTBUF_FENCE, DEC, H264 | HEVC | AV1,
-		{LOWLATENCY_MODE, OUTBUF_FENCE_TYPE, OUTBUF_FENCE_DIRECTION, SLICE_DECODE},
+		{LOWLATENCY_MODE, OUTBUF_FENCE_TYPE, OUTBUF_FENCE_DIRECTION, SLICE_DECODE,
+		EARLY_NOTIFY_ENABLE},
 		NULL,
 		NULL},
 
@@ -2247,6 +2269,21 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_sun[
 	{SLICE_DECODE, DEC, H264 | HEVC | AV1,
 		{0},
 		msm_vidc_adjust_dec_slice_mode,
+		msm_vidc_set_u32},
+
+	{EARLY_NOTIFY_ENABLE, DEC, H264 | HEVC | AV1,
+		{EARLY_NOTIFY_LINE_COUNT},
+		msm_vidc_adjust_early_notify_enable,
+		msm_vidc_set_u32},
+
+	{EARLY_NOTIFY_LINE_COUNT, DEC, H264 | HEVC | AV1,
+		{EARLY_NOTIFY_FENCE_COUNT},
+		msm_vidc_adjust_early_notify_line_count,
+		msm_vidc_set_u32},
+
+	{EARLY_NOTIFY_FENCE_COUNT, DEC, H264 | HEVC | AV1,
+		{0},
+		msm_vidc_adjust_early_notify_fence_count,
 		msm_vidc_set_u32},
 
 	{HEADER_MODE, ENC, CODECS_ALL,
@@ -2358,9 +2395,14 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_sun[
 		msm_vidc_adjust_enc_lowlatency_mode,
 		NULL},
 
-	{LOWLATENCY_MODE, DEC, H264 | HEVC | VP9 | AV1,
-		{STAGE, SLICE_DECODE},
-		NULL,
+	{LOWLATENCY_MODE, DEC, H264 | HEVC | AV1,
+		{STAGE, SLICE_DECODE, EARLY_NOTIFY_ENABLE},
+		msm_vidc_adjust_dec_lowlatency_mode,
+		NULL},
+
+	{LOWLATENCY_MODE, DEC, VP9,
+		{STAGE},
+		msm_vidc_adjust_dec_lowlatency_mode,
 		NULL},
 
 	{LTR_COUNT, ENC, H264 | HEVC,
@@ -2629,7 +2671,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_sun[
 		NULL},
 
 	{OUTPUT_ORDER, DEC, H264 | HEVC | AV1,
-		{SLICE_DECODE},
+		{SLICE_DECODE, EARLY_NOTIFY_ENABLE},
 		msm_vidc_adjust_output_order,
 		msm_vidc_set_u32},
 
