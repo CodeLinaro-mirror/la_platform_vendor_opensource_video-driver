@@ -250,7 +250,11 @@ int msm_vidc_memory_map(struct msm_vidc_core *core, struct msm_vidc_map *map)
 		attach->dma_map_attrs |= 0UL;
 			/*TODO: define DMA_ATTR_IOMMU_USE_UPSTREAM_HINT;*/
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 2, 0))
 	table = dma_buf_map_attachment(attach, DMA_BIDIRECTIONAL);
+#else
+	table = dma_buf_map_attachment_unlocked(attach, DMA_BIDIRECTIONAL);
+#endif
 	if (IS_ERR_OR_NULL(table)) {
 		rc = PTR_ERR(table) ? PTR_ERR(table) : -ENOMEM;
 		d_vpr_e("Failed to map table\n");
@@ -275,7 +279,11 @@ exit:
 	return 0;
 
 error_sg:
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 2, 0))
 	dma_buf_unmap_attachment(attach, table, DMA_BIDIRECTIONAL);
+#else
+	dma_buf_unmap_attachment_unlocked(attach, table, DMA_BIDIRECTIONAL);
+#endif
 error_table:
 	dma_buf_detach(map->dmabuf, attach);
 error_attach:
@@ -307,7 +315,11 @@ int msm_vidc_memory_unmap(struct msm_vidc_core *core,
 	if (map->refcount)
 		goto exit;
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 2, 0))
 	dma_buf_unmap_attachment(map->attach, map->table, DMA_BIDIRECTIONAL);
+#else
+	dma_buf_unmap_attachment_unlocked(map->attach, map->table, DMA_BIDIRECTIONAL);
+#endif
 	dma_buf_detach(map->dmabuf, map->attach);
 
 	map->device_addr = 0x0;
@@ -429,7 +441,7 @@ int msm_vidc_memory_alloc(struct msm_vidc_core *core, struct msm_vidc_alloc *mem
 			rc = -EIO;
 			goto error;
 		}
-#elif (KERNEL_VERSION(5, 16, 0) > LINUX_VERSION_CODE)
+#elif (KERNEL_VERSION(6, 2, 0) > LINUX_VERSION_CODE)
 		rc = dma_buf_vmap(mem->dmabuf, &mem->dmabuf_map);
 		if (rc) {
 			d_vpr_e("%s: kernel map failed\n", __func__);
@@ -438,7 +450,7 @@ int msm_vidc_memory_alloc(struct msm_vidc_core *core, struct msm_vidc_alloc *mem
 		}
 		mem->kvaddr = mem->dmabuf_map.vaddr;
 #else
-		rc = dma_buf_vmap(mem->dmabuf, &mem->dmabuf_map);
+		rc = dma_buf_vmap_unlocked(mem->dmabuf, &mem->dmabuf_map);
 		if (rc) {
 			d_vpr_e("%s: kernel map failed\n", __func__);
 			rc = -EIO;
@@ -482,8 +494,10 @@ int msm_vidc_memory_free(struct msm_vidc_core *core, struct msm_vidc_alloc *mem)
 	if (mem->kvaddr) {
 #if (KERNEL_VERSION(5, 15, 0) > LINUX_VERSION_CODE)
 		dma_buf_vunmap(mem->dmabuf, mem->kvaddr);
-#else
+#elif (KERNEL_VERSION(6, 2, 0) > LINUX_VERSION_CODE)
 		dma_buf_vunmap(mem->dmabuf, &mem->dmabuf_map);
+#else
+		dma_buf_vunmap_unlocked(mem->dmabuf, &mem->dmabuf_map);
 #endif
 		mem->kvaddr = NULL;
 		dma_buf_end_cpu_access(mem->dmabuf, DMA_BIDIRECTIONAL);
