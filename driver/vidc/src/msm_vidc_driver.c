@@ -3448,6 +3448,7 @@ static int msm_vidc_queue_buffer(struct msm_vidc_inst *inst, struct msm_vidc_buf
 
 int msm_vidc_queue_deferred_buffers(struct msm_vidc_inst *inst, enum msm_vidc_buffer_type buf_type)
 {
+	struct msm_vidc_fence *fence = NULL;
 	struct msm_vidc_buffers *buffers;
 	struct msm_vidc_buffer *buf;
 	int rc = 0;
@@ -3466,6 +3467,14 @@ int msm_vidc_queue_deferred_buffers(struct msm_vidc_inst *inst, enum msm_vidc_bu
 	list_for_each_entry(buf, &buffers->list, list) {
 		if (!(buf->attr & MSM_VIDC_ATTR_DEFERRED))
 			continue;
+
+		if (is_outbuf_fence_enabled(inst)) {
+			fence = msm_vidc_fence_create(inst);
+			if (!fence)
+				return -EINVAL;
+			buf->fence_id = fence->dma_fence.seqno;
+		}
+
 		rc = msm_vidc_queue_buffer(inst, buf);
 		if (rc)
 			return rc;
