@@ -226,8 +226,7 @@ static struct msm_platform_inst_capability instance_data_blair[] = {
 		V4L2_CID_MPEG_VIDC_METADATA_OUTBUF_FENCE,
 		HFI_PROP_FENCE,
 		CAP_FLAG_NONE,
-		{OUTPUT_ORDER},
-		{LOWLATENCY_MODE}},
+		{OUTPUT_ORDER}},
 
 	/*
 	 * Client to do set_ctrl with FENCE_ID to set fence_id
@@ -511,9 +510,8 @@ static struct msm_platform_inst_capability instance_data_blair[] = {
 		V4L2_CID_MPEG_VIDC_LOWLATENCY_REQUEST,
 		HFI_PROP_SEQ_CHANGE_AT_SYNC_FRAME,
 		CAP_FLAG_INPUT_PORT,
-		{META_OUTBUF_FENCE},
-		{STAGE},
-		msm_vidc_adjust_dec_lowlatency_mode},
+		{0},
+		{STAGE}},
 
 	{LTR_COUNT, ENC, H264|HEVC,
 		0, 2, 1, 0,

@@ -289,8 +289,10 @@ static int msm_vidc_deinit_platform_variant(struct msm_vidc_core *core, struct d
 static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct device *dev)
 {
 	int rc = -EINVAL;
+#if defined(CONFIG_MSM_VIDC_BLAIR)
 	struct msm_platform_core_capability *platform_data;
 	int i, num_platform_caps;
+#endif
 
 	if (!core || !dev) {
 		d_vpr_e("%s: Invalid params\n", __func__);
@@ -635,5 +637,5 @@ void msm_vidc_sort_table(struct msm_vidc_core *core)
 		sizeof(*core->dt->allowed_clks_tbl), cmp, NULL);
 	d_vpr_h("Updated allowed clock rates\n");
 	for (i = 0; i < core->dt->allowed_clks_tbl_size; i++)
-		d_vpr_h("    %d\n", core->dt->allowed_clks_tbl[i]);
+		d_vpr_h("    %u\n", core->dt->allowed_clks_tbl[i].clock_rate);
 }

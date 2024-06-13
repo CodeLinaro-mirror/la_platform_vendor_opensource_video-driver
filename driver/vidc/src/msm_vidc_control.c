@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include "msm_vidc_control.h"
@@ -184,7 +184,7 @@ static int msm_vidc_packetize_control(struct msm_vidc_inst *inst,
 
 	if (payload_size <= sizeof(u64))
 		i_vpr_h(inst,
-			"set cap: name: %24s, cap value: %#10x, hfi: %#10x\n",
+			"set cap: name: %24s, cap value: %#10x, hfi: %#llx\n",
 			cap_name(cap_id), inst->capabilities->cap[cap_id].value, payload);
 	else
 		i_vpr_h(inst,
@@ -2323,36 +2323,6 @@ int msm_vidc_adjust_enc_lowlatency_mode(void *instance, struct v4l2_ctrl *ctrl)
 
 	if (rc_type == HFI_RC_CBR_CFR ||
 		rc_type == HFI_RC_CBR_VFR)
-		adjusted_value = 1;
-
-	msm_vidc_update_cap_value(inst, LOWLATENCY_MODE,
-		adjusted_value, __func__);
-
-	return 0;
-}
-
-int msm_vidc_adjust_dec_lowlatency_mode(void *instance, struct v4l2_ctrl *ctrl)
-{
-	struct msm_vidc_inst_capability *capability;
-	s32 adjusted_value;
-	struct msm_vidc_inst *inst = (struct msm_vidc_inst *) instance;
-	s32 outbuf_fence = V4L2_MPEG_MSM_VIDC_DISABLE;
-
-	if (!inst || !inst->capabilities) {
-		d_vpr_e("%s: invalid params\n", __func__);
-		return -EINVAL;
-	}
-	capability = inst->capabilities;
-
-	adjusted_value = ctrl ? ctrl->val :
-		capability->cap[LOWLATENCY_MODE].value;
-
-	if (msm_vidc_get_parent_value(inst, LOWLATENCY_MODE, META_OUTBUF_FENCE,
-		&outbuf_fence, __func__))
-		return -EINVAL;
-
-	/* enable lowlatency if outbuf fence is enabled */
-	if (outbuf_fence == V4L2_MPEG_MSM_VIDC_ENABLE)
 		adjusted_value = 1;
 
 	msm_vidc_update_cap_value(inst, LOWLATENCY_MODE,

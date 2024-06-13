@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2022, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/dma-buf.h>
@@ -136,7 +136,7 @@ void msm_vidc_memory_put_dmabuf(struct msm_vidc_inst *inst, struct dma_buf *dmab
 		}
 	}
 	if (!found) {
-		i_vpr_e(inst, "%s: invalid dmabuf %#x\n", __func__, dmabuf);
+		i_vpr_e(inst, "%s: invalid dmabuf %p\n", __func__, dmabuf);
 		return;
 	}
 
@@ -247,8 +247,8 @@ int msm_vidc_memory_map(struct msm_vidc_core *core, struct msm_vidc_map *map)
 	 */
 	attach->dma_map_attrs |= DMA_ATTR_SKIP_CPU_SYNC;
 	if (core->dt->sys_cache_present)
-		attach->dma_map_attrs |=
-			DMA_ATTR_IOMMU_USE_UPSTREAM_HINT;
+		attach->dma_map_attrs |= 0UL;
+			/*TODO: define DMA_ATTR_IOMMU_USE_UPSTREAM_HINT;*/
 
 	table = dma_buf_map_attachment(attach, DMA_BIDIRECTIONAL);
 	if (IS_ERR_OR_NULL(table)) {
@@ -269,7 +269,7 @@ int msm_vidc_memory_map(struct msm_vidc_core *core, struct msm_vidc_map *map)
 
 exit:
 	d_vpr_l(
-		"%s: type %11s, device_addr %#x, refcount %d, region %d\n",
+		"%s: type %11s, device_addr %#llx, refcount %d, region %d\n",
 		__func__, buf_name(map->type), map->device_addr, map->refcount, map->region);
 
 	return 0;
@@ -301,7 +301,7 @@ int msm_vidc_memory_unmap(struct msm_vidc_core *core,
 	}
 
 	d_vpr_l(
-		"%s: type %11s, device_addr %#x, refcount %d, region %d\n",
+		"%s: type %11s, device_addr %#llx, refcount %d, region %d\n",
 		__func__, buf_name(map->type), map->device_addr, map->refcount, map->region);
 
 	if (map->refcount)
@@ -554,7 +554,7 @@ void msm_memory_free(struct msm_vidc_inst *inst, void *vidc_buf)
 
 	/* sanitize buffer addr */
 	if (hdr->buf != vidc_buf) {
-		i_vpr_e(inst, "%s: invalid buf addr %#x\n", __func__, vidc_buf);
+		i_vpr_e(inst, "%s: invalid buf addr %p\n", __func__, vidc_buf);
 		return;
 	}
 
@@ -567,7 +567,7 @@ void msm_memory_free(struct msm_vidc_inst *inst, void *vidc_buf)
 
 	/* catch double-free request */
 	if (!hdr->busy) {
-		i_vpr_e(inst, "%s: double free request. type %s, addr %#x\n", __func__,
+		i_vpr_e(inst, "%s: double free request. type %s, addr %p\n", __func__,
 			pool->name, vidc_buf);
 		return;
 	}

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023, Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024, Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <media/v4l2_vidc_extensions.h>
@@ -2239,7 +2239,7 @@ static int msm_vidc_unmap_excessive_mappings(struct msm_vidc_inst *inst)
 	list_for_each_entry_safe(map, temp, &inst->mappings.output.list, list) {
 		if (is_valid_removable_buffer(inst, map)) {
 			i_vpr_l(inst,
-				"%s: type %11s, device_addr %#x, refcount %d, region %d\n",
+				"%s: type %11s, device_addr %#llx, refcount %d, region %d\n",
 				__func__, buf_name(map->type), map->device_addr,
 				map->refcount, map->region);
 			rc = msm_vidc_put_delayed_unmap(inst, map);
