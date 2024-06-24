@@ -22,6 +22,14 @@ ddk_headers(
 )
 
 ddk_headers(
+    name = "monaco_headers",
+    hdrs = glob([
+      "driver/platform/monaco/inc/*.h",
+    ]),
+    includes = ["driver/platform/monaco/inc"]
+)
+
+ddk_headers(
     name = "pitti_headers",
     hdrs = glob([
       "driver/platform/blair/inc/*.h",
@@ -49,11 +57,8 @@ ddk_headers(
 
 ddk_headers(
     name = "video_driver_headers",
-    hdrs = [":uapi_headers", "blair_headers", "ar50lt_headers", "vidc_headers"]
+    hdrs = [":uapi_headers", "blair_headers", "monaco_headers", "ar50lt_headers", "vidc_headers"]
 )
 
-load(":target.bzl", "define_blair")
-define_blair()
-
-load(":target.bzl", "define_pitti")
-define_pitti()
+load(":target.bzl", "define_target_modules")
+define_target_modules()

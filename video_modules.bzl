@@ -26,11 +26,16 @@ module_entry(
         "driver/platform/common/src/msm_vidc_platform.c",
         ],
     config_srcs = {
-        "CONFIG_MSM_VIDC_BLAIR" : [
+        "CONFIG_MSM_VIDC_MONACO" : [
+            "driver/platform/monaco/src/msm_vidc_monaco.c",
+        ],
+        "CONFIG_MSM_VIDC_BLAIR"  : [
+            "driver/platform/blair/src/msm_vidc_blair.c",
+        ],
+        "CONFIG_MSM_VIDC_AR50LT" : [
             "driver/variant/ar50lt/src/msm_vidc_power_ar50lt.c",
             "driver/variant/ar50lt/src/msm_vidc_buffer_ar50lt.c",
             "driver/variant/ar50lt/src/msm_vidc_ar50lt.c",
-            "driver/platform/blair/src/msm_vidc_blair.c",
         ],
     },
 )
