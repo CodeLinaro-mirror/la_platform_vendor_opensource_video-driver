@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022, 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/of.h>
@@ -1663,6 +1663,7 @@ static const struct msm_vidc_platform_data monaco_data = {
 	.csc_data.vpe_csc_custom_limit_coeff = vpe_csc_custom_limit_coeff,
 	.ubwc_config = NULL,
 	.bus_bw_nrt = bus_bw_nrt,
+	.vpu_ver = VENUS_VERSION_AR50LT_V1,
 };
 
 static struct msm_vidc_platform_ops monaco_platform_ops = {
