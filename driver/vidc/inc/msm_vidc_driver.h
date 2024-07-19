@@ -173,7 +173,14 @@ static inline bool is_linear_colorformat(enum msm_vidc_colorformat_type colorfor
 {
 	return is_linear_yuv_colorformat(colorformat) || is_linear_rgba_colorformat(colorformat);
 }
-
+static inline bool is_split_mode_enabled(struct msm_vidc_inst *inst)
+{
+	if (!is_decode_session(inst))
+		return false;
+	if (is_linear_colorformat(inst->capabilities->cap[PIX_FMTS].value))
+		return true;
+	return false;
+}
 static inline bool is_ubwc_colorformat(enum msm_vidc_colorformat_type colorformat)
 {
 	return colorformat == MSM_VIDC_FMT_NV12C ||
