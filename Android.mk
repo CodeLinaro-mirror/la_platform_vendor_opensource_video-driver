@@ -19,7 +19,9 @@ KBUILD_OPTIONS := VIDEO_ROOT=$(VIDEO_BLD_DIR)
 
 KBUILD_OPTIONS += $(VIDEO_SELECT)
 
+ifneq ($(TARGET_BOARD_PLATFORM), monaco)
 KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(shell pwd)/$(call intermediates-dir-for,DLKM,mmrm-module-symvers)/Module.symvers
+endif
 ###########################################################
 
 DLKM_DIR   := device/qcom/common/dlkm
@@ -37,8 +39,10 @@ LOCAL_MODULE_PATH         := $(KERNEL_MODULES_OUT)
 LOCAL_MODULE_DDK_BUILD    := true
 LOCAL_MODULE_KO_DIRS      := msm_video.ko
 
+ifneq ($(TARGET_BOARD_PLATFORM), monaco)
 LOCAL_REQUIRED_MODULES    := mmrm-module-symvers
 LOCAL_ADDITIONAL_DEPENDENCIES := $(call intermediates-dir-for,DLKM,mmrm-module-symvers)/Module.symvers
+endif
 
 include $(DLKM_DIR)/Build_external_kernelmodule.mk
 endif
