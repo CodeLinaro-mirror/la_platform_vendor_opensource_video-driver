@@ -32,5 +32,16 @@ module_entry(
             "driver/variant/ar50lt/src/msm_vidc_ar50lt.c",
             "driver/platform/blair/src/msm_vidc_blair.c",
         ],
+        "CONFIG_MSM_VIDC_NEO" : [
+            "driver/variant/ar50lt/src/msm_vidc_power_ar50lt.c",
+            "driver/variant/ar50lt/src/msm_vidc_buffer_ar50lt.c",
+            "driver/variant/ar50lt/src/msm_vidc_ar50lt.c",
+	    "driver/platform/neo/src/msm_vidc_neo.c",
+        ],
+        "CONFIG_MSM_VIDC_IRIS3" : [
+            "driver/variant/iris2/src/msm_vidc_buffer_iris2.c",
+            "driver/variant/iris2/src/msm_vidc_power_iris2.c",
+            "driver/variant/iris2/src/msm_vidc_iris2.c",
+        ],
     },
 )

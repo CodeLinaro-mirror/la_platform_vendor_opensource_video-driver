@@ -26,3 +26,17 @@ def define_pitti():
             "CONFIG_MSM_VIDC_AR50LT",
         ],
     )
+
+def define_neo_la():
+    define_consolidate_gki_perf_modules(
+        target = "neo-la",
+        registry = video_driver_modules,
+        modules = [
+            "msm_video",
+        ],
+        config_options = [
+            "CONFIG_MSM_VIDC_NEO",
+	    "CONFIG_MSM_VIDC_AR50LT",
+            "CONFIG_MSM_VIDC_IRIS3",
+        ],
+    )
