@@ -289,9 +289,10 @@ static int msm_vidc_deinit_platform_variant(struct msm_vidc_core *core, struct d
 static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct device *dev)
 {
 	int rc = -EINVAL;
+#if defined(CONFIG_MSM_VIDC_BLAIR)
 	struct msm_platform_core_capability *platform_data;
 	int i, num_platform_caps;
-
+#endif
 	if (!core || !dev) {
 		d_vpr_e("%s: Invalid params\n", __func__);
 		return -EINVAL;
