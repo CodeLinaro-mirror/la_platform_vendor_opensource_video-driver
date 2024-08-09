@@ -1,24 +1,23 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
-#include <dt-bindings/clock/qcom,gcc-lemans.h>
-#include <dt-bindings/clock/qcom,videocc-lemans.h>
+#include <dt-bindings/clock/qcom,gcc-nordau.h>
+#include <dt-bindings/clock/qcom,videocc-nordau.h>
 
 #include <linux/soc/qcom/llcc-qcom.h>
 #include <soc/qcom/of_common.h>
 
 #include <media/v4l2_vidc_extensions.h>
-#include "msm_vidc_lemans.h"
+#include "msm_vidc_nordau.h"
 #include "msm_vidc_platform.h"
 #include "msm_vidc_debug.h"
 #include "msm_vidc_internal.h"
 #include "msm_vidc_control_ext.h"
 #include "msm_vidc_memory_ext.h"
 #include "hfi_property.h"
-#include "msm_vidc_iris3.h"
+#include "msm_vidc_iris33_au.h"
 #include "hfi_command.h"
 
 #define DEFAULT_VIDEO_CONCEAL_COLOR_BLACK 0x8020010
@@ -50,7 +49,7 @@
 #define CODECS_ALL     (H264 | HEVC | VP9 | HEIC | AV1 | MPEG2)
 #define MAXIMUM_OVERRIDE_VP9_FPS 200
 
-static struct codec_info codec_data_lemans[] = {
+static struct codec_info codec_data_nordau[] = {
 	{
 		.v4l2_codec  = V4L2_PIX_FMT_H264,
 		.vidc_codec  = MSM_VIDC_H264,
@@ -83,7 +82,7 @@ static struct codec_info codec_data_lemans[] = {
 	},
 };
 
-static struct color_format_info color_format_data_lemans[] = {
+static struct color_format_info color_format_data_nordau[] = {
 	{
 		.v4l2_color_format = V4L2_PIX_FMT_NV12,
 		.vidc_color_format = MSM_VIDC_FMT_NV12,
@@ -126,7 +125,7 @@ static struct color_format_info color_format_data_lemans[] = {
 	},
 };
 
-static struct color_primaries_info color_primaries_data_lemans[] = {
+static struct color_primaries_info color_primaries_data_nordau[] = {
 	{
 		.v4l2_color_primaries  = V4L2_COLORSPACE_DEFAULT,
 		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_RESERVED,
@@ -177,7 +176,7 @@ static struct color_primaries_info color_primaries_data_lemans[] = {
 	},
 };
 
-static struct transfer_char_info transfer_char_data_lemans[] = {
+static struct transfer_char_info transfer_char_data_nordau[] = {
 	{
 		.v4l2_transfer_char  = V4L2_XFER_FUNC_DEFAULT,
 		.vidc_transfer_char  = MSM_VIDC_TRANSFER_RESERVED,
@@ -240,7 +239,7 @@ static struct transfer_char_info transfer_char_data_lemans[] = {
 	},
 };
 
-static struct matrix_coeff_info matrix_coeff_data_lemans[] = {
+static struct matrix_coeff_info matrix_coeff_data_nordau[] = {
 	{
 		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_DEFAULT,
 		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_RESERVED,
@@ -287,23 +286,21 @@ static struct matrix_coeff_info matrix_coeff_data_lemans[] = {
 	},
 };
 
-static struct msm_platform_core_capability core_data_lemans[] = {
+static struct msm_platform_core_capability core_data_nordau[] = {
 	/* {type, value} */
 	{ENC_CODECS, H264|HEVC|HEIC},
 	{DEC_CODECS, H264|HEVC|VP9|AV1|HEIC|MPEG2},
-	{MAX_SESSION_COUNT, 24},
-	{MAX_NUM_720P_SESSIONS, 16},
-	{MAX_NUM_1080P_SESSIONS, 16},
-	{MAX_NUM_4K_SESSIONS, 8},
-	{MAX_NUM_8K_SESSIONS, 2},
-	{MAX_SECURE_SESSION_COUNT, 3},
+	{MAX_SESSION_COUNT, 32},
+	{MAX_NUM_720P_SESSIONS, 32},
+	{MAX_NUM_1080P_SESSIONS, 32},
+	{MAX_NUM_4K_SESSIONS, 16},
+	{MAX_NUM_8K_SESSIONS, 1},
+	{MAX_SECURE_SESSION_COUNT, 4},
 	{MAX_RT_MBPF, 174080},	/* (8192x4352)/256 + (4096x2176)/256*/
 	{MAX_MBPF, 278528}, /* ((8192x4352)/256) * 2 */
-	{MAX_MBPS, 7833600},	/* max_load
-					 * 7680x4320@60fps or 3840x2176@240fps
-					 * which is greater than 4096x2176@120fps,
-					 * 8192x4320@48fps
-					 */
+	{MAX_MBPS, 17925000},	/* max_load
+				 * 3840x2176@550fps
+				 */
 	{MAX_IMAGE_MBPF, 1048576},  /* (16384x16384)/256 */
 	{MAX_MBPF_HQ, 3600}, /* ((1280x720)/256) */
 	{MAX_MBPS_HQ, 108000}, /* ((1280x720)/256)@30fps */
@@ -329,9 +326,10 @@ static struct msm_platform_core_capability core_data_lemans[] = {
 	{DEVICE_CAPS, V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_META_CAPTURE |
 		V4L2_CAP_STREAMING},
 	{SUPPORTS_REQUESTS, 1},
+	{NUM_VPU, 1},
 };
 
-static struct msm_platform_inst_capability instance_cap_data_lemans[] = {
+static struct msm_platform_inst_capability instance_cap_data_nordau[] = {
 	/* {cap, domain, codec,
 	 *      min, max, step_or_mask, value,
 	 *      v4l2_id,
@@ -1968,7 +1966,7 @@ static struct msm_platform_inst_capability instance_cap_data_lemans[] = {
 		CAP_FLAG_OUTPUT_PORT},
 };
 
-static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_lemans[] = {
+static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_nordau[] = {
 	/* {cap, domain, codec,
 	 *      parents,
 	 *      children,
@@ -2218,7 +2216,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_lema
 	{BITRATE_BOOST, ENC, H264|HEVC,
 		{BITRATE_MODE, MIN_QUALITY, BIT_RATE},
 		{0},
-		msm_vidc_adjust_bitrate_boost_iris3,
+		msm_vidc_adjust_bitrate_boost_iris33_au,
 		msm_vidc_set_vbr_related_properties},
 
 	{MIN_QUALITY, ENC, H264,
@@ -2607,38 +2605,39 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_lema
 };
 
 /* Default UBWC config for LPDDR5 */
-static struct msm_vidc_ubwc_config_data ubwc_config_lemans[] = {
-	UBWC_CONFIG(8, 32, 13, 0, 0, 1, 1),
+static struct msm_vidc_ubwc_config_data ubwc_config_nordau[] = {
+	UBWC_CONFIG(8, 32, 16, 0, 0, 0, 1),
 };
 
-static struct msm_vidc_format_capability format_data_lemans = {
-	.codec_info = codec_data_lemans,
-	.codec_info_size = ARRAY_SIZE(codec_data_lemans),
-	.color_format_info = color_format_data_lemans,
-	.color_format_info_size = ARRAY_SIZE(color_format_data_lemans),
-	.color_prim_info = color_primaries_data_lemans,
-	.color_prim_info_size = ARRAY_SIZE(color_primaries_data_lemans),
-	.transfer_char_info = transfer_char_data_lemans,
-	.transfer_char_info_size = ARRAY_SIZE(transfer_char_data_lemans),
-	.matrix_coeff_info = matrix_coeff_data_lemans,
-	.matrix_coeff_info_size = ARRAY_SIZE(matrix_coeff_data_lemans),
+static struct msm_vidc_format_capability format_data_nordau = {
+	.codec_info = codec_data_nordau,
+	.codec_info_size = ARRAY_SIZE(codec_data_nordau),
+	.color_format_info = color_format_data_nordau,
+	.color_format_info_size = ARRAY_SIZE(color_format_data_nordau),
+	.color_prim_info = color_primaries_data_nordau,
+	.color_prim_info_size = ARRAY_SIZE(color_primaries_data_nordau),
+	.transfer_char_info = transfer_char_data_nordau,
+	.transfer_char_info_size = ARRAY_SIZE(transfer_char_data_nordau),
+	.matrix_coeff_info = matrix_coeff_data_nordau,
+	.matrix_coeff_info_size = ARRAY_SIZE(matrix_coeff_data_nordau),
 };
 
 /* name, min_kbps, max_kbps */
-static const struct bw_table lemans_bw_table[] = {
+static const struct bw_table nordau_bw_table[] = {
 	{ "venus-cnoc",  1000, 1000     },
 	{ "venus-ddr",   1000, 15000000 },
 	{ "venus-llcc",  1000, 15000000 },
 };
 
 /* name, hw_trigger */
-static const struct regulator_table lemans_regulator_table[] = {
+static const struct regulator_table nordau_regulator_table[] = {
 	{ "iris-ctl", 0 },
 	{ "vcodec",   1 },
+	{ "vcodec1",  1 },
 };
 
 /* name, clock id, scaling */
-static const struct clk_table lemans_clk_table[] = {
+static const struct clk_table nordau_clk_table[] = {
 	{ "gcc_video_axi0",         GCC_VIDEO_AXI0_CLK,     0 },
 	{ "core_clk",               VIDEO_CC_MVS0C_CLK,     0 },
 	{ "vcodec_clk",             VIDEO_CC_MVS0_CLK,      0 },
@@ -2646,88 +2645,96 @@ static const struct clk_table lemans_clk_table[] = {
 };
 
 /* name */
-static const struct clk_rst_table lemans_clk_reset_table[] = {
+static const struct clk_rst_table nordau_clk_reset_table[] = {
 	{ "video_axi_reset" },
 };
 
 /* name, llcc_id */
-static const struct subcache_table lemans_subcache_table[] = {
+static const struct subcache_table nordau_subcache_table[] = {
 	{ "vidsc0",     LLCC_VIDSC0 },
 	{ "vidvsp",     LLCC_VIDVSP },
 };
 
 /* name, start, size, secure, dma_coherant, region, dma_mask */
-const struct context_bank_table lemans_context_bank_table[] = {
-	{"qcom,vidc,cb-ns",            0x25800000, 0xba800000, 0, 1, MSM_VIDC_NON_SECURE,       0 },
-	{"qcom,vidc,cb-ns-pxl",        0x00100000, 0xdff00000, 0, 1, MSM_VIDC_NON_SECURE_PIXEL, 0 },
-	{"qcom,vidc,cb-sec-pxl",       0x00500000, 0xdfb00000, 1, 0, MSM_VIDC_SECURE_PIXEL,     0 },
-	{"qcom,vidc,cb-sec-non-pxl",   0x01000000, 0x24800000, 1, 0, MSM_VIDC_SECURE_NONPIXEL,  0 },
-	{"qcom,vidc,cb-sec-bitstream", 0x00500000, 0xdfb00000, 1, 0, MSM_VIDC_SECURE_BITSTREAM, 0 },
+const struct context_bank_table nordau_context_bank_table[] = {
+	{"qcom,vidc,cb-ns-non-pxl",    0x92400000, 0x1f400000, 0, 1,
+		MSM_VIDC_NON_SECURE_NONPIXEL, 0 },
+	{"qcom,vidc,cb-ns-pxl",        0x00500000, 0xefb00000, 0, 1,
+		MSM_VIDC_NON_SECURE_PIXEL,    0 },
+	{"qcom,vidc,cb-ns",            0x00500000, 0xefb00000, 0, 1,
+		MSM_VIDC_NON_SECURE,          0 },
+	{"qcom,vidc,cb-sec-pxl",       0x00500000, 0xefb00000, 1, 0,
+		MSM_VIDC_SECURE_PIXEL,        0 },
+	{"qcom,vidc,cb-sec-non-pxl",   0x0d800000, 0x0c800000, 1, 0,
+		MSM_VIDC_SECURE_NONPIXEL,     0 },
+	{"qcom,vidc,cb-sec-bitstream", 0x00500000, 0xefb00000, 1, 0,
+		MSM_VIDC_SECURE_BITSTREAM,    0 },
 };
 
 /* freq */
-static struct freq_table lemans_freq_table[] = {
-	{560000000}, {533000000}, {444000000}, {366000000}, {338000000}, {240000000}
+static struct freq_table nordau_freq_table[] = {
+	{560000000}, {533333333}, {480000000}, {435000000}, {240000000}
 };
 
 /* register, value, mask */
-static const struct reg_preset_table lemans_reg_preset_table[] = {
+static const struct reg_preset_table nordau_reg_preset_table[] = {
 	{ 0xB0088, 0x0, 0x11 },
 };
 
-static const struct msm_vidc_platform_data lemans_data = {
+static const struct msm_vidc_platform_data nordau_data = {
 	/* resources dependent on other module */
-	.bw_tbl = lemans_bw_table,
-	.bw_tbl_size = ARRAY_SIZE(lemans_bw_table),
-	.regulator_tbl = lemans_regulator_table,
-	.regulator_tbl_size = ARRAY_SIZE(lemans_regulator_table),
-	.clk_tbl = lemans_clk_table,
-	.clk_tbl_size = ARRAY_SIZE(lemans_clk_table),
-	.clk_rst_tbl = lemans_clk_reset_table,
-	.clk_rst_tbl_size = ARRAY_SIZE(lemans_clk_reset_table),
-	// .subcache_tbl = lemans_subcache_table,
-	// .subcache_tbl_size = ARRAY_SIZE(lemans_subcache_table),
+	.bw_tbl = nordau_bw_table,
+	.bw_tbl_size = ARRAY_SIZE(nordau_bw_table),
+	.regulator_tbl = nordau_regulator_table,
+	.regulator_tbl_size = ARRAY_SIZE(nordau_regulator_table),
+	.clk_tbl = nordau_clk_table,
+	.clk_tbl_size = ARRAY_SIZE(nordau_clk_table),
+	.clk_rst_tbl = nordau_clk_reset_table,
+	.clk_rst_tbl_size = ARRAY_SIZE(nordau_clk_reset_table),
+	// .subcache_tbl = nordau_subcache_table,
+	// .subcache_tbl_size = ARRAY_SIZE(nordau_subcache_table),
 
 	/* populate context bank */
-	.context_bank_tbl = lemans_context_bank_table,
-	.context_bank_tbl_size = ARRAY_SIZE(lemans_context_bank_table),
+	.context_bank_tbl = nordau_context_bank_table,
+	.context_bank_tbl_size = ARRAY_SIZE(nordau_context_bank_table),
 
 	/* platform specific resources */
-	.freq_tbl = lemans_freq_table,
-	.freq_tbl_size = ARRAY_SIZE(lemans_freq_table),
-	.reg_prst_tbl = lemans_reg_preset_table,
-	.reg_prst_tbl_size = ARRAY_SIZE(lemans_reg_preset_table),
-	.fwname = "vpu30_4v",
+	.freq_tbl = nordau_freq_table,
+	.freq_tbl_size = ARRAY_SIZE(nordau_freq_table),
+	.reg_prst_tbl = nordau_reg_preset_table,
+	.reg_prst_tbl_size = ARRAY_SIZE(nordau_reg_preset_table),
+	.fwname = "vpu36_4v",
 	.pas_id = 9,
 	.supports_mmrm = 0,
 
 	/* caps related resorces */
-	.core_data = core_data_lemans,
-	.core_data_size = ARRAY_SIZE(core_data_lemans),
-	.inst_cap_data = instance_cap_data_lemans,
-	.inst_cap_data_size = ARRAY_SIZE(instance_cap_data_lemans),
-	.inst_cap_dependency_data = instance_cap_dependency_data_lemans,
-	.inst_cap_dependency_data_size = ARRAY_SIZE(instance_cap_dependency_data_lemans),
+	.core_data = core_data_nordau,
+	.core_data_size = ARRAY_SIZE(core_data_nordau),
+	.inst_cap_data = instance_cap_data_nordau,
+	.inst_cap_data_size = ARRAY_SIZE(instance_cap_data_nordau),
+	.inst_cap_dependency_data = instance_cap_dependency_data_nordau,
+	.inst_cap_dependency_data_size = ARRAY_SIZE(instance_cap_dependency_data_nordau),
 	.csc_data.vpe_csc_custom_bias_coeff = vpe_csc_custom_bias_coeff,
 	.csc_data.vpe_csc_custom_matrix_coeff = vpe_csc_custom_matrix_coeff,
 	.csc_data.vpe_csc_custom_limit_coeff = vpe_csc_custom_limit_coeff,
-	.ubwc_config = ubwc_config_lemans,
-	.format_data = &format_data_lemans,
+	.ubwc_config = ubwc_config_nordau,
+	.format_data = &format_data_nordau,
 };
 
-int msm_vidc_lemans_check_ddr_type(void)
+int msm_vidc_nordau_check_ddr_type(void)
 {
-	u32 ddr_type;
+	u32 ddr_type = 0;
+	int rc = 0;
 
 	ddr_type = of_fdt_get_ddrtype();
 	if (ddr_type != DDR_TYPE_LPDDR5 &&
 		ddr_type != DDR_TYPE_LPDDR5X) {
 		d_vpr_e("%s: wrong ddr type %d\n", __func__, ddr_type);
-		return -EINVAL;
+		rc = -EINVAL;
 	} else {
 		d_vpr_h("%s: ddr type %d\n", __func__, ddr_type);
 	}
-	return 0;
+	return rc;
 }
 
 static int msm_vidc_init_data(struct msm_vidc_core *core, struct device *dev)
@@ -2738,18 +2745,18 @@ static int msm_vidc_init_data(struct msm_vidc_core *core, struct device *dev)
 		d_vpr_e("%s: invalid params\n", __func__);
 		return -EINVAL;
 	}
-	d_vpr_h("%s: initialize lemans data\n", __func__);
+	d_vpr_h("%s: initialize nordau data\n", __func__);
 
-	core->platform->data = lemans_data;
+	core->platform->data = nordau_data;
 	core->mem_ops = get_mem_ops_ext();
-	rc = msm_vidc_lemans_check_ddr_type();
+	rc = msm_vidc_nordau_check_ddr_type();
 	if (rc)
 		return rc;
 
 	return rc;
 }
 
-int msm_vidc_init_platform_lemans(struct msm_vidc_core *core, struct device *dev)
+int msm_vidc_init_platform_nordau(struct msm_vidc_core *core, struct device *dev)
 {
 	int rc = 0;
 
@@ -2760,7 +2767,7 @@ int msm_vidc_init_platform_lemans(struct msm_vidc_core *core, struct device *dev
 	return 0;
 }
 
-int msm_vidc_deinit_platform_lemans(struct msm_vidc_core *core, struct device *dev)
+int msm_vidc_deinit_platform_nordau(struct msm_vidc_core *core, struct device *dev)
 {
 	/* do nothing */
 	return 0;
