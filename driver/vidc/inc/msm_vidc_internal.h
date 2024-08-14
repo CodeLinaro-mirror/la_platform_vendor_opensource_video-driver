@@ -393,6 +393,7 @@ enum msm_vidc_inst_capability_type {
 	META_TRANSCODING_STAT_INFO,
 	META_DOLBY_RPU,
 	META_MULTI_VIEW_ID,
+	META_MULTI_VIEW_PAIR,
 	META_CAP_MAX,
 	/* end of metadata caps */
 	FRAME_WIDTH,

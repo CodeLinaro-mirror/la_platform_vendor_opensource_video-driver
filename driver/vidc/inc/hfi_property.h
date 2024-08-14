@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023, Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024, Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef __H_HFI_PROPERTY_H__
@@ -582,6 +582,8 @@ enum hfi_saliency_type {
 #define HFI_PROP_EARLY_NOTIFY_FENCE_COUNT                       0x0300019A
 
 #define HFI_PROP_VIEW_ID                                        0x030001A5
+
+#define HFI_PROP_PAIRED_YUV                                     0x030001AA
 
 #define HFI_PROP_END                                            0x03FFFFFF
 
