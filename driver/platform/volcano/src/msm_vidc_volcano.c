@@ -316,7 +316,7 @@ static struct msm_platform_core_capability core_data_volcano_v0[] = {
 	{ENC_AUTO_FRAMERATE, 0},
 	{DEVICE_CAPS, V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_META_CAPTURE |
 		V4L2_CAP_STREAMING},
-	{SUPPORTS_SYNX_FENCE, 0},
+	{SUPPORTS_SYNX_FENCE, 1},
 	{SUPPORTS_REQUESTS, 0},
 };
 
@@ -329,7 +329,7 @@ static struct msm_platform_core_capability core_data_volcano_v1[] = {
 	{MAX_NUM_1080P_SESSIONS, 4},
 	{MAX_NUM_4K_SESSIONS, 2},
 	{MAX_SECURE_SESSION_COUNT, 3},
-	{MAX_RT_MBPF, 40800}, /* ((3840x2176)/256) + (1920x1088)/256 */
+	{MAX_RT_MBPF, 65280}, /* ((3840x2176)/256) x 2 */
 	{MAX_MBPF, 69632}, /* ((4096x2176)/256) x 2 */
 	/* max_load 4096x2160@30fps*/
 	/* Concurrency:UHD@30fps decode + 1080p@30fps encode */
@@ -358,7 +358,7 @@ static struct msm_platform_core_capability core_data_volcano_v1[] = {
 	{ENC_AUTO_FRAMERATE, 0},
 	{DEVICE_CAPS, V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_META_CAPTURE |
 		V4L2_CAP_STREAMING},
-	{SUPPORTS_SYNX_FENCE, 0},
+	{SUPPORTS_SYNX_FENCE, 1},
 	{SUPPORTS_REQUESTS, 0},
 };
 
@@ -586,6 +586,46 @@ static struct msm_platform_inst_capability instance_cap_data_volcano_v0[] = {
 		V4L2_CID_MPEG_VIDC_SW_FENCE_FD,
 		0,
 		CAP_FLAG_VOLATILE},
+
+	{INBUF_FENCE_TYPE, DEC, H264 | HEVC | VP9,
+		MSM_VIDC_FENCE_NONE, MSM_VIDC_FENCE_NONE,
+		BIT(MSM_VIDC_FENCE_NONE),
+		MSM_VIDC_FENCE_NONE,
+		0,
+		HFI_PROP_FENCE_TYPE,
+		CAP_FLAG_MENU | CAP_FLAG_INPUT_PORT},
+
+	{OUTBUF_FENCE_TYPE, DEC, H264 | HEVC | VP9,
+		MSM_VIDC_FENCE_NONE, MSM_VIDC_SYNX_V2_FENCE,
+		BIT(MSM_VIDC_FENCE_NONE) | BIT(MSM_VIDC_SW_FENCE) |
+			BIT(MSM_VIDC_SYNX_V2_FENCE),
+		MSM_VIDC_FENCE_NONE,
+		0,
+		HFI_PROP_FENCE_TYPE,
+		CAP_FLAG_MENU | CAP_FLAG_OUTPUT_PORT},
+
+	/* Fence direction for input buffer. Currently unused */
+	{INBUF_FENCE_DIRECTION, DEC, H264 | HEVC | VP9,
+		MSM_VIDC_FENCE_DIR_NONE, MSM_VIDC_FENCE_DIR_NONE,
+		BIT(MSM_VIDC_FENCE_DIR_NONE),
+		MSM_VIDC_FENCE_DIR_NONE,
+		0,
+		HFI_PROP_FENCE_DIRECTION,
+		CAP_FLAG_MENU | CAP_FLAG_INPUT_PORT},
+
+	{OUTBUF_FENCE_DIRECTION, DEC, H264 | HEVC | VP9,
+		MSM_VIDC_FENCE_DIR_NONE, MSM_VIDC_FENCE_DIR_RX,
+		BIT(MSM_VIDC_FENCE_DIR_NONE) | BIT(MSM_VIDC_FENCE_DIR_TX) |
+			BIT(MSM_VIDC_FENCE_DIR_RX),
+		MSM_VIDC_FENCE_DIR_NONE,
+		0,
+		HFI_PROP_FENCE_DIRECTION,
+		CAP_FLAG_MENU | CAP_FLAG_OUTPUT_PORT},
+
+	{FENCE_ERROR_DATA_CORRUPT, DEC, H264 | HEVC | VP9,
+		0, 1, 1, 0,
+		0,
+		HFI_PROP_FENCE_ERROR_DATA_CORRUPT},
 
 	{TS_REORDER, DEC, H264 | HEVC,
 		0, 1, 1, 0,
@@ -2050,6 +2090,46 @@ static struct msm_platform_inst_capability instance_cap_data_volcano_v1[] = {
 		0,
 		CAP_FLAG_VOLATILE},
 
+	{INBUF_FENCE_TYPE, DEC, H264 | HEVC | VP9,
+		MSM_VIDC_FENCE_NONE, MSM_VIDC_FENCE_NONE,
+		BIT(MSM_VIDC_FENCE_NONE),
+		MSM_VIDC_FENCE_NONE,
+		0,
+		HFI_PROP_FENCE_TYPE,
+		CAP_FLAG_MENU | CAP_FLAG_INPUT_PORT},
+
+	{OUTBUF_FENCE_TYPE, DEC, H264 | HEVC | VP9,
+		MSM_VIDC_FENCE_NONE, MSM_VIDC_SYNX_V2_FENCE,
+		BIT(MSM_VIDC_FENCE_NONE) | BIT(MSM_VIDC_SW_FENCE) |
+			BIT(MSM_VIDC_SYNX_V2_FENCE),
+		MSM_VIDC_FENCE_NONE,
+		0,
+		HFI_PROP_FENCE_TYPE,
+		CAP_FLAG_MENU | CAP_FLAG_OUTPUT_PORT},
+
+	/* Fence direction for input buffer. Currently unused */
+	{INBUF_FENCE_DIRECTION, DEC, H264 | HEVC | VP9,
+		MSM_VIDC_FENCE_DIR_NONE, MSM_VIDC_FENCE_DIR_NONE,
+		BIT(MSM_VIDC_FENCE_DIR_NONE),
+		MSM_VIDC_FENCE_DIR_NONE,
+		0,
+		HFI_PROP_FENCE_DIRECTION,
+		CAP_FLAG_MENU | CAP_FLAG_INPUT_PORT},
+
+	{OUTBUF_FENCE_DIRECTION, DEC, H264 | HEVC | VP9,
+		MSM_VIDC_FENCE_DIR_NONE, MSM_VIDC_FENCE_DIR_RX,
+		BIT(MSM_VIDC_FENCE_DIR_NONE) | BIT(MSM_VIDC_FENCE_DIR_TX) |
+			BIT(MSM_VIDC_FENCE_DIR_RX),
+		MSM_VIDC_FENCE_DIR_NONE,
+		0,
+		HFI_PROP_FENCE_DIRECTION,
+		CAP_FLAG_MENU | CAP_FLAG_OUTPUT_PORT},
+
+	{FENCE_ERROR_DATA_CORRUPT, DEC, H264 | HEVC | VP9,
+		0, 1, 1, 0,
+		0,
+		HFI_PROP_FENCE_ERROR_DATA_CORRUPT},
+
 	{TS_REORDER, DEC, H264 | HEVC,
 		0, 1, 1, 0,
 		V4L2_CID_MPEG_VIDC_TS_REORDER},
@@ -3018,7 +3098,7 @@ static struct msm_platform_inst_capability instance_cap_data_volcano_v1[] = {
 		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{PRIORITY, DEC | ENC, CODECS_ALL,
-		0, 4, 1, 4,
+		0, 4, 1, 1,
 		V4L2_CID_MPEG_VIDC_PRIORITY,
 		HFI_PROP_SESSION_PRIORITY,
 		CAP_FLAG_DYNAMIC_ALLOWED},
@@ -3326,9 +3406,34 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_volc
 		msm_vidc_set_u32},
 
 	{META_OUTBUF_FENCE, DEC, H264 | HEVC | VP9,
-		{LOWLATENCY_MODE},
+		{LOWLATENCY_MODE, OUTBUF_FENCE_TYPE, OUTBUF_FENCE_DIRECTION},
 		NULL,
 		NULL},
+
+	{INBUF_FENCE_TYPE, DEC, H264 | HEVC | VP9,
+		{0},
+		NULL,
+		NULL},
+
+	{OUTBUF_FENCE_TYPE, DEC, H264 | HEVC | VP9,
+		{0},
+		msm_vidc_adjust_dec_outbuf_fence_type,
+		msm_vidc_set_outbuf_fence_type},
+
+	{INBUF_FENCE_DIRECTION, DEC, H264 | HEVC | VP9,
+		{0},
+		NULL,
+		NULL},
+
+	{OUTBUF_FENCE_DIRECTION, DEC, H264 | HEVC | VP9,
+		{0},
+		msm_vidc_adjust_dec_outbuf_fence_direction,
+		msm_vidc_set_outbuf_fence_direction},
+
+	{FENCE_ERROR_DATA_CORRUPT, DEC, H264 | HEVC | VP9,
+		{0},
+		NULL,
+		msm_vidc_set_u32},
 
 	{HFLIP, ENC, CODECS_ALL,
 		{0},
@@ -3865,9 +3970,34 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_volc
 		msm_vidc_set_u32},
 
 	{META_OUTBUF_FENCE, DEC, H264 | HEVC | VP9,
-		{LOWLATENCY_MODE},
+		{LOWLATENCY_MODE, OUTBUF_FENCE_TYPE, OUTBUF_FENCE_DIRECTION},
 		NULL,
 		NULL},
+
+	{INBUF_FENCE_TYPE, DEC, H264 | HEVC | VP9,
+		{0},
+		NULL,
+		NULL},
+
+	{OUTBUF_FENCE_TYPE, DEC, H264 | HEVC | VP9,
+		{0},
+		msm_vidc_adjust_dec_outbuf_fence_type,
+		msm_vidc_set_outbuf_fence_type},
+
+	{INBUF_FENCE_DIRECTION, DEC, H264 | HEVC | VP9,
+		{0},
+		NULL,
+		NULL},
+
+	{OUTBUF_FENCE_DIRECTION, DEC, H264 | HEVC | VP9,
+		{0},
+		msm_vidc_adjust_dec_outbuf_fence_direction,
+		msm_vidc_set_outbuf_fence_direction},
+
+	{FENCE_ERROR_DATA_CORRUPT, DEC, H264 | HEVC | VP9,
+		{0},
+		NULL,
+		msm_vidc_set_u32},
 
 	{HFLIP, ENC, CODECS_ALL,
 		{0},
@@ -4361,8 +4491,6 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_volc
 
 static const u32 volcano_msm_vidc_ssr_type[] = {
 	HFI_SSR_TYPE_SW_ERR_FATAL,
-	HFI_SSR_TYPE_SW_DIV_BY_ZERO,
-	HFI_SSR_TYPE_CPU_WDOG_IRQ,
 	HFI_SSR_TYPE_NOC_ERROR,
 };
 
@@ -4537,7 +4665,7 @@ static const struct msm_vidc_platform_data volcano_data_v0 = {
 	.freq_tbl_size = ARRAY_SIZE(volcano_freq_table_sku0),
 	.reg_prst_tbl = volcano_reg_preset_table,
 	.reg_prst_tbl_size = ARRAY_SIZE(volcano_reg_preset_table),
-	.fwname = "vpu20_4v",
+	.fwname = "vpu20_2v",
 	.pas_id = 9,
 	.supports_mmrm = 0,
 	.vpu_ver = VPU_VERSION_IRIS2_2P,
@@ -4604,7 +4732,7 @@ static const struct msm_vidc_platform_data volcano_data_v1 = {
 	.freq_tbl_size = ARRAY_SIZE(volcano_freq_table_sku1),
 	.reg_prst_tbl = volcano_reg_preset_table,
 	.reg_prst_tbl_size = ARRAY_SIZE(volcano_reg_preset_table),
-	.fwname = "vpu20_4v",
+	.fwname = "vpu20_2v",
 	.pas_id = 9,
 	.supports_mmrm = 0,
 	.vpu_ver = VPU_VERSION_IRIS2_2P,
@@ -4718,6 +4846,9 @@ static int msm_vidc_init_data(struct msm_vidc_core *core)
 	rc = msm_vidc_volcano_check_ddr_type(&core->platform->data, 0xe);
 	if (rc)
 		return rc;
+
+	/* Enable bug on for WD_TIMEOUT */
+	msm_vidc_enable_bugon = MSM_VIDC_BUG_ON_WD_TIMEOUT;
 
 	return rc;
 }
