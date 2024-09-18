@@ -71,6 +71,7 @@ static const struct msm_vidc_cap_name cap_name_arr[] = {
 	{META_CONCEALED_MB_CNT,          "META_CONCEALED_MB_CNT"      },
 	{META_HIST_INFO,                 "META_HIST_INFO"             },
 	{META_MULTI_VIEW_ID,             "META_MULTI_VIEW_ID"         },
+	{META_MULTI_VIEW_PAIR,           "META_MULTI_VIEW_PAIR"       },
 	{META_PICTURE_TYPE,              "META_PICTURE_TYPE"          },
 	{META_SEI_MASTERING_DISP,        "META_SEI_MASTERING_DISP"    },
 	{META_SEI_CLL,                   "META_SEI_CLL"               },

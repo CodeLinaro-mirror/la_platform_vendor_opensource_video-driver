@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef __V4l2_VIDC_EXTENSIONS_H__
@@ -286,6 +287,9 @@ enum v4l2_h264_encode_delivery_mode {
 #define V4L2_CID_MPEG_VIDC_METADATA_VIEW_ID_INFO                            \
 	(V4L2_CID_MPEG_VIDC_BASE + 0x46)
 
+#define V4L2_CID_MPEG_VIDC_METADATA_VIEW_PAIR_INFO                            \
+	(V4L2_CID_MPEG_VIDC_BASE + 0x47)
+
 /* add new controls above this line */
 /* Deprecate below controls once availble in gki and gsi bionic header */
 #ifndef V4L2_CID_MPEG_VIDEO_BASELAYER_PRIORITY_ID
@@ -430,6 +434,7 @@ enum v4l2_mpeg_vidc_metadata {
 	METADATA_TRANSCODING_STAT_INFO        = 0x03000191,
 	METADATA_DV_RPU                       = 0x03000192,
 	METADATA_MULTI_VIEW                   = 0x030001A5,
+	METADATA_PAIRED_VIEW                  = 0x030001AA,
 };
 enum meta_interlace_info {
 	META_INTERLACE_INFO_NONE                            = 0x00000000,
