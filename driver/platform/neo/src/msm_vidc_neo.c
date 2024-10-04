@@ -1674,6 +1674,16 @@ static struct msm_platform_inst_capability instance_data_neo[] = {
 		1, V4L2_MPEG_MSM_VIDC_DISABLE,
 		V4L2_CID_MPEG_VIDC_METADATA_MAX_NUM_REORDER_FRAMES,
 		HFI_PROP_MAX_NUM_REORDER_FRAMES},
+	{SIGNAL_COLOR_INFO, ENC, CODECS_ALL,
+		0, INT_MAX, 1, 0,
+		V4L2_CID_MPEG_VIDC_SIGNAL_COLOR_INFO,
+		HFI_PROP_SIGNAL_COLOR_INFO,
+		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED | CAP_FLAG_ROOT,
+		{0},
+		{0},
+		NULL,
+		msm_vidc_set_signal_color_info
+	}
 };
 
 /* Default UBWC config for LPDDR5 */
