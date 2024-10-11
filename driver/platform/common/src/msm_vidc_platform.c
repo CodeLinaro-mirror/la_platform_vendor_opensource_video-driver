@@ -614,11 +614,13 @@ void msm_vidc_ddr_ubwc_config(
 		d_vpr_e("Failed to get ddr type, use LPDDR5\n");
 #endif
 
+	if (platform_data->vpu_ver == VPU_VERSION_IRIS2_1PIPE) {
+		ddr_type = DDR_TYPE_LPDDR4X;
+	}
 	if (platform_data->ubwc_config &&
 		(ddr_type == DDR_TYPE_LPDDR4 ||
 		 ddr_type == DDR_TYPE_LPDDR4X))
 		platform_data->ubwc_config->highest_bank_bit = hbb_override_val;
-
 	d_vpr_h("DDR Type 0x%x hbb 0x%x\n",
 		ddr_type, platform_data->ubwc_config ?
 		platform_data->ubwc_config->highest_bank_bit : -1);
