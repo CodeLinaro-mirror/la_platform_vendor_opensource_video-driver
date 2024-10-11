@@ -602,6 +602,7 @@ void msm_vidc_ddr_ubwc_config(
 	struct msm_vidc_platform_data *platform_data, u32 hbb_override_val)
 {
 	uint32_t ddr_type = DDR_TYPE_LPDDR5;
+	struct device_node *mem_node;
 
 	if (!platform_data || !platform_data->ubwc_config) {
 		d_vpr_e("%s: invalid params\n", __func__);
@@ -614,11 +615,13 @@ void msm_vidc_ddr_ubwc_config(
 		d_vpr_e("Failed to get ddr type, use LPDDR5\n");
 #endif
 
+	mem_node = of_find_node_by_path("/memory");
+	of_property_read_u32(mem_node, "ddr_device_type", &ddr_type);
+
 	if (platform_data->ubwc_config &&
 		(ddr_type == DDR_TYPE_LPDDR4 ||
 		 ddr_type == DDR_TYPE_LPDDR4X))
 		platform_data->ubwc_config->highest_bank_bit = hbb_override_val;
-
 	d_vpr_h("DDR Type 0x%x hbb 0x%x\n",
 		ddr_type, platform_data->ubwc_config ?
 		platform_data->ubwc_config->highest_bank_bit : -1);
