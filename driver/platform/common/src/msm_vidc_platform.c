@@ -27,6 +27,9 @@
 #if defined(CONFIG_MSM_VIDC_KHAJE)
 #include "msm_vidc_khaje.h"
 #endif
+#if defined(CONFIG_MSM_VIDC_SCUBA)
+#include "msm_vidc_scuba.h"
+#endif
 #if defined(CONFIG_MSM_VIDC_MONACO)
 #include "msm_vidc_monaco.h"
 #endif
@@ -233,6 +236,15 @@ static int msm_vidc_deinit_platform_variant(struct msm_vidc_core *core, struct d
 	}
 #endif
 
+#if defined(CONFIG_MSM_VIDC_SCUBA)
+	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-scuba")) {
+		rc = msm_vidc_deinit_platform_scuba(core, dev);
+		if (rc)
+			d_vpr_e("%s: failed with %d\n", __func__, rc);
+		return rc;
+	}
+#endif
+
 #if defined(CONFIG_MSM_VIDC_MONACO)
 	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-monaco")) {
 		rc = msm_vidc_deinit_platform_monaco(core, dev);
@@ -335,16 +347,19 @@ static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct dev
 		return rc;
 	}
 #endif
-
-#if defined(CONFIG_MSM_VIDC_KHAJE)
-	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-khaje")) {
-		rc = msm_vidc_init_platform_khaje(core, dev);
+#if defined(CONFIG_MSM_VIDC_SCUBA)
+	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-scuba")) {
+		rc = msm_vidc_init_platform_scuba(core, dev);
 		if (rc) {
-			d_vpr_e("%s: failed with %d\n", __func__, rc);
+			d_vpr_e("%s: failed msm-vidc-scuba with %d\n",
+				__func__, rc);
 			return rc;
 		}
 	}
-	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-scuba")) {
+#endif
+
+#if defined(CONFIG_MSM_VIDC_KHAJE)
+	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-khaje")) {
 		rc = msm_vidc_init_platform_khaje(core, dev);
 		if (rc) {
 			d_vpr_e("%s: failed with %d\n", __func__, rc);
@@ -379,6 +394,7 @@ static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct dev
 		return rc;
 	}
 #endif
+
 	return rc;
 }
 
@@ -488,6 +504,7 @@ int msm_vidc_init_platform(struct platform_device *pdev)
 	int rc = 0;
 	struct msm_vidc_platform *platform = NULL;
 	struct msm_vidc_core *core;
+
 	if (!pdev) {
 		d_vpr_e("%s: invalid params\n", __func__);
 		return -EINVAL;
@@ -522,6 +539,7 @@ int msm_vidc_init_platform(struct platform_device *pdev)
 	rc = msm_vidc_init_vpu(core, &pdev->dev);
 	if (rc)
 		return rc;
+
 	return rc;
 }
 
