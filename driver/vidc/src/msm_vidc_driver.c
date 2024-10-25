@@ -2243,7 +2243,16 @@ int msm_vidc_get_control(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 		rc = msm_vidc_get_fence_fd(inst, &ctrl->val);
 		if (!rc)
 			i_vpr_l(inst, "%s: fence fd: %d\n", __func__, ctrl->val);
-		break;	
+		break;
+	case V4L2_CID_MPEG_VIDEO_H264_LEVEL:
+	case V4L2_CID_MPEG_VIDEO_HEVC_LEVEL:
+		ctrl->val = inst->capabilities->cap[LEVEL].value;
+		i_vpr_h(inst, "%s: level: %d\n", __func__, ctrl->val);
+		break;
+	case V4L2_CID_MPEG_VIDEO_HEVC_TIER:
+		ctrl->val = inst->capabilities->cap[HEVC_TIER].value;
+		i_vpr_h(inst, "%s: hevc_tier: %d\n", __func__, ctrl->val);
+		break;
 	default:
 		break;
 	}

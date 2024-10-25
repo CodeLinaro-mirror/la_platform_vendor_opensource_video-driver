@@ -320,7 +320,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v0[] = {
 		0,
 		HFI_PROP_FRAME_RATE,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT,
-		{0}, {0},
+		{0}, {LEVEL},
 		NULL, msm_vidc_set_q16},
 
 	{FRAME_RATE, DEC, CODECS_ALL,
@@ -486,7 +486,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v0[] = {
 		HFI_PROP_TOTAL_BITRATE,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
 			CAP_FLAG_DYNAMIC_ALLOWED,
-		{ENH_LAYER_COUNT, BITRATE_MODE}, {PEAK_BITRATE},
+		{ENH_LAYER_COUNT, BITRATE_MODE}, {PEAK_BITRATE, LEVEL},
 		msm_vidc_adjust_bitrate, msm_vidc_set_bitrate},
 
 	{BITRATE_MODE, ENC, H264,
@@ -711,7 +711,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v0[] = {
 		HFI_PROP_BITRATE_BOOST,
 		CAP_FLAG_OUTPUT_PORT,
 		{BITRATE_MODE, MIN_QUALITY},
-		{0},
+		{LEVEL},
 		msm_vidc_adjust_bitrate_boost,
 		msm_vidc_set_vbr_related_properties},
 
@@ -909,14 +909,18 @@ static struct msm_platform_inst_capability instance_data_parrot_v0[] = {
 		V4L2_MPEG_VIDEO_H264_HIERARCHICAL_CODING_P,
 		V4L2_CID_MPEG_VIDEO_H264_HIERARCHICAL_CODING_TYPE,
 		HFI_PROP_LAYER_ENCODING_TYPE,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
+		{0}, {LEVEL}
+		},
 
 	{LAYER_ENABLE, ENC, H264,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
 		1, V4L2_MPEG_MSM_VIDC_DISABLE,
 		V4L2_CID_MPEG_VIDEO_H264_HIERARCHICAL_CODING,
 		HFI_PROP_LAYER_ENCODING_TYPE,
-		CAP_FLAG_OUTPUT_PORT},
+		CAP_FLAG_OUTPUT_PORT,
+		{0}, {LEVEL}
+		},
 
 	{ENH_LAYER_COUNT, ENC, HEVC,
 		0, 5, 1, 0,
@@ -935,7 +939,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v0[] = {
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
 			CAP_FLAG_DYNAMIC_ALLOWED,
 		{BITRATE_MODE, META_EVA_STATS},
-		{GOP_SIZE, B_FRAME, BIT_RATE, MIN_QUALITY},
+		{GOP_SIZE, B_FRAME, BIT_RATE, MIN_QUALITY, LEVEL},
 		msm_vidc_adjust_layer_count, msm_vidc_set_layer_count_and_type},
 
 	/*
@@ -1229,9 +1233,9 @@ static struct msm_platform_inst_capability instance_data_parrot_v0[] = {
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
+		{BIT_RATE},
 		{0},
-		{0},
-		NULL, msm_vidc_set_level},
+		msm_vidc_adjust_level_tier, msm_vidc_set_level},
 
 	{LEVEL, DEC, HEVC|HEIC,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
@@ -1268,9 +1272,9 @@ static struct msm_platform_inst_capability instance_data_parrot_v0[] = {
 		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
+		{BIT_RATE},
 		{0},
-		{0},
-		NULL, msm_vidc_set_level},
+		msm_vidc_adjust_level_tier, msm_vidc_set_level},
 
 	/* TODO: Bring the VP9 Level upstream GKI change, and level cap here:
 	 *	go/videogki
@@ -1875,7 +1879,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v1[] = {
 		0,
 		HFI_PROP_FRAME_RATE,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT,
-		{0}, {0},
+		{0}, {LEVEL},
 		NULL, msm_vidc_set_q16},
 
 	{FRAME_RATE, DEC, CODECS_ALL,
@@ -2031,7 +2035,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v1[] = {
 		HFI_PROP_TOTAL_BITRATE,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
 			CAP_FLAG_DYNAMIC_ALLOWED,
-		{ENH_LAYER_COUNT, BITRATE_MODE}, {PEAK_BITRATE},
+		{ENH_LAYER_COUNT, BITRATE_MODE}, {PEAK_BITRATE, LEVEL},
 		msm_vidc_adjust_bitrate, msm_vidc_set_bitrate},
 
 	{BITRATE_MODE, ENC, H264,
@@ -2256,7 +2260,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v1[] = {
 		HFI_PROP_BITRATE_BOOST,
 		CAP_FLAG_OUTPUT_PORT,
 		{BITRATE_MODE, MIN_QUALITY},
-		{0},
+		{LEVEL},
 		msm_vidc_adjust_bitrate_boost,
 		msm_vidc_set_vbr_related_properties},
 
@@ -2454,14 +2458,18 @@ static struct msm_platform_inst_capability instance_data_parrot_v1[] = {
 		V4L2_MPEG_VIDEO_H264_HIERARCHICAL_CODING_P,
 		V4L2_CID_MPEG_VIDEO_H264_HIERARCHICAL_CODING_TYPE,
 		HFI_PROP_LAYER_ENCODING_TYPE,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
+		{0}, {LEVEL}
+		},
 
 	{LAYER_ENABLE, ENC, H264,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
 		1, V4L2_MPEG_MSM_VIDC_DISABLE,
 		V4L2_CID_MPEG_VIDEO_H264_HIERARCHICAL_CODING,
 		HFI_PROP_LAYER_ENCODING_TYPE,
-		CAP_FLAG_OUTPUT_PORT},
+		CAP_FLAG_OUTPUT_PORT,
+		{0}, {LEVEL}
+		},
 
 	{ENH_LAYER_COUNT, ENC, HEVC,
 		0, 5, 1, 0,
@@ -2480,7 +2488,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v1[] = {
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
 			CAP_FLAG_DYNAMIC_ALLOWED,
 		{BITRATE_MODE, META_EVA_STATS},
-		{GOP_SIZE, B_FRAME, BIT_RATE, MIN_QUALITY},
+		{GOP_SIZE, B_FRAME, BIT_RATE, MIN_QUALITY, LEVEL},
 		msm_vidc_adjust_layer_count, msm_vidc_set_layer_count_and_type},
 
 	/*
@@ -2772,9 +2780,9 @@ static struct msm_platform_inst_capability instance_data_parrot_v1[] = {
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
+		{BIT_RATE},
 		{0},
-		{0},
-		NULL, msm_vidc_set_level},
+		msm_vidc_adjust_level_tier, msm_vidc_set_level},
 
 	{LEVEL, DEC, HEVC|HEIC,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
@@ -2810,9 +2818,9 @@ static struct msm_platform_inst_capability instance_data_parrot_v1[] = {
 		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
+		{BIT_RATE},
 		{0},
-		{0},
-		NULL, msm_vidc_set_level},
+		msm_vidc_adjust_level_tier, msm_vidc_set_level},
 
 	/* TODO: Bring the VP9 Level upstream GKI change, and level cap here:
 	 *	go/videogki
@@ -3415,7 +3423,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v2[] = {
 		0,
 		HFI_PROP_FRAME_RATE,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT,
-		{0}, {0},
+		{0}, {LEVEL},
 		NULL, msm_vidc_set_q16},
 
 	{FRAME_RATE, DEC, CODECS_ALL,
@@ -3571,7 +3579,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v2[] = {
 		HFI_PROP_TOTAL_BITRATE,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
 			CAP_FLAG_DYNAMIC_ALLOWED,
-		{ENH_LAYER_COUNT, BITRATE_MODE}, {PEAK_BITRATE},
+		{ENH_LAYER_COUNT, BITRATE_MODE}, {PEAK_BITRATE, LEVEL},
 		msm_vidc_adjust_bitrate, msm_vidc_set_bitrate},
 
 	{BITRATE_MODE, ENC, H264,
@@ -3796,7 +3804,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v2[] = {
 		HFI_PROP_BITRATE_BOOST,
 		CAP_FLAG_OUTPUT_PORT,
 		{BITRATE_MODE, MIN_QUALITY},
-		{0},
+		{LEVEL},
 		msm_vidc_adjust_bitrate_boost,
 		msm_vidc_set_vbr_related_properties},
 
@@ -3994,14 +4002,18 @@ static struct msm_platform_inst_capability instance_data_parrot_v2[] = {
 		V4L2_MPEG_VIDEO_H264_HIERARCHICAL_CODING_P,
 		V4L2_CID_MPEG_VIDEO_H264_HIERARCHICAL_CODING_TYPE,
 		HFI_PROP_LAYER_ENCODING_TYPE,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
+		{0}, {LEVEL}
+		},
 
 	{LAYER_ENABLE, ENC, H264,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
 		1, V4L2_MPEG_MSM_VIDC_DISABLE,
 		V4L2_CID_MPEG_VIDEO_H264_HIERARCHICAL_CODING,
 		HFI_PROP_LAYER_ENCODING_TYPE,
-		CAP_FLAG_OUTPUT_PORT},
+		CAP_FLAG_OUTPUT_PORT,
+		{0}, {LEVEL}
+		},
 
 	{ENH_LAYER_COUNT, ENC, HEVC,
 		0, 5, 1, 0,
@@ -4020,7 +4032,7 @@ static struct msm_platform_inst_capability instance_data_parrot_v2[] = {
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
 			CAP_FLAG_DYNAMIC_ALLOWED,
 		{BITRATE_MODE, META_EVA_STATS},
-		{GOP_SIZE, B_FRAME, BIT_RATE, MIN_QUALITY},
+		{GOP_SIZE, B_FRAME, BIT_RATE, MIN_QUALITY, LEVEL},
 		msm_vidc_adjust_layer_count, msm_vidc_set_layer_count_and_type},
 
 	/*
@@ -4308,9 +4320,9 @@ static struct msm_platform_inst_capability instance_data_parrot_v2[] = {
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
+		{BIT_RATE},
 		{0},
-		{0},
-		NULL, msm_vidc_set_level},
+		msm_vidc_adjust_level_tier, msm_vidc_set_level},
 
 	{LEVEL, DEC, HEVC|HEIC,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
@@ -4345,9 +4357,9 @@ static struct msm_platform_inst_capability instance_data_parrot_v2[] = {
 		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
+		{BIT_RATE},
 		{0},
-		{0},
-		NULL, msm_vidc_set_level},
+		msm_vidc_adjust_level_tier, msm_vidc_set_level},
 
 	/* TODO: Bring the VP9 Level upstream GKI change, and level cap here:
 	 *	go/videogki
