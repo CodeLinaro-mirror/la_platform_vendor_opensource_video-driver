@@ -2209,6 +2209,20 @@ int msm_vidc_get_control(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 			inst->buffers.input.extra_count;
 		i_vpr_h(inst, "g_min: input buffers %d\n", ctrl->val);
 		break;
+	case LEVEL:
+		if (is_encode_session(inst) && inst->capabilities->cap[LEVEL].adjust)
+			inst->capabilities->cap[LEVEL].adjust(inst, ctrl);
+		ctrl->val = inst->capabilities->cap[LEVEL].value;
+		i_vpr_h(inst, "get_control: level %d\n", ctrl->val);
+		break;
+	case PROFILE:
+		ctrl->val = inst->capabilities->cap[PROFILE].value;
+		i_vpr_h(inst, "get_control: profile %d\n", ctrl->val);
+		break;
+	case HEVC_TIER:
+		ctrl->val = inst->capabilities->cap[HEVC_TIER].value;
+		i_vpr_h(inst, "get_control: hevc_tier %d\n", ctrl->val);
+		break;
 	case FILM_GRAIN:
 		ctrl->val = inst->capabilities->cap[FILM_GRAIN].value;
 		i_vpr_h(inst, "%s: film grain present: %d\n",
@@ -2217,8 +2231,7 @@ int msm_vidc_get_control(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 	case FENCE_FD:
 		rc = msm_vidc_get_fence_fd(inst, &ctrl->val);
 		if (!rc)
-			i_vpr_l(inst, "%s: fence fd: %d\n",
-				__func__, ctrl->val);
+			i_vpr_l(inst, "%s: fence fd: %d\n", __func__, ctrl->val);
 		break;
 	default:
 		i_vpr_e(inst, "invalid ctrl %s id %d\n",
