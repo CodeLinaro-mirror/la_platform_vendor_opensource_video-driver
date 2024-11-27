@@ -48,6 +48,7 @@ static inline bool is_video_device(struct device *dev)
 		of_device_is_compatible(dev->of_node, "qcom,sm8750-vidc") ||
 		of_device_is_compatible(dev->of_node, "qcom,sm8750-vidc-v2") ||
 		of_device_is_compatible(dev->of_node, "qcom,canoe-vidc") ||
+		of_device_is_compatible(dev->of_node, "qcom,seraph-vidc") ||
 		of_device_is_compatible(dev->of_node, "qcom,niobe-vidc"));
 }
 
@@ -57,6 +58,7 @@ static inline bool is_video_context_bank_device_node(struct device_node *of_node
 		of_device_is_compatible(of_node, "qcom,vidc,cb-sec-bitstream") ||
 		of_device_is_compatible(of_node, "qcom,vidc,cb-sec-non-pxl") ||
 		of_device_is_compatible(of_node, "qcom,vidc,cb-ns") ||
+		of_device_is_compatible(of_node, "qcom,vidc,cb-ns-bitstream") ||
 		of_device_is_compatible(of_node, "qcom,vidc,cb-ns-pxl"));
 }
 
@@ -129,11 +131,13 @@ static const struct of_device_id msm_vidc_dt_match[] = {
 	{.compatible = "qcom,sm8750-vidc"},
 	{.compatible = "qcom,sm8750-vidc-v2"},
 	{.compatible = "qcom,canoe-vidc"},
+	{.compatible = "qcom,seraph-vidc"},
 	{.compatible = "qcom,cliffs-vidc"},
 	{.compatible = "qcom,volcano-vidc"},
 	{.compatible = "qcom,niobe-vidc"},
 	{.compatible = "qcom,vidc,cb-ns-pxl"},
 	{.compatible = "qcom,vidc,cb-ns"},
+	{.compatible = "qcom,vidc,cb-ns-bitstream"},
 	{.compatible = "qcom,vidc,cb-sec-non-pxl"},
 	{.compatible = "qcom,vidc,cb-sec-bitstream"},
 	{.compatible = "qcom,vidc,cb-sec-pxl"},
