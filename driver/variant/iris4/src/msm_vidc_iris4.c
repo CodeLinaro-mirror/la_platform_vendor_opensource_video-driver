@@ -451,11 +451,11 @@ static int __power_off_iris4_apv(struct msm_vidc_core *core)
 	 * add APV TOP IDLE STATUS check before collapsing APV per HPG update
 	 * poll for APV TOP IDLE STATUS -> HPG 3.4.4.2
 	 */
-	/*rc = __read_register_with_poll_timeout(core, WRAPPER_IRIS_APV_TOP_IDLE_STATUS_IRIS4,
-			0x11F, 0x11F, 2000, 20000);
-	if (rc)
-		d_vpr_e("%s: APV_TOP_IDLE_STATUS (%d) is not idle (%#x)\n",
-			__func__, value);*/
+	//rc = __read_register_with_poll_timeout(core, WRAPPER_IRIS_APV_TOP_IDLE_STATUS_IRIS4,
+	//		0x11F, 0x11F, 2000, 20000);
+	//if (rc)
+	//	d_vpr_e("%s: APV_TOP_IDLE_STATUS (%d) is not idle (%#x)\n",
+	//		__func__, value);
 
 	/* set MNoC to low power, set PD_NOC_QREQ (bit 0) */
 	rc = __write_register_masked(core, AON_WRAPPER_MVP_NOC_LPI_CONTROL_IRIS4,
