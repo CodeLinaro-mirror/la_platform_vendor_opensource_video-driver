@@ -1817,6 +1817,16 @@ int msm_vidc_decide_core_and_power_mode_ar50(struct msm_vidc_inst *inst)
 		/* Move all instances to LP mode and return */
 		inst->clk_data.core_id = min_lp_core_id;
 		msm_vidc_move_core_to_power_save_mode(core, min_lp_core_id);
+	}else if(inst->session_type == MSM_VIDC_ENCODER && is_realtime_session(inst)){
+		if ( inst->core_adjusted == false ){
+			rc = adjust_core_load(inst);
+			if (rc) {
+				s_vpr_e(inst->sid, "%s:Failed to adjust core load\n",__func__);
+				return rc;
+			}
+		}
+		/*Assign the core with adjusted core currently assiging with min core id*/
+		inst->clk_data.core_id = min_core_id;
 	} else {
 		s_vpr_e(inst->sid, "Core cannot support this load\n");
 		msm_print_core_status(core, VIDC_CORE_ID_1, inst->sid);
