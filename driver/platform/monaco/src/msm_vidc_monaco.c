@@ -47,13 +47,13 @@ static struct msm_platform_core_capability core_data_monaco[] = {
 	{ENC_CODECS, H264|HEVC|HEIC},
 	{DEC_CODECS, H264|HEVC|VP9},
 	{MAX_SESSION_COUNT, 16},
-	{MAX_NUM_720P_SESSIONS, 16},
-	{MAX_NUM_1080P_SESSIONS, 8},
+	{MAX_NUM_720P_SESSIONS, 4},
+	{MAX_NUM_1080P_SESSIONS, 2},
 	{MAX_NUM_4K_SESSIONS, 0},
 	{MAX_NUM_8K_SESSIONS, 0},
-	{MAX_SECURE_SESSION_COUNT, 3},
-	{MAX_RT_MBPF, 8160},	/* (1920x1088)/256 */
-	{MAX_MBPF, 65280}, /* ((3840x2176)/256) x 2 */
+	{MAX_SECURE_SESSION_COUNT, 0},
+	{MAX_RT_MBPF, 16320},	/* (1920x1088)/256*2 */
+	{MAX_MBPF, 32640}, /* ((1920x1088)/256)*4 */
 	{MAX_MBPS, 489600},	/* ((1088x1920)/256)@60fps */
 	{MAX_IMAGE_MBPF, 262144},
 	{MAX_MBPF_HQ, 8160}, /* ((1920x1088)/256) */
@@ -61,7 +61,7 @@ static struct msm_platform_core_capability core_data_monaco[] = {
 	{MAX_MBPF_B_FRAME, 8160}, /* (1920x1088)/256 */
 	{MAX_MBPS_B_FRAME, 244800}, /* (1920*1088)/256 MBs@30fps */
 	{MAX_MBPS_ALL_INTRA, 244800}, /* 1920*1088/256 MBs@30fps */
-	{MAX_ENH_LAYER_COUNT, 6},
+	{MAX_ENH_LAYER_COUNT, 5},
 	{NUM_VPP_PIPE, 1},
 	{SW_PC, 1},
 	{FW_UNLOAD, 0},
