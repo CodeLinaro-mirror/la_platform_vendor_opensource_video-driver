@@ -27,6 +27,7 @@ struct msm_vidc_session_ops {
 	int (*decide_work_route)(struct msm_vidc_inst *inst);
 	int (*decide_work_mode)(struct msm_vidc_inst *inst);
 	int (*decide_quality_mode)(struct msm_vidc_inst *inst);
+	int (*decide_scaling)(struct msm_vidc_inst *inst);
 	int (*buffer_size)(struct msm_vidc_inst *inst, enum msm_vidc_buffer_type type);
 	int (*min_count)(struct msm_vidc_inst *inst, enum msm_vidc_buffer_type type);
 	int (*extra_count)(struct msm_vidc_inst *inst, enum msm_vidc_buffer_type type);
@@ -76,7 +77,7 @@ struct msm_vidc_inst {
 							 enum msm_vidc_event event,
 							 void *data);
 	enum msm_vidc_sub_state            sub_state;
-	char                               sub_state_name[MAX_NAME_LENGTH];
+	char                               sub_state_name[MAX_MSM_VIDC_NAME_LENGTH];
 	enum msm_vidc_domain_type          domain;
 	enum msm_vidc_codec_type           codec;
 	void                              *core;
