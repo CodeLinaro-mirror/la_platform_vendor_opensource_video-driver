@@ -1272,6 +1272,12 @@ int msm_vidc_decide_work_route_iris2(struct msm_vidc_inst *inst)
 	is_legacy_cbr = inst->clk_data.is_legacy_cbr;
 	pdata.video_work_route = inst->core->platform_data->num_vpp_pipes;
 
+	if(inst->pframe_size)
+	{
+		pdata.video_work_route = 1;
+		goto decision_done;
+	}
+
 	if (vpu == VPU_VERSION_IRIS2_1) {
 		pdata.video_work_route = 1;
 		goto decision_done;
@@ -1821,7 +1827,7 @@ int msm_vidc_decide_core_and_power_mode_ar50(struct msm_vidc_inst *inst)
 		s_vpr_e(inst->sid, "Core cannot support this load\n");
 		msm_print_core_status(core, VIDC_CORE_ID_1, inst->sid);
 		msm_print_core_status(core, VIDC_CORE_ID_2, inst->sid);
-		return -EINVAL;
+		return -ENOMEM;
 	}
 decision_done:
 	core_info.video_core_enable_mask = inst->clk_data.core_id;
