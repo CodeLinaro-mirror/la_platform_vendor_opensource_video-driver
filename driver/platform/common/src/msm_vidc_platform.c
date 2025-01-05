@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include <linux/of_platform.h>
@@ -41,6 +41,9 @@
 #endif
 #if defined(CONFIG_MSM_VIDC_NEO)
 #include "msm_vidc_neo.h"
+#endif
+#if defined(CONFIG_MSM_VIDC_VIENNA)
+#include "msm_vidc_vienna.h"
 #endif
 #if defined(CONFIG_MSM_VIDC_IRIS2) || defined(CONFIG_MSM_VIDC_IRIS3)
 #include "msm_vidc_iris2.h"
@@ -282,6 +285,15 @@ static int msm_vidc_deinit_platform_variant(struct msm_vidc_core *core, struct d
 		return rc;
 	}
 #endif
+#if defined(CONFIG_MSM_VIDC_VIENNA)
+	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-vienna")) {
+		rc = msm_vidc_deinit_platform_vienna(core, dev);
+		if (rc)
+			d_vpr_e("%s: failed msm-vidc-vienna with %d\n",
+				__func__, rc);
+		return rc;
+	}
+#endif
 
 	return rc;
 }
@@ -398,6 +410,15 @@ static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct dev
 		rc = msm_vidc_init_platform_monaco(core, dev);
 		if (rc)
 			d_vpr_e("%s: failed with %d\n", __func__, rc);
+		return rc;
+	}
+#endif
+#if defined(CONFIG_MSM_VIDC_VIENNA)
+	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-vienna")) {
+		rc = msm_vidc_init_platform_vienna(core, dev);
+		if (rc)
+			d_vpr_e("%s: failed msm-vidc-vienna with %d\n",
+				__func__, rc);
 		return rc;
 	}
 #endif
