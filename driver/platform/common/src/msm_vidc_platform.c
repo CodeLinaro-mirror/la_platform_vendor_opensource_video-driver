@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022, 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022, 2024-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <soc/qcom/of_common.h>
@@ -292,6 +292,10 @@ static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct dev
 				platform_data[i].value = 32;
 			else if (platform_data[i].type == MAX_NUM_1080P_SESSIONS)
 				platform_data[i].value = 32;
+			else if (platform_data[i].type == MAX_MBPF) {
+				/* (8192 * 8192) / 256 * 2 */
+				platform_data[i].value = 524288;
+			}
 		}
 		inst_cap_data = core->platform->data.inst_cap_data;
 		inst_cap_data_size = core->platform->data.inst_cap_data_size;
