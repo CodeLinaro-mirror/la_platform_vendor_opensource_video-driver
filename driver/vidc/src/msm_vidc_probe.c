@@ -318,7 +318,7 @@ exit:
 	return rc;
 }
 
-static int msm_vidc_remove(struct platform_device* pdev)
+static int __remove(struct platform_device* pdev)
 {
 	struct msm_vidc_core* core;
 
@@ -362,6 +362,18 @@ static int msm_vidc_remove(struct platform_device* pdev)
 
 	return 0;
 }
+
+#if (KERNEL_VERSION(6, 10, 0) <= LINUX_VERSION_CODE)
+static void msm_vidc_remove(struct platform_device *pdev)
+{
+	__remove(pdev);
+}
+#else
+static int msm_vidc_remove(struct platform_device *pdev)
+{
+	return __remove(pdev);
+}
+#endif
 
 static int msm_vidc_probe_video_device(struct platform_device *pdev)
 {
