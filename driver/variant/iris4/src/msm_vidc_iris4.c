@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2024, Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2025, Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/delay.h>
@@ -337,8 +337,8 @@ static int __program_bootup_registers_iris4(struct msm_vidc_core *core)
 			return rc;
 	}
 
-	/* Based on below register programming, firmware WA for sm8750-v2 would be enabled */
-	if (of_device_is_compatible(dev->of_node, "qcom,sm8750-vidc-v2")) {
+	/* Based on below register programming, firmware WA for canoe-v2 would be enabled */
+	if (of_device_is_compatible(dev->of_node, "qcom,canoe-vidc-v2")) {
 		rc = __write_register(core, WRAPPER_IRIS_VCODEC_VPU_WRAPPER_SPARE_0_IRIS4, 0x1);
 		if (rc)
 			return rc;
@@ -961,6 +961,10 @@ static int __power_off_iris4(struct msm_vidc_core *core)
 	if (rc)
 		d_vpr_e("%s: resetting core clocks failed\n", __func__);
 
+	rc = call_res_op(core, gdsc_sw_ctrl, core);
+	if (rc)
+		d_vpr_e("%s: gdsc_sw_ctrl failed\n", __func__);
+
 	if (__power_off_iris4_apv(core))
 		d_vpr_e("%s: failed to power off apv\n", __func__);
 
@@ -1353,6 +1357,7 @@ static int __sw_ctrl_gdsc_iris4(struct msm_vidc_core *core)
 
 static int __switch_gdsc_mode_iris4(struct msm_vidc_core *core, bool sw_mode)
 {
+#if (KERNEL_VERSION(6, 11, 0) <= LINUX_VERSION_CODE)
 	struct power_domain_info *pdinfo = NULL;
 	int rc;
 
@@ -1381,6 +1386,7 @@ static int __switch_gdsc_mode_iris4(struct msm_vidc_core *core, bool sw_mode)
 			d_vpr_h("%s: moved power domain %s into HW ctrl\n", __func__, pdinfo->name);
 		}
 	}
+#endif
 
 	return 0;
 }
@@ -1536,11 +1542,55 @@ decision_done:
 	return 0;
 }
 
-static int msm_vidc_decide_scaling_iris4(struct msm_vidc_inst *inst)
+static int msm_vidc_update_scaling_iris4(struct msm_vidc_inst *inst,
+		u32 aspect_ratio_w, u32 aspect_ratio_h)
 {
 	u32 wxh_contraint = 32;
-	u32 aspect_ratio_w = 0, aspect_ratio_h = 0;
+	u32 input_width, input_height;
 	u32 factor, factor_w, factor_h;
+
+	input_width = inst->fmts[INPUT_PORT].fmt.pix_mp.width;
+	input_height = inst->fmts[INPUT_PORT].fmt.pix_mp.height;
+
+	/* adjust compose width and height based on video hardware requirements */
+	factor_w = inst->compose.width / (aspect_ratio_w * wxh_contraint);
+
+	if ((factor_w * (aspect_ratio_w * wxh_contraint)) < inst->compose.width)
+		factor_w++;
+	factor_h = inst->compose.height / (aspect_ratio_h * wxh_contraint);
+	if ((factor_h * (aspect_ratio_h * wxh_contraint)) < inst->compose.height)
+		factor_h++;
+	factor = (factor_w < factor_h) ? factor_w : factor_h;
+
+	inst->compose.top = 0;
+	inst->compose.left = 0;
+	inst->compose.width = factor * aspect_ratio_w * wxh_contraint;
+	inst->compose.height = factor * aspect_ratio_h * wxh_contraint;
+
+	/* disable downscaling if updated compose >= input width/height */
+	if (inst->compose.width >= input_width ||
+	    inst->compose.height >= input_height) {
+		i_vpr_h(inst, "%s: compose wxh %ux%u >= input wxh %ux%u\n",
+			__func__, inst->compose.width, inst->compose.height,
+			input_width, input_height);
+		return -EINVAL;
+	}
+
+	/* disable downscaling if updated compose is beyond 1/8 of input */
+	if (inst->compose.width < input_width / 8 ||
+	    inst->compose.height < input_height / 8) {
+		i_vpr_h(inst, "%s: compose wxh %ux%u < 1/8 of input wxh %ux%u\n",
+			__func__, inst->compose.width, inst->compose.height,
+			input_width, input_height);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+static int msm_vidc_decide_scaling_iris4(struct msm_vidc_inst *inst)
+{
+	u32 aspect_ratio_w = 0, aspect_ratio_h = 0;
 	u32 input_width, input_height;
 
 	/* check if scaling requested */
@@ -1634,34 +1684,18 @@ static int msm_vidc_decide_scaling_iris4(struct msm_vidc_inst *inst)
 			aspect_ratio_h = 19;
 		}
 	}
-
 	if (!aspect_ratio_w || !aspect_ratio_h) {
 		i_vpr_h(inst, "%s: aspect ratio %ux%u\n",
 			__func__, aspect_ratio_w, aspect_ratio_h);
 		goto exit;
 	}
 
-	/* adjust compose width and height based on video hardware requirements */
-	factor_w = (inst->compose.width +
-			((aspect_ratio_w * wxh_contraint) >> 1)) /
-			(aspect_ratio_w * wxh_contraint);
-	factor_h = (inst->compose.height +
-			((aspect_ratio_h * wxh_contraint) >> 1)) /
-			(aspect_ratio_h * wxh_contraint);
-	factor = (factor_w > factor_h) ? factor_w : factor_h;
-	inst->compose.top = 0;
-	inst->compose.left = 0;
-	inst->compose.width = factor * aspect_ratio_w * wxh_contraint;
-	inst->compose.height = factor * aspect_ratio_h * wxh_contraint;
-
-	/* disable downscaling if updated compose >= input width/height */
-	if (inst->compose.width >= input_width ||
-	    inst->compose.height >= input_height)
+	if (msm_vidc_update_scaling_iris4(inst, aspect_ratio_w, aspect_ratio_h))
 		goto exit;
 
 	i_vpr_h(inst,
-		"scaling enabled, input wxh: %dx%d, compose wxh: %dx%d\n",
-		input_width, input_height,
+		"%s: scaling enabled, input wxh: %dx%d, compose wxh: %dx%d\n",
+		__func__, input_width, input_height,
 		inst->compose.width, inst->compose.height);
 
 	return 0;
@@ -1672,8 +1706,9 @@ exit:
 	inst->compose.width = inst->crop.width;
 	inst->compose.height = inst->crop.height;
 	msm_vidc_update_cap_value(inst, SCALE_ENABLE, 0, __func__);
-	i_vpr_h(inst, "scaling disabled, input wxh: %dx%d, compose wxh: %dx%d\n",
-		input_width, input_height,
+	i_vpr_h(inst,
+		"%s: scaling disabled, input wxh: %dx%d, compose wxh: %dx%d\n",
+		__func__, input_width, input_height,
 		inst->compose.width, inst->compose.height);
 
 	return 0;
