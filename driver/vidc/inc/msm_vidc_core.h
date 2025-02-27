@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #ifndef _MSM_VIDC_CORE_H_
@@ -15,6 +15,8 @@
 #include "resources.h"
 
 struct msm_vidc_core;
+struct msm_vidc_inst;
+enum msm_vidc_buffer_type;
 
 #define MAX_EVENTS   30
 
@@ -65,6 +67,11 @@ struct msm_vidc_core_power {
 	u64 bw_llcc;
 };
 
+struct msm_vidc_platform_ops {
+	u32 (*buffer_region)(struct msm_vidc_inst *inst,
+	        enum msm_vidc_buffer_type buffer_type, const char *func);
+};
+
 struct msm_vidc_core {
 	struct platform_device                *pdev;
 	struct msm_video_device                vdev[2];
@@ -83,6 +90,7 @@ struct msm_vidc_core {
 	char                                   sub_state_name[MAX_NAME_LENGTH];
 	struct mutex                           lock;
 	struct msm_vidc_platform              *platform;
+	struct msm_vidc_platform_ops          *platform_ops;
 	u32                                    intr_status;
 	u32                                    spur_count;
 	u32                                    reg_count;

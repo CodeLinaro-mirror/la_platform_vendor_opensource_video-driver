@@ -562,7 +562,7 @@ static int __init_reset_clocks(struct msm_vidc_core *core)
 	if (!rst_tbl || !rst_count) {
 		d_vpr_e("%s: invalid reset tbl %pK or count %d\n",
 			__func__, rst_tbl, rst_count);
-		return -EINVAL;
+		return 0;
 	}
 
 	/* allocate reset_set */

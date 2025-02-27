@@ -202,6 +202,7 @@ enum vpu_version {
 	VPU_VERSION_IRIS33 = 1,
 	VPU_VERSION_IRIS33_2P, // IRIS3 2 PIPE
 	VPU_VERSION_IRIS2_2P, // IRIS2 2 PIPE
+	VPU_VERSION_IRIS2_1, // IRIS2 1 PIPE
 };
 
 struct msm_vidc_platform_data {
@@ -353,6 +354,7 @@ int msm_vidc_adjust_brs(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_bitrate_boost(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_min_quality(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_enc_lowlatency_mode(void *instance, struct v4l2_ctrl *ctrl);
+int msm_vidc_adjust_dec_lowlatency_mode(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_session_priority(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_roi_info(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_all_intra(void *instance, struct v4l2_ctrl *ctrl);

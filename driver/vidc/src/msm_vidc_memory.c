@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include <linux/dma-buf.h>
 #include <linux/dma-heap.h>
 #include <linux/dma-mapping.h>
+#include <linux/vmalloc.h>
 
 #include "msm_vidc_memory.h"
 #include "msm_vidc_internal.h"
@@ -536,8 +537,8 @@ exit:
 	return rc;
 }
 
-static u32 msm_vidc_buffer_region(struct msm_vidc_inst *inst,
-	enum msm_vidc_buffer_type buffer_type)
+u32 msm_vidc_buffer_region(struct msm_vidc_inst *inst,
+	enum msm_vidc_buffer_type buffer_type, const char *func)
 {
 	return MSM_VIDC_NON_SECURE;
 }

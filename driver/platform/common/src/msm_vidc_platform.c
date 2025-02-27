@@ -22,6 +22,10 @@
 #include "hfi_property.h"
 #include "venus_hfi.h"
 
+#if defined(CONFIG_MSM_VIDC_YUPIK)
+#include "msm_vidc_yupik.h"
+#include "msm_vidc_iris2.h"
+#endif
 #if defined(CONFIG_MSM_VIDC_SUN)
 #include "msm_vidc_sun.h"
 #include "msm_vidc_iris35.h"
@@ -194,6 +198,10 @@ static struct vb2_mem_ops msm_vb2_mem_ops = {
 	.unmap_dmabuf                   = msm_vb2_unmap_dmabuf,
 };
 
+static struct msm_vidc_platform_ops msm_platform_ops = {
+	.buffer_region                  = msm_vidc_buffer_region,
+};
+
 static struct media_device_ops msm_v4l2_media_ops = {
 	.req_validate                   = msm_v4l2_request_validate,
 	.req_queue                      = msm_v4l2_request_queue,
@@ -215,6 +223,13 @@ static const struct msm_vidc_compat_handle compat_handle[] = {
 		.compat                     = "qcom,sm8650-vidc-v2",
 		.init_platform              = msm_vidc_init_platform_pineapple,
 		.init_iris                  = msm_vidc_init_iris33,
+	},
+#endif
+#if defined(CONFIG_MSM_VIDC_YUPIK)
+	{
+		.compat                     = "qcom,yupik-vidc",
+		.init_platform              = msm_vidc_init_platform_yupik,
+		.init_iris                  = msm_vidc_init_iris2,
 	},
 #endif
 #if defined(CONFIG_MSM_VIDC_SUN)
@@ -253,6 +268,7 @@ static int msm_vidc_init_ops(struct msm_vidc_core *core)
 	core->media_device_ops = &msm_v4l2_media_ops;
 	core->v4l2_m2m_ops = &msm_v4l2_m2m_ops;
 	core->mem_ops = get_mem_ops();
+	core->platform_ops = &msm_platform_ops;
 	if (!core->mem_ops) {
 		d_vpr_e("%s: invalid memory ops\n", __func__);
 		return -EINVAL;

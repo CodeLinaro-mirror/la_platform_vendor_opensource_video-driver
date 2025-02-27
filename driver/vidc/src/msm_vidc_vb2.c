@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include "msm_vidc_vb2.h"
@@ -385,7 +385,7 @@ int msm_vb2_queue_setup(struct vb2_queue *q,
 		return rc;
 	}
 
-	region = call_mem_op(core, buffer_region, inst, buffer_type);
+	region = call_platform_op(core, buffer_region, inst, buffer_type, __func__);
 	cb = msm_vidc_get_context_bank_for_region(core, region);
 	if (!cb) {
 		d_vpr_e("%s: Failed to get context bank device\n",

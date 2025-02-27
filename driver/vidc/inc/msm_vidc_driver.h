@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #ifndef _MSM_VIDC_DRIVER_H_
@@ -496,6 +496,8 @@ int msm_vidc_v4l2_fh_deinit(struct msm_vidc_inst *inst);
 int msm_vidc_vb2_queue_init(struct msm_vidc_inst *inst);
 int msm_vidc_vb2_queue_deinit(struct msm_vidc_inst *inst);
 int msm_vidc_get_control(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl);
+u32 msm_vidc_buffer_region(struct msm_vidc_inst *inst,
+        enum msm_vidc_buffer_type buffer_type, const char *func);
 struct msm_vidc_buffers *msm_vidc_get_buffers(struct msm_vidc_inst *inst,
 					      enum msm_vidc_buffer_type buffer_type,
 					      const char *func);
