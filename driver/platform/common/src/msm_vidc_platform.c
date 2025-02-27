@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022, 2024-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <soc/qcom/of_common.h>
@@ -246,6 +246,8 @@ static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct dev
 #if defined(CONFIG_MSM_VIDC_KALAMA)
 	struct msm_platform_core_capability *platform_data;
 	int i, num_platform_caps;
+	struct msm_platform_inst_capability *inst_cap_data;
+	int inst_cap_data_size;
 #endif
 	int rc = -EINVAL;
 
@@ -290,6 +292,21 @@ static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct dev
 				platform_data[i].value = 32;
 			else if (platform_data[i].type == MAX_NUM_1080P_SESSIONS)
 				platform_data[i].value = 32;
+			else if (platform_data[i].type == MAX_MBPF) {
+				/* (8192 * 8192) / 256 * 2 */
+				platform_data[i].value = 524288;
+			}
+		}
+		inst_cap_data = core->platform->data.inst_cap_data;
+		inst_cap_data_size = core->platform->data.inst_cap_data_size;
+		for (i = 0; i < inst_cap_data_size && i < INST_CAP_MAX; i++) {
+			if (inst_cap_data[i].cap_id == MBPF &&
+				inst_cap_data[i].domain == MSM_VIDC_ENCODER &&
+				inst_cap_data[i].codec & (MSM_VIDC_H264 | MSM_VIDC_HEVC)) {
+				/* (8192 * 8192) / 256 */
+				inst_cap_data[i].value = 262144;
+				inst_cap_data[i].max = 262144;
+			}
 		}
 	}
 #endif
