@@ -7,9 +7,11 @@
 #define _MSM_VIDC_H_
 
 #include <linux/videodev2.h>
-#include <linux/dma-buf-map.h>
+//#include <linux/dma-buf-map.h>
 #include "vidc/media/msm_vidc_utils.h"
 #include <media/media-device.h>
+#include <linux/version.h>
+#include <linux/iosys-map.h>
 
 #define HAL_BUFFER_MAX 0xe
 #define CVP_FRAME_RATE_MAX (60)
@@ -74,7 +76,11 @@ struct msm_smem {
 	unsigned long flags;
 	enum hal_buffer buffer_type;
 	struct dma_mapping_info mapping_info;
-	struct dma_buf_map dmabuf_map;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 16, 0))
+	struct iosys_map            dmabuf_map;
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+	struct dma_buf_map          dmabuf_map;
+#endif
 };
 
 enum smem_cache_ops {

@@ -13,6 +13,10 @@
 #include "msm_vidc_debug.h"
 #include "msm_vidc_resources.h"
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 16, 0))
+	MODULE_IMPORT_NS(DMA_BUF);
+#endif
+
 struct msm_vidc_buf_region_name {
 	enum msm_vidc_buffer_region region;
 	char *name;
