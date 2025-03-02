@@ -12,6 +12,47 @@
 #include "msm_vidc.h"
 #include "msm_vidc_debug.h"
 #include "msm_vidc_resources.h"
+#include <linux/iommu.h>
+#include <linux/version.h>
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 16, 0))
+	MODULE_IMPORT_NS(DMA_BUF);
+#endif
+static void * __cvp_dma_buf_vmap(struct dma_buf *dbuf)
+{
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0))
+	struct dma_buf_map map;
+#else
+	struct iosys_map map;
+#endif
+	void *dma_map;
+	int err;
+
+	err = dma_buf_vmap(dbuf, &map);
+	dma_map = err ? NULL : map.vaddr;
+	if (!dma_map)
+		printk(KERN_ERR"%s: map to kvaddr failed\n",__func__);
+
+	return dma_map;
+}
+
+static void __cvp_dma_buf_vunmap(struct dma_buf *dbuf, void *vaddr)
+{
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0))
+	struct dma_buf_map map = { \
+			.vaddr = vaddr, \
+			.is_iomem = false, \
+	};
+#else
+	struct iosys_map map = { \
+			.vaddr = vaddr, \
+			.is_iomem = false, \
+	};
+#endif
+	if (vaddr)
+		dma_buf_vunmap(dbuf, &map);
+}
+
 
 struct msm_vidc_buf_region_name {
 	enum msm_vidc_buffer_region region;
@@ -84,7 +125,7 @@ static int msm_dma_get_device_address(struct dma_buf *dbuf, unsigned long align,
 		attach->dma_map_attrs |= DMA_ATTR_SKIP_CPU_SYNC;
 		if (res->sys_cache_present)
 			attach->dma_map_attrs |=
-				DMA_ATTR_IOMMU_USE_UPSTREAM_HINT;
+				DMA_ATTR_SYS_CACHE;
 
 		table = dma_buf_map_attachment(attach, DMA_BIDIRECTIONAL);
 		if (IS_ERR_OR_NULL(table)) {
@@ -432,13 +473,13 @@ static int alloc_dma_mem(size_t size, u32 align, u32 flags,
 
 	if (map_kernel) {
 		dma_buf_begin_cpu_access(dbuf, DMA_BIDIRECTIONAL);
-		rc = dma_buf_vmap(dbuf, &mem->dmabuf_map);
+		mem->kvaddr = __cvp_dma_buf_vmap(dbuf);
 		if (rc) {
 			d_vpr_e("%s: kernel map failed\n", __func__);
 			rc = -EIO;
 			goto fail_map;
 		}
-		mem->kvaddr = mem->dmabuf_map.vaddr;
+		//mem->kvaddr = mem->dmabuf_map.vaddr;
 	}
 
 	s_vpr_h(sid,
@@ -475,7 +516,7 @@ static int free_dma_mem(struct msm_smem *mem, u32 sid)
 	}
 
 	if (mem->kvaddr) {
-		dma_buf_vunmap(dbuf, &mem->dmabuf_map);
+		__cvp_dma_buf_vunmap(mem->dma_buf, mem->kvaddr);
 		mem->kvaddr = NULL;
 		dma_buf_end_cpu_access(dbuf, DMA_BIDIRECTIONAL);
 	}
