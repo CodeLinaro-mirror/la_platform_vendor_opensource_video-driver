@@ -302,7 +302,7 @@ int create_pkt_cmd_sys_ubwc_config(
 		memcpy(&pkt->rg_property_data[1], &(ubwc_config->ubwc_config_data_v2.config_v2), ubwc_config->ubwc_config_data_v2.nSize);
 
 		d_vpr_h(
-			"UBWC config nSize: %u, MaxChannels: %u, MalLength: %u, %u, HBB: %u\n",
+			"UBWC config nSize: %u, MaxChannels: %u, MalLength: %u, HBB: %u\n",
 			ubwc_config->ubwc_config_data_v2.nSize,
 			ubwc_config->ubwc_config_data_v2.config_v2.nMaxChannels,
 			ubwc_config->ubwc_config_data_v2.config_v2.nMalLength,

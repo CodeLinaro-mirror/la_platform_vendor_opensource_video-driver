@@ -900,7 +900,7 @@ struct hfi_cmd_sys_set_property_packet {
 	u32 size;
 	u32 packet_type;
 	u32 num_properties;
-	u32 rg_property_data[1];
+	u32 rg_property_data[2];
 };
 
 struct hfi_cmd_sys_get_property_packet {

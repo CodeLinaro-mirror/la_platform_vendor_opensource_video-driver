@@ -11,7 +11,8 @@
 #include <linux/regulator/consumer.h>
 #include <linux/clk-provider.h>
 #include <linux/iommu.h>
-#include <linux/qcom_scm.h>
+//#include <linux/qcom_scm.h>
+#include <linux/firmware/qcom/qcom_scm.h>
 #include <linux/soc/qcom/smem.h>
 #include <linux/irqreturn.h>
 #include <linux/reset.h>
