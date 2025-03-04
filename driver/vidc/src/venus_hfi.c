@@ -12,6 +12,11 @@
 #include <linux/firmware/qcom/qcom_scm.h>
 #include <linux/soc/qcom/mdt_loader.h>
 #include <linux/soc/qcom/llcc-qcom.h>
+#include <linux/dma-fence.h>
+#include <linux/iosys-map.h>
+#include <linux/dma-direction.h>
+#include <media/videobuf2-core.h>
+#include <linux/vmalloc.h>
 #include <linux/iopoll.h>
 
 #include "venus_hfi.h"

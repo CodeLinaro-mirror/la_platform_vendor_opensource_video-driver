@@ -5,6 +5,12 @@
  */
 
 #include <linux/types.h>
+
+#include <media/v4l2-event.h>
+#include <media/videobuf2-core.h>
+#include <media/videobuf2-v4l2.h>
+#include <linux/vmalloc.h>
+
 #include <linux/hash.h>
 
 #include "msm_vidc_core.h"

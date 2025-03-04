@@ -4,8 +4,17 @@
  * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
+#include <linux/delay.h>
 #include <linux/iommu.h>
+#include <linux/string.h>
 #include <linux/workqueue.h>
+#include <linux/dma-buf.h>
+#include <linux/sync_file.h>
+#include <media/videobuf2-core.h>
+#include <media/v4l2-mem2mem.h>
+#include <media/v4l2-event.h>
+#include <linux/vmalloc.h>
+
 #include "msm_media_info.h"
 
 #include "msm_vidc_driver.h"
