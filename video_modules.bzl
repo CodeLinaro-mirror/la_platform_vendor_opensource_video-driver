@@ -64,7 +64,12 @@ module_entry(
             "driver/variant/iris2/src/msm_vidc_power_iris2.c",
             "driver/platform/yupik/src/msm_vidc_yupik.c",
         ],
-    }
+    },
+    deps = [
+         #   "//vendor/qcom/opensource/mm-drivers:mm_drivers_headers",
+         #   "//vendor/qcom/opensource/synx-kernel:synx_headers",
+            "//vendor/qcom/opensource/mmrm-driver:%b_mmrm_driver",
+        ],
 )
 
 module_entry(
@@ -117,5 +122,15 @@ module_entry(
             "driver/variant/iris33/src/msm_vidc_power_iris33.c",
             "driver/variant/iris33/src/msm_vidc_iris33.c",
         ],
-    }
+        "CONFIG_MSM_VIDC_YUPIK" : [
+            "driver/variant/iris2/src/msm_vidc_buffer_iris2.c",
+            "driver/variant/iris2/src/msm_vidc_iris2.c",
+            "driver/variant/iris2/src/msm_vidc_power_iris2.c",
+            "driver/platform/yupik/src/msm_vidc_yupik.c",
+        ],
+
+    },
+    deps = [
+        "//vendor/qcom/opensource/mmrm-driver:%b_mmrm_driver",
+    ],
 )
