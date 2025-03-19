@@ -33,7 +33,7 @@
 #define MAX_BITRATE             400000000
 #define MAX_BITRATE_HEVC        180000000
 #define MAX_BITRATE_H264        220000000
-#define APV_MAX_BITRATE         3300000000 /* 3.3 Gpbs */
+#define APV_MAX_BITRATE         2000000000 /* 2 Gpbs */
 #define DEFAULT_BITRATE         20000000
 #define APV_DEFAULT_BITRATE     1000000000
 #define MINIMUM_FPS             1
@@ -1599,13 +1599,27 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 		HFI_PROP_PROFILE,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
-	{PROFILE, ENC | DEC, HEVC | HEIC,
+	{PROFILE, ENC | DEC, HEIC,
 		V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN,
 		V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_10_STILL_PICTURE,
 		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_STILL_PICTURE) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_10) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_10_STILL_PICTURE),
+		V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN,
+		V4L2_CID_MPEG_VIDEO_HEVC_PROFILE,
+		HFI_PROP_PROFILE,
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+
+	{PROFILE, ENC | DEC, HEVC,
+		V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN,
+		V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_10_MULTIVIEW,
+		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN) |
+		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_STILL_PICTURE) |
+		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_10) |
+		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_10_STILL_PICTURE) |
+		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_MULTIVIEW) |
+		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_10_MULTIVIEW),
 		V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN,
 		V4L2_CID_MPEG_VIDEO_HEVC_PROFILE,
 		HFI_PROP_PROFILE,
@@ -2277,6 +2291,22 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 		0, MSM_VIDC_META_DISABLE,
 		V4L2_CID_MPEG_VIDC_METADATA_TRANSCODE_STAT_INFO,
 		HFI_PROP_TRANSCODING_STAT_INFO,
+		CAP_FLAG_BITMASK | CAP_FLAG_META},
+
+	{META_VIEW_ID, ENC, HEVC,
+		MSM_VIDC_META_DISABLE,
+		MSM_VIDC_META_ENABLE | MSM_VIDC_META_TX_INPUT,
+		0, MSM_VIDC_META_DISABLE,
+		V4L2_CID_MPEG_VIDC_METADATA_VIEW_ID,
+		HFI_PROP_VIEW_ID,
+		CAP_FLAG_BITMASK | CAP_FLAG_META},
+
+	{META_THREE_DIMENSIONAL_REF_DISP_INFO, ENC, HEVC,
+		MSM_VIDC_META_DISABLE,
+		MSM_VIDC_META_ENABLE | MSM_VIDC_META_TX_INPUT,
+		0, MSM_VIDC_META_DISABLE,
+		V4L2_CID_MPEG_VIDC_METADATA_THREE_DIMENSIONAL_REF_DISP_INFO,
+		HFI_PROP_THREE_DIMENSIONAL_REFERENCE_DISPLAYS_INFO,
 		CAP_FLAG_BITMASK | CAP_FLAG_META},
 
 	{META_PICTURE_TYPE, DEC, CODECS_ALL,
@@ -7961,11 +7991,11 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 	 */
 
 	{PIX_FMTS, ENC, H264,
-		{META_ROI_INFO, IR_PERIOD, CSC}},
+		{IR_PERIOD, CSC}},
 
 	{PIX_FMTS, ENC, HEVC,
 		{PROFILE, MIN_FRAME_QP, MAX_FRAME_QP, I_FRAME_QP, P_FRAME_QP,
-			B_FRAME_QP, META_ROI_INFO, MIN_QUALITY, BLUR_TYPES, IR_PERIOD,
+			B_FRAME_QP, MIN_QUALITY, BLUR_TYPES, IR_PERIOD,
 			LTR_COUNT, CSC}},
 
 	{PIX_FMTS, ENC, HEIC,
@@ -8701,11 +8731,11 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 	 */
 
 	{PIX_FMTS, ENC, H264,
-		{META_ROI_INFO, IR_PERIOD, CSC}},
+		{IR_PERIOD, CSC}},
 
 	{PIX_FMTS, ENC, HEVC,
 		{PROFILE, MIN_FRAME_QP, MAX_FRAME_QP, I_FRAME_QP, P_FRAME_QP,
-			B_FRAME_QP, META_ROI_INFO, MIN_QUALITY, BLUR_TYPES, IR_PERIOD,
+			B_FRAME_QP, MIN_QUALITY, BLUR_TYPES, IR_PERIOD,
 			LTR_COUNT, CSC}},
 
 	{PIX_FMTS, ENC, HEIC,
@@ -9323,7 +9353,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 
 	{META_ROI_INFO, ENC, H264 | HEVC,
 		{MIN_QUALITY, IR_PERIOD, BLUR_TYPES},
-		msm_vidc_adjust_roi_info,
+		msm_vidc_adjust_roi_info_iris4,
 		NULL},
 
 	{GRID_ENABLE, ENC, HEIC,
@@ -9392,11 +9422,11 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 	 */
 
 	{PIX_FMTS, ENC, H264,
-		{META_ROI_INFO, IR_PERIOD, CSC}},
+		{IR_PERIOD, CSC}},
 
 	{PIX_FMTS, ENC, HEVC,
 		{PROFILE, MIN_FRAME_QP, MAX_FRAME_QP, I_FRAME_QP, P_FRAME_QP,
-			B_FRAME_QP, META_ROI_INFO, MIN_QUALITY, BLUR_TYPES, IR_PERIOD,
+			B_FRAME_QP, MIN_QUALITY, BLUR_TYPES, IR_PERIOD,
 			LTR_COUNT, CSC}},
 
 	{PIX_FMTS, ENC, HEIC,
@@ -10040,7 +10070,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 
 	{META_ROI_INFO, ENC, H264 | HEVC,
 		{MIN_QUALITY, IR_PERIOD, BLUR_TYPES},
-		msm_vidc_adjust_roi_info,
+		msm_vidc_adjust_roi_info_iris4,
 		NULL},
 
 	{GRID_ENABLE, ENC, HEIC,
@@ -10135,11 +10165,11 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 	 */
 
 	{PIX_FMTS, ENC, H264,
-		{META_ROI_INFO, IR_PERIOD, CSC}},
+		{IR_PERIOD, CSC}},
 
 	{PIX_FMTS, ENC, HEVC,
 		{PROFILE, MIN_FRAME_QP, MAX_FRAME_QP, I_FRAME_QP, P_FRAME_QP,
-			B_FRAME_QP, META_ROI_INFO, MIN_QUALITY, BLUR_TYPES, IR_PERIOD,
+			B_FRAME_QP, MIN_QUALITY, BLUR_TYPES, IR_PERIOD,
 			LTR_COUNT, CSC}},
 
 	{PIX_FMTS, ENC, HEIC,
@@ -10758,7 +10788,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 
 	{META_ROI_INFO, ENC, H264 | HEVC,
 		{MIN_QUALITY, IR_PERIOD, BLUR_TYPES},
-		msm_vidc_adjust_roi_info,
+		msm_vidc_adjust_roi_info_iris4,
 		NULL},
 
 	{GRID_ENABLE, ENC, HEIC,
@@ -10890,36 +10920,36 @@ static const struct subcache_table canoe_subcache_table[] = {
 
 /* name, start, size, secure, dma_coherant, region, dma_mask */
 const struct context_bank_table canoe_context_bank_table[] = {
-	{"qcom,vidc,cb-ns",             0x25800000, 0xba800000, 0, 1,
+	{"qcom,vidc,cb-sec-non-pxl",    0x01000000, 0x24800000, 1, 0,
+		MSM_VIDC_SECURE_NONPIXEL,      0 },
+	{"qcom,vidc,cb-ns",             0x25800000, 0xda400000, 0, 1,
 		MSM_VIDC_NON_SECURE |
 		MSM_VIDC_NON_SECURE_PIXEL |
 		MSM_VIDC_NON_SECURE_BITSTREAM, 0 },
 	{"qcom,vidc,cb-ns-bitstream",   0x00100000, 0xdff00000, 0, 1,
 		MSM_VIDC_REGION_NONE,          0 },
-	{"qcom,vidc,cb-ns-pxl",         0x00100000, 0xdff00000, 0, 1,
+	{"qcom,vidc,cb-ns-pxl",         0x00100000, 0xffb00000, 0, 1,
 		MSM_VIDC_REGION_NONE,          0 },
-	{"qcom,vidc,cb-sec-pxl",        0x00500000, 0xdfb00000, 1, 0,
+	{"qcom,vidc,cb-sec-pxl",        0x00100000, 0xffb00000, 1, 0,
 		MSM_VIDC_SECURE_PIXEL,         0 },
-	{"qcom,vidc,cb-sec-non-pxl",    0x01000000, 0x24800000, 1, 0,
-		MSM_VIDC_SECURE_NONPIXEL,      0 },
-	{"qcom,vidc,cb-sec-bitstream",  0x00500000, 0xdfb00000, 1, 0,
+	{"qcom,vidc,cb-sec-bitstream",  0x00100000, 0xffb00000, 1, 0,
 		MSM_VIDC_SECURE_BITSTREAM,     0 },
 };
 
 /* name, start, size, secure, dma_coherant, region, dma_mask */
 const struct context_bank_table canoe_context_bank_table_v2[] = {
-	{"qcom,vidc,cb-ns",             0x25800000, 0xba800000, 0, 1,
-		MSM_VIDC_NON_SECURE |
-		MSM_VIDC_NON_SECURE_BITSTREAM, 0 },
-	{"qcom,vidc,cb-ns-bitstream",   0x00100000, 0xdff00000, 0, 1,
-		MSM_VIDC_REGION_NONE,          0 },
-	{"qcom,vidc,cb-ns-pxl",         0x00100000, 0xdff00000, 0, 1,
-		MSM_VIDC_NON_SECURE_PIXEL,     0 },
-	{"qcom,vidc,cb-sec-pxl",        0x00500000, 0xdfb00000, 1, 0,
-		MSM_VIDC_SECURE_PIXEL,         0 },
 	{"qcom,vidc,cb-sec-non-pxl",    0x01000000, 0x24800000, 1, 0,
 		MSM_VIDC_SECURE_NONPIXEL,      0 },
-	{"qcom,vidc,cb-sec-bitstream",  0x00500000, 0xdfb00000, 1, 0,
+	{"qcom,vidc,cb-ns",             0x25800000, 0xda400000, 0, 1,
+		MSM_VIDC_NON_SECURE |
+		MSM_VIDC_NON_SECURE_BITSTREAM, 0 },
+	{"qcom,vidc,cb-ns-bitstream",   0x00100000, 0xffb00000, 0, 1,
+		MSM_VIDC_REGION_NONE,          0 },
+	{"qcom,vidc,cb-ns-pxl",         0x00100000, 0xffb00000, 0, 1,
+		MSM_VIDC_NON_SECURE_PIXEL,     0 },
+	{"qcom,vidc,cb-sec-pxl",        0x00100000, 0xffb00000, 1, 0,
+		MSM_VIDC_SECURE_PIXEL,         0 },
+	{"qcom,vidc,cb-sec-bitstream",  0x00100000, 0xffb00000, 1, 0,
 		MSM_VIDC_SECURE_BITSTREAM,     0 },
 };
 
