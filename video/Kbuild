@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: GPL-2.0-only
-
 VIDEO_DRIVER_ABS_PATH := $(VIDEO_ROOT)/video/driver
 VIDEO_DRIVER_REL_PATH := ../video/driver
 
 ifeq ($(CONFIG_ARCH_PINEAPPLE), y)
 include $(VIDEO_ROOT)/config/pineapple_video.conf
 LINUXINCLUDE   += -include $(VIDEO_ROOT)/config/pineapple_video.h
+endif
+
+ifeq ($(CONFIG_ARCH_YUPIK), y)
+include $(VIDEO_ROOT)/config/yupik_video.conf
+LINUXINCLUDE   += -include $(VIDEO_ROOT)/config/yupik_video.h
 endif
 
 ifeq ($(CONFIG_ARCH_SUN), y)
@@ -34,6 +38,11 @@ LINUXINCLUDE   += -I$(VIDEO_DRIVER_ABS_PATH)/platform/common/inc \
 USERINCLUDE    += -I$(VIDEO_ROOT)/include/uapi/vidc/media \
                   -I$(VIDEO_ROOT)/include/uapi/vidc
 
+ifeq ($(CONFIG_MSM_VIDC_YUPIK), y)
+LINUXINCLUDE   += -I$(VIDEO_DRIVER_ABS_PATH)/platform/yupik/inc \
+                   -I$(VIDEO_DRIVER_ABS_PATH)/variant/iris2/inc
+endif
+
 obj-m += video.o
 
 ifeq ($(CONFIG_MSM_VIDC_PINEAPPLE), y)
@@ -58,6 +67,13 @@ video-objs +=     $(VIDEO_DRIVER_REL_PATH)/platform/sun/src/sun.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/iris33/src/msm_vidc_bus_iris33.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/iris33/src/msm_vidc_clock_iris33.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/iris33/src/msm_vidc_iris33.o
+endif
+
+ifeq ($(CONFIG_MSM_VIDC_YUPIK), y)
+video-objs +=     $(VIDEO_DRIVER_REL_PATH)/platform/yupik/src/yupik.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/iris2/src/msm_vidc_buffer_iris2.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/iris2/src/msm_vidc_power_iris2.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/iris2/src/msm_vidc_iris2.o
 endif
 
 video-objs +=     $(VIDEO_DRIVER_REL_PATH)/platform/common/src/msm_vidc_platform.o \

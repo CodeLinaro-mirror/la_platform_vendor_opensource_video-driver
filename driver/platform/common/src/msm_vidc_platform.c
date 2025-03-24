@@ -198,6 +198,10 @@ static struct vb2_mem_ops msm_vb2_mem_ops = {
 	.unmap_dmabuf                   = msm_vb2_unmap_dmabuf,
 };
 
+static struct msm_vidc_platform_ops msm_platform_ops = {
+	.buffer_region                  = msm_vidc_buffer_region,
+};
+
 static struct media_device_ops msm_v4l2_media_ops = {
 	.req_validate                   = msm_v4l2_request_validate,
 	.req_queue                      = msm_v4l2_request_queue,
@@ -264,6 +268,7 @@ static int msm_vidc_init_ops(struct msm_vidc_core *core)
 	core->media_device_ops = &msm_v4l2_media_ops;
 	core->v4l2_m2m_ops = &msm_v4l2_m2m_ops;
 	core->mem_ops = get_mem_ops();
+	core->platform_ops = &msm_platform_ops;
 	if (!core->mem_ops) {
 		d_vpr_e("%s: invalid memory ops\n", __func__);
 		return -EINVAL;
@@ -414,6 +419,79 @@ int msm_vidc_read_efuse(struct msm_vidc_core *core)
 	}
 	return rc;
 }
+
+int msm_vidc_get_license_fp_info(struct msm_vidc_core *core)
+{
+	int rc = 0;
+	void __iomem *base;
+	u32 i = 0, softsku_enabled_bit = 0, license_data_count = 0;
+	u32 softsku_id = 0, license_validity_bit = 0;
+
+	struct msm_vidc_license_data *license_data = NULL;
+	struct msm_vidc_platform_data *platform_data;
+
+	platform_data = &core->platform->data;
+	license_data = platform_data->license_data;
+	license_data_count = platform_data->license_data_size;
+
+	if (!license_data)
+		return 0;
+
+	if (platform_data->sku_version) {
+		d_vpr_h("%s: Skip reading SoftSKU as efuse is already present, sku version: %d\n",
+				__func__, platform_data->sku_version);
+		return 0;
+	}
+
+	for (i = 0; i < license_data_count; i++) {
+		base = devm_ioremap(&core->pdev->dev, license_data[i].start_address,
+				license_data[i].header_size);
+		if (!base) {
+			d_vpr_e("failed license page info: start %#x, size %d\n",
+				license_data[i].start_address, license_data[i].header_size);
+			return -EINVAL;
+		}
+		softsku_enabled_bit = readl_relaxed(base);
+
+		if (softsku_enabled_bit & 0x1) {
+			license_validity_bit = readl_relaxed(base +
+							license_data[i].license_validity_shift);
+
+			if (license_validity_bit) {
+				softsku_id = readl_relaxed(base + license_data[i].sku_id_shift);
+				d_vpr_h("softsku_id %d\n", softsku_id);
+			} else {
+				softsku_id = 1;
+			}
+
+			switch (softsku_id) {
+			case 1:
+				platform_data->sku_version = SKU_VERSION_2;
+				break;
+			case 2:
+				platform_data->sku_version = SKU_VERSION_3;
+				break;
+			case 3:
+				platform_data->sku_version = SKU_VERSION_4;
+				break;
+			case 4:
+				platform_data->sku_version = SKU_VERSION_0;
+				break;
+			default:
+				platform_data->sku_version = SKU_VERSION_0;
+				break;
+			}
+		}
+
+		if (platform_data->sku_version) {
+			d_vpr_h("softsku_id %d, platform version 0x%x\n",
+				softsku_id, platform_data->sku_version);
+			break;
+		}
+	}
+	return rc;
+}
+
 
 /****************** control framework utility functions **********************/
 

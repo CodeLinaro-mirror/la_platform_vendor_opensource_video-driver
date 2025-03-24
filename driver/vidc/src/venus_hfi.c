@@ -827,7 +827,7 @@ void venus_hfi_pm_work_handler(struct work_struct *work)
 		core->skip_pc_count++;
 		d_vpr_e("%s: retry power collapse (count %d)\n",
 			__func__, core->skip_pc_count);
-		__schedule_power_collapse_work(core);
+		//__schedule_power_collapse_work(core);
 		break;
 	default:
 		d_vpr_e("%s: power collapse failed\n", __func__);

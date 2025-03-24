@@ -496,6 +496,8 @@ int msm_vidc_v4l2_fh_deinit(struct msm_vidc_inst *inst);
 int msm_vidc_vb2_queue_init(struct msm_vidc_inst *inst);
 int msm_vidc_vb2_queue_deinit(struct msm_vidc_inst *inst);
 int msm_vidc_get_control(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl);
+u32 msm_vidc_buffer_region(struct msm_vidc_inst *inst,
+        enum msm_vidc_buffer_type buffer_type, const char *func);
 struct msm_vidc_buffers *msm_vidc_get_buffers(struct msm_vidc_inst *inst,
 					      enum msm_vidc_buffer_type buffer_type,
 					      const char *func);

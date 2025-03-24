@@ -4,8 +4,8 @@
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
-#include <dt-bindings/clock/qcom,gcc-volcano.h>  // TO Do
-#include <dt-bindings/clock/qcom,videocc-pineapple.h> // To do
+#include <dt-bindings/clock/qcom,gcc-sc7280.h>
+#include <dt-bindings/clock/qcom,videocc-sc7280.h>
 
 #include <linux/soc/qcom/llcc-qcom.h> //To do
 #include <soc/qcom/of_common.h>  //To do
@@ -13,11 +13,12 @@
 #include <media/v4l2_vidc_extensions.h>
 #include "msm_vidc_yupik.h"
 #include "msm_vidc_platform.h"
+#include "msm_vidc_driver.h"
 #include "msm_vidc_debug.h"
 #include "msm_vidc_internal.h"
 #include "msm_vidc_platform_ext.h"
 #include "msm_vidc_memory_ext.h"
-#include "msm_vidc_synx.h"
+//#include "msm_vidc_synx.h"
 #include "resources_ext.h"
 #include "msm_vidc_iris2.h"
 #include "hfi_property.h"
@@ -29,6 +30,7 @@
 #define DEFAULT_VIDEO_CONCEAL_COLOR_BLACK 0x8020010
 #define MAX_BASE_LAYER_PRIORITY_ID 63
 #define MAX_OP_POINT            31
+#define MAX_BITRATE             160000000
 #define MAX_BITRATE_V0          100000000
 #define MAX_BITRATE_V1          100000000
 #define DEFAULT_BITRATE         20000000
@@ -54,7 +56,7 @@
 #define VP9     MSM_VIDC_VP9
 #define AV1     MSM_VIDC_AV1
 #define HEIC    MSM_VIDC_HEIC
-#define CODECS_ALL    (H264 | HEVC | VP9 | HEIC)
+#define CODECS_ALL    (H264 | HEVC | VP9 | HEIC | AV1)
 #define MAXIMUM_OVERRIDE_VP9_FPS 60
 
 static struct codec_info codec_data_yupik[] = {
@@ -72,6 +74,11 @@ static struct codec_info codec_data_yupik[] = {
 		.v4l2_codec  = V4L2_PIX_FMT_VP9,
 		.vidc_codec  = MSM_VIDC_VP9,
 		.pixfmt_name = "VP9",
+	},
+	{
+		.v4l2_codec  = V4L2_PIX_FMT_AV1,
+		.vidc_codec  = MSM_VIDC_AV1,
+		.pixfmt_name = "AV1",
 	},
 	{
 		.v4l2_codec  = V4L2_PIX_FMT_VIDC_HEIC,
@@ -111,24 +118,185 @@ static struct color_format_info color_format_data_yupik[] = {
 		.vidc_color_format = MSM_VIDC_FMT_P010,
 		.pixfmt_name       = "P010",
 	},
+	{
+		.v4l2_color_format = V4L2_META_FMT_VIDC,
+		.vidc_color_format = MSM_VIDC_FMT_META,
+		.pixfmt_name       = "META",
+	},
 };
 
 static struct color_primaries_info color_primaries_data_yupik[] = {
+	{
+		.v4l2_color_primaries  = V4L2_COLORSPACE_DEFAULT,
+		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_UNSPECIFIED,
+	},
+	{
+		.v4l2_color_primaries  = V4L2_COLORSPACE_DEFAULT,
+		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_RESERVED,
+	},
+	{
+		.v4l2_color_primaries  = V4L2_COLORSPACE_REC709,
+		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_BT709,
+	},
+	{
+		.v4l2_color_primaries  = V4L2_COLORSPACE_470_SYSTEM_M,
+		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_BT470_SYSTEM_M,
+	},
+	{
+		.v4l2_color_primaries  = V4L2_COLORSPACE_470_SYSTEM_BG,
+		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_BT470_SYSTEM_BG,
+	},
+	{
+		.v4l2_color_primaries  = V4L2_COLORSPACE_SMPTE170M,
+		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_BT601_525,
+	},
+	{
+		.v4l2_color_primaries  = V4L2_COLORSPACE_SMPTE240M,
+		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_SMPTE_ST240M,
+	},
+	{
+		.v4l2_color_primaries  = V4L2_COLORSPACE_VIDC_GENERIC_FILM,
+		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_GENERIC_FILM,
+	},
+	{
+		.v4l2_color_primaries  = V4L2_COLORSPACE_BT2020,
+		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_BT2020,
+	},
+	{
+		.v4l2_color_primaries  = V4L2_COLORSPACE_DCI_P3,
+		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_SMPTE_RP431_2,
+	},
+	{
+		.v4l2_color_primaries  = V4L2_COLORSPACE_VIDC_EG431,
+		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_SMPTE_EG431_1,
+	},
+	{
+		.v4l2_color_primaries  = V4L2_COLORSPACE_VIDC_EBU_TECH,
+		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_SMPTE_EBU_TECH,
+	},
 
 };
 
 static struct transfer_char_info transfer_char_data_yupik[] = {
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_DEFAULT,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_UNSPECIFIED,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_DEFAULT,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_RESERVED,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_709,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_BT709,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_VIDC_BT470_SYSTEM_M,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_BT470_SYSTEM_M,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_VIDC_BT470_SYSTEM_BG,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_BT470_SYSTEM_BG,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_VIDC_BT601_525_OR_625,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_BT601_525_OR_625,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_SMPTE240M,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_SMPTE_ST240M,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_VIDC_LINEAR,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_LINEAR,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_VIDC_XVYCC,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_XVYCC,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_VIDC_BT1361,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_BT1361_0,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_SRGB,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_SRGB_SYCC,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_VIDC_BT2020,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_BT2020_14,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_SMPTE2084,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_SMPTE_ST2084_PQ,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_VIDC_ST428,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_SMPTE_ST428_1,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_VIDC_HLG,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_BT2100_2_HLG,
+	},
+	{
+		.v4l2_transfer_char  = V4L2_XFER_FUNC_VIDC_CUSTLOG,
+		.vidc_transfer_char  = MSM_VIDC_TRANSFER_CUSTLOG,
+	},
 
 };
 
 static struct matrix_coeff_info matrix_coeff_data_yupik[] = {
+	{
+		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_DEFAULT,
+		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_UNSPECIFIED,
+	},
+	{
+		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_DEFAULT,
+		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_RESERVED,
+	},
+	{
+		.v4l2_matrix_coeff  = V4L2_YCBCR_VIDC_SRGB_OR_SMPTE_ST428,
+		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_SRGB_SMPTE_ST428_1,
+	},
+	{
+		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_709,
+		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_BT709,
+	},
+	{
+		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_XV709,
+		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_BT709,
+	},
+	{
+		.v4l2_matrix_coeff  = V4L2_YCBCR_VIDC_FCC47_73_682,
+		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_FCC_TITLE_47,
+	},
+	{
+		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_XV601,
+		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_BT470_SYS_BG_OR_BT601_625,
+	},
+	{
+		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_601,
+		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_BT601_525_BT1358_525_OR_625,
+	},
+	{
+		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_SMPTE240M,
+		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_SMPTE_ST240,
+	},
+	{
+		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_BT2020,
+		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_BT2020_NON_CONSTANT,
+	},
+	{
+		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_BT2020_CONST_LUM,
+		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_BT2020_CONSTANT,
+	},
 
 };
 
-static struct msm_platform_core_capability core_data_yupik_v0[] = {
+static const struct msm_platform_core_capability core_data_yupik_v0[] = {
 	/* {type, value} */
 	{ENC_CODECS, H264 | HEVC | HEIC},
-	{DEC_CODECS, H264 | HEVC | VP9 | HEIC},
+	{DEC_CODECS, H264 | HEVC | VP9 | AV1 | HEIC},
 	{MAX_SESSION_COUNT, 16},//Need to check
 	{MAX_NUM_720P_SESSIONS, 16}, //Need to check
 	{MAX_NUM_1080P_SESSIONS, 16}, //Need to check
@@ -168,10 +336,10 @@ static struct msm_platform_core_capability core_data_yupik_v0[] = {
 	{SUPPORTS_REQUESTS, 0}, //Need to check
 };
 
-static struct msm_platform_core_capability core_data_yupik_v1[] = {
+static const struct msm_platform_core_capability core_data_yupik_v1[] = {
 	/* {type, value} */
 	{ENC_CODECS, H264 | HEVC | HEIC},
-	{DEC_CODECS, H264 | HEVC | VP9 | HEIC},
+	{DEC_CODECS, H264 | HEVC | VP9 | AV1 | HEIC},
 	{MAX_SESSION_COUNT, 16}, //Need to check
 	{MAX_NUM_720P_SESSIONS, 16}, // Need to check
 	{MAX_NUM_1080P_SESSIONS, 8}, // Need to check
@@ -1872,6 +2040,78 @@ static struct msm_platform_inst_capability instance_cap_data_yupik_v0[] = {
 		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
 };
 
+static u32 msm_vidc_buffer_region_yupik(struct msm_vidc_inst *inst,
+	enum msm_vidc_buffer_type buffer_type, const char *func)
+{
+	u32 region = MSM_VIDC_NON_SECURE;
+
+	if (!is_secure_session(inst)) {
+		switch (buffer_type) {
+		case MSM_VIDC_BUF_ARP:
+			region = MSM_VIDC_SECURE_NONPIXEL;
+		break;
+		case MSM_VIDC_BUF_INPUT:
+		case MSM_VIDC_BUF_OUTPUT:
+		case MSM_VIDC_BUF_DPB:
+		case MSM_VIDC_BUF_VPSS:
+		case MSM_VIDC_BUF_INPUT_META:
+		case MSM_VIDC_BUF_OUTPUT_META:
+		case MSM_VIDC_BUF_BIN:
+		case MSM_VIDC_BUF_COMV:
+		case MSM_VIDC_BUF_NON_COMV:
+		case MSM_VIDC_BUF_LINE:
+		case MSM_VIDC_BUF_PERSIST:
+			region = MSM_VIDC_NON_SECURE;
+			break;
+		default:
+			i_vpr_e(inst, " invalid driver buffer type %d\n",
+				buffer_type);
+		}
+	} else {
+		switch (buffer_type) {
+		case MSM_VIDC_BUF_INPUT:
+			if (is_encode_session(inst))
+				region = MSM_VIDC_SECURE_PIXEL;
+			else
+				region = MSM_VIDC_SECURE_BITSTREAM;
+			break;
+		case MSM_VIDC_BUF_OUTPUT:
+			if (is_encode_session(inst))
+				region = MSM_VIDC_SECURE_BITSTREAM;
+			else
+				region = MSM_VIDC_SECURE_PIXEL;
+			break;
+		case MSM_VIDC_BUF_INPUT_META:
+		case MSM_VIDC_BUF_OUTPUT_META:
+			region = MSM_VIDC_NON_SECURE;
+			break;
+		case MSM_VIDC_BUF_DPB:
+		case MSM_VIDC_BUF_VPSS:
+			region = MSM_VIDC_SECURE_PIXEL;
+			break;
+		case MSM_VIDC_BUF_BIN:
+			region = MSM_VIDC_SECURE_BITSTREAM;
+			break;
+		case MSM_VIDC_BUF_ARP:
+		case MSM_VIDC_BUF_COMV:
+		case MSM_VIDC_BUF_NON_COMV:
+		case MSM_VIDC_BUF_LINE:
+		case MSM_VIDC_BUF_PERSIST:
+			region = MSM_VIDC_SECURE_NONPIXEL;
+			break;
+		default:
+			i_vpr_e(inst, " invalid driver buffer type %d\n",
+				buffer_type);
+		}
+	}
+
+	return region;
+}
+
+static struct msm_vidc_platform_ops yupik_platform_ops = {
+	.buffer_region = msm_vidc_buffer_region_yupik,
+};
+
 static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_yupik_v0[] = {
 	/* {cap, domain, codec,
 	 *      parents,
@@ -2438,7 +2678,7 @@ static const u32 yupik_msm_vidc_ssr_type[] = {
 
 /* Default UBWC config for LPDDR5 */
 static struct msm_vidc_ubwc_config_data ubwc_config_yupik[] = {
-	UBWC_CONFIG(1, 1, 1, 0, 0, 0, 8, 32, 15, 0, 0),
+	UBWC_CONFIG(8, 32, 16, 0, 1, 1, 1),
 };
 
 static struct msm_vidc_efuse_data efuse_data_yupik[] = {
@@ -2487,7 +2727,6 @@ static const struct clk_table yupik_clk_table[] = {
 /* name, exclusive_release */
 static const struct clk_rst_table yupik_clk_reset_table[] = {
 	{ "video_axi_reset",        0  },
-	{ "video_mvs0c_reset",      0  },
 };//need to check
 
 /* name, start, size, secure, dma_coherant, region, dma_mask */
@@ -2511,6 +2750,24 @@ static struct freq_table yupik_freq_table_sku0[] = {
 static const struct reg_preset_table yupik_reg_preset_table[] = {
 	{ 0xB0088, 0x0,        0x11      },
 }; //Need to check
+
+/* name, phys_addr, size, device_addr, device region type */
+static const struct device_region_table yupik_device_region_table[] = {
+	{	"aon-registers",
+		0x0AAE0000, 0x1000, 0xFFAE0000,
+		MSM_VIDC_AON
+	},
+	{
+		"ipc_protocol4_client8_version-registers",
+		0x00508000, 0x1000, 0xFFADF000,
+		MSM_VIDC_PROTOCOL_FENCE_CLIENT_VPU
+	},
+	{
+		"qtimer_f0v1_qtmr_v1_cntpct_lo",
+		0x17421000, 0x1000, 0xFFADE000,
+		MSM_VIDC_QTIMER
+	},
+};
 
 /* decoder properties */
 static const u32 yupik_vdec_psc_avc[] = {  //need to check upto 2558 from FW team
@@ -2606,6 +2863,8 @@ static const struct msm_vidc_platform_data yupik_data_v0 = {
 	.freq_tbl_size = ARRAY_SIZE(yupik_freq_table_sku0),
 	.reg_prst_tbl = yupik_reg_preset_table,
 	.reg_prst_tbl_size = ARRAY_SIZE(yupik_reg_preset_table),
+	.dev_reg_tbl = yupik_device_region_table,
+	.dev_reg_tbl_size = ARRAY_SIZE(yupik_device_region_table),
 	.fwname = "vpu20_1v",
 	.pas_id = 9, //need to check from 
 	.supports_mmrm = 0, //need to check
@@ -2661,8 +2920,7 @@ int msm_vidc_yupik_check_ddr_type(struct msm_vidc_platform_data *platform_data,
 	u32 ddr_type = DDR_TYPE_LPDDR5;
 
 	if (!platform_data || !platform_data->ubwc_config) {
-		d_vpr_e("%s: invalid params\n", __func__);
-		return -EINVAL;
+	    d_vpr_e("%s: invalid params\n", __func__);
 	}
 
 	ddr_type = of_fdt_get_ddrtype();
@@ -2684,9 +2942,6 @@ int msm_vidc_yupik_check_ddr_type(struct msm_vidc_platform_data *platform_data,
 static int msm_vidc_init_data(struct msm_vidc_core *core)
 {
 	struct device *dev = NULL;
-	struct msm_platform_core_capability *platform_data;
-	int i, num_platform_caps;
-	unsigned int sku_ver;
 	int rc = 0;
 
 	dev = &core->pdev->dev;
@@ -2694,6 +2949,7 @@ static int msm_vidc_init_data(struct msm_vidc_core *core)
 	d_vpr_h("%s: initialize yupik data\n", __func__);
 
 	core->platform->data = yupik_data_v0;
+	core->platform_ops = &yupik_platform_ops;
 
 	rc = msm_vidc_read_efuse(core);
 	if (rc) {
@@ -2701,61 +2957,23 @@ static int msm_vidc_init_data(struct msm_vidc_core *core)
 		return rc;
 	}
 
-	/* Check for soft sku version */
-	rc = msm_vidc_get_license_fp_info(core);
-	if (rc) {
-		d_vpr_e("%s: Failed to read license data\n", __func__);
-		return rc;
-	}
-
-	sku_ver = core->platform->data.sku_version;
-	switch (sku_ver) {
-	case SKU_VERSION_1:
-		core->platform->data = yupik_data_v1;
-		break;
-	case SKU_VERSION_2:
-		core->platform->data = yupik_data_v2;
-		break;
-	case SKU_VERSION_3:
-		core->platform->data = yupik_data_v1;
-		core->platform->data.sku_version = sku_ver;
-		platform_data = core->platform->data.core_data;
-		num_platform_caps = core->platform->data.core_data_size;
-		for (i = 0; i < num_platform_caps && i < CORE_CAP_MAX; i++) {
-			if (platform_data[i].type == MAX_MBPS)
-				platform_data[i].value = 1044480; /* max_load 4096x2176@30fps*/ //need to check
-		}
-		break;
-	case SKU_VERSION_4:
-		core->platform->data = yupik_data_v1;
-		core->platform->data.sku_version = sku_ver;
-		platform_data = core->platform->data.core_data;
-		num_platform_caps = core->platform->data.core_data_size;
-		for (i = 0; i < num_platform_caps && i < CORE_CAP_MAX; i++) {
-			if (platform_data[i].type == MAX_MBPS)
-				platform_data[i].value = 2088960; /* max_load 4096x2176@60fps*/
-		}
-		break;
-	default:
-		d_vpr_h("%s: Default yupik data already set\n", __func__);
-		break;
-	}
-
 	core->mem_ops = get_mem_ops_ext();
 	if (!core->mem_ops) {
 		d_vpr_e("%s: invalid memory ext ops\n", __func__);
 		return -EINVAL;
 	}
-	core->res_ops = get_res_ops_ext();
+	core->res_ops = get_res_ops_ext(core);
 	if (!core->res_ops) {
 		d_vpr_e("%s: invalid resource ext ops\n", __func__);
 		return -EINVAL;
 	}
+	// TODO gdoddabe Enable when Synx changes are available
+	/*
 	core->fence_ops = get_synx_fence_ops();
 	if (!core->fence_ops) {
 		d_vpr_e("%s: invalid synx fence ops\n", __func__);
 		return -EINVAL;
-	}
+	}*/
 
 	rc = msm_vidc_yupik_check_ddr_type(&core->platform->data, 0xe);
 	if (rc)
