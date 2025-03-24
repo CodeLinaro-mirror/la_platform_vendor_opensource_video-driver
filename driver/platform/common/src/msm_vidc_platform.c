@@ -2489,7 +2489,7 @@ int msm_vidc_adjust_roi_info_iris4(void *instance, struct v4l2_ctrl *ctrl)
 {
 	s32 adjusted_value;
 	struct msm_vidc_inst *inst = (struct msm_vidc_inst *)instance;
-	s64 rc_type = -1, pix_fmt = -1;
+	s64 rc_type = -1;
 
 	adjusted_value = ctrl ? ctrl->val : inst->capabilities[META_ROI_INFO].value;
 
