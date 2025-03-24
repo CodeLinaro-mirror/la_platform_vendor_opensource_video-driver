@@ -2497,10 +2497,6 @@ int msm_vidc_adjust_roi_info_iris4(void *instance, struct v4l2_ctrl *ctrl)
 				      &rc_type, __func__))
 		return -EINVAL;
 
-	if (msm_vidc_get_parent_value(inst, META_ROI_INFO, PIX_FMTS,
-				      &pix_fmt, __func__))
-		return -EINVAL;
-
 	/*
 	 * iris4 onwards roi is supported for 10bit color format as well and
 	 * hence removed !is_8bit_colorformat(pix_fmt) condition here
