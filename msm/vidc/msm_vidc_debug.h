@@ -92,7 +92,7 @@ enum vidc_err_recovery_disable {
 	VIDC_DISABLE_NON_NOC_ERR_RECOV = 0x0002
 };
 
-extern int msm_vidc_debug;
+extern unsigned int msm_vidc_debug;
 extern int msm_vidc_fw_debug_mode;
 extern bool msm_vidc_fw_coverage;
 extern bool msm_vidc_thermal_mitigation_disabled;
