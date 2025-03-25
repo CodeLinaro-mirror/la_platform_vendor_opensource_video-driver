@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2021-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <soc/qcom/of_common.h>
@@ -1014,12 +1014,13 @@ static struct msm_platform_inst_capability instance_cap_data_anorak[] = {
 
 	{PROFILE, ENC|DEC, HEVC,
 		V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN,
-		V4L2_MPEG_VIDEO_HEVC_PROFILE_MULTIVIEW_MAIN,
+		V4L2_MPEG_VIDEO_HEVC_PROFILE_MULTIVIEW_MAIN_10,
 		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_STILL_PICTURE) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_10) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_10_STILL_PICTURE) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MULTIVIEW_MAIN),
+		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MULTIVIEW_MAIN) |
+		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MULTIVIEW_MAIN_10),
 		V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN,
 		V4L2_CID_MPEG_VIDEO_HEVC_PROFILE,
 		HFI_PROP_PROFILE,
