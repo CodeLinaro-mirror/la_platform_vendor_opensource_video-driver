@@ -90,5 +90,5 @@ define_blair()
 load(":target.bzl", "define_pitti")
 define_pitti()
 
-load(":target.bzl", "define_neo-la")
-define_neo-la()
+load(":target.bzl", "define_neo_la")
+define_neo_la()
