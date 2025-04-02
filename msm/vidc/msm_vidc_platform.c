@@ -145,7 +145,7 @@ static struct msm_vidc_codec_data kona_codec_data[] =  {
 	CODEC_ENTRY(V4L2_PIX_FMT_VP9, MSM_VIDC_DECODER, 60, 200, 200),
 };
 
-static struct msm_vidc_codec_data qcs605_codec_data[] =  {
+static struct msm_vidc_codec_data qcs610_codec_data[] =  {
 	CODEC_ENTRY(V4L2_PIX_FMT_H264, MSM_VIDC_ENCODER, 125, 675, 320),
 	CODEC_ENTRY(V4L2_PIX_FMT_HEVC, MSM_VIDC_ENCODER, 125, 675, 320),
 	CODEC_ENTRY(V4L2_PIX_FMT_VP8, MSM_VIDC_ENCODER, 125, 675, 320),
@@ -1468,7 +1468,7 @@ static struct msm_vidc_vpss_capability vpss_capabilities[] = {
 	{1644, 3840},
 };
 
-static struct msm_vidc_codec_capability qcs605_capabilities[] = {
+static struct msm_vidc_codec_capability qcs610_capabilities[] = {
 	/* {cap_type, domains, codecs, min, max, step_size, default_value,} */
 	{CAP_FRAME_WIDTH, DEC, CODECS_ALL, 96, 5376, 1, 5376},
 	{CAP_FRAME_HEIGHT, DOMAINS_ALL, CODECS_ALL, 96, 5376, 1, 5376},
@@ -2881,7 +2881,7 @@ static struct msm_vidc_common_data qcs3165_common_data[] = {
 	},
 };
 
-static struct msm_vidc_common_data qcs605_common_data_v0[] = {
+static struct msm_vidc_common_data qcs610_common_data_v0[] = {
 	{
 		.key = "qcom,never-unload-fw",
 		.value = 1,
@@ -2965,7 +2965,7 @@ static struct msm_vidc_common_data qcs605_common_data_v0[] = {
 	},
 };
 
-static struct msm_vidc_common_data qcs605_common_data_v1[] = {
+static struct msm_vidc_common_data qcs610_common_data_v1[] = {
 	{
 		.key = "qcom,never-unload-fw",
 		.value = 1,
@@ -3085,12 +3085,12 @@ static struct msm_vidc_ubwc_config_data kona_ubwc_data[] = {
 	UBWC_CONFIG(1,1, 1, 1, 0, 0, 0, 8, 32, 16, 0, 0),
 };
 
-static struct msm_vidc_ubwc_config_data qcs605_ubwc_data[] = {
+static struct msm_vidc_ubwc_config_data qcs610_ubwc_data[] = {
 	UBWC_CONFIG(1, 1, 1, 1, 0, 0, 0, 8, 32, 16, 0, 0),
 };
 
 
-static struct msm_vidc_efuse_data qcs605_efuse_data[] = {
+static struct msm_vidc_efuse_data qcs610_efuse_data[] = {
 	EFUSE_ENTRY(0x007801A0, 4, 0x00008000, 0x0f, SKU_VERSION),
 };
 
@@ -3329,24 +3329,24 @@ static struct msm_vidc_platform_data qcs3165_data = {
 	.max_inst_count = MAX_SUPPORTED_INSTANCES_24,
 };
 
-static struct msm_vidc_platform_data qcs605_data = {
-	.codec_data = qcs605_codec_data,
-	.codec_data_length =  ARRAY_SIZE(qcs605_codec_data),
-	.common_data = qcs605_common_data_v0,
-	.common_data_length =  ARRAY_SIZE(qcs605_common_data_v0),
+static struct msm_vidc_platform_data qcs610_data = {
+	.codec_data = qcs610_codec_data,
+	.codec_data_length =  ARRAY_SIZE(qcs610_codec_data),
+	.common_data = qcs610_common_data_v0,
+	.common_data_length =  ARRAY_SIZE(qcs610_common_data_v0),
 	.csc_data.vpe_csc_custom_bias_coeff = vpe_csc_custom_bias_coeff,
 	.csc_data.vpe_csc_custom_matrix_coeff = vpe_csc_custom_matrix_coeff,
 	.csc_data.vpe_csc_custom_limit_coeff = vpe_csc_custom_limit_coeff,
-	.efuse_data = qcs605_efuse_data,
-	.efuse_data_length = ARRAY_SIZE(qcs605_efuse_data),
+	.efuse_data = qcs610_efuse_data,
+	.efuse_data_length = ARRAY_SIZE(qcs610_efuse_data),
 	.sku_version = 0,
 	.vpu_ver = VPU_VERSION_AR50,
 	.num_vpp_pipes = 0x1,
-	.ubwc_config = qcs605_ubwc_data,
+	.ubwc_config = qcs610_ubwc_data,
 	.codecs = default_codecs,
 	.codecs_count = ARRAY_SIZE(default_codecs),
-	.codec_caps = qcs605_capabilities,
-	.codec_caps_count = ARRAY_SIZE(qcs605_capabilities),
+	.codec_caps = qcs610_capabilities,
+	.codec_caps_count = ARRAY_SIZE(qcs610_capabilities),
 	.max_inst_count = MAX_SUPPORTED_INSTANCES_24,
 };
 
@@ -3392,8 +3392,8 @@ static const struct of_device_id msm_vidc_dt_device[] = {
 		.data = &trinket_data,
 	},
 	{
-		.compatible = "qcom,qcs605-vidc",
-		.data = &qcs605_data,
+		.compatible = "qcom,qcs610-vidc",
+		.data = &qcs610_data,
 	},
 	{},
 };
@@ -3571,7 +3571,7 @@ void *vidc_get_drv_data(struct device *dev)
 		msm_vidc_ddr_ubwc_config(driver_data, 0xe);
 	} else if (!strcmp(match->compatible, "qcom,qcs3165-vidc")) {
 		msm_vidc_ddr_ubwc_config(driver_data, 0xe);
-	} else if (!strcmp(match->compatible, "qcom,qcs605-vidc")) {
+	} else if (!strcmp(match->compatible, "qcom,qcs610-vidc")) {
 		driver_data->max_inst_count = MAX_SUPPORTED_INSTANCES_24;
 		rc = msm_vidc_read_efuse(driver_data, dev);
 		if (rc) {
@@ -3580,9 +3580,9 @@ void *vidc_get_drv_data(struct device *dev)
 		}
 
 		if (driver_data->sku_version == SKU_VERSION_1) {
-			driver_data->common_data = qcs605_common_data_v1;
+			driver_data->common_data = qcs610_common_data_v1;
 			driver_data->common_data_length =
-			ARRAY_SIZE(qcs605_common_data_v1);
+			ARRAY_SIZE(qcs610_common_data_v1);
 		}
 	}
 	
