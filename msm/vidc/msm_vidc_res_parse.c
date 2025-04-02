@@ -3,6 +3,7 @@
  * Copyright (c) 2012-2021, The Linux Foundation. All rights reserved.
  */
 
+
 #include <linux/iommu.h>
 //#include <linux/dma-iommu.h>
 #include <linux/of.h>
@@ -10,6 +11,7 @@
 #include "msm_vidc_debug.h"
 #include "msm_vidc_resources.h"
 #include "msm_vidc_res_parse.h"
+#include <linux/version.h>
 
 enum clock_properties {
 	CLOCK_PROP_HAS_SCALING = 1 << 0,
@@ -992,7 +994,7 @@ static int msm_vidc_setup_context_bank(struct msm_vidc_platform_resources *res,
 		struct context_bank_info *cb, struct device *dev)
 {
 	int rc = 0;
-	struct bus_type *bus;
+	const struct bus_type *bus;
 
 	if (!dev || !cb || !res) {
 		d_vpr_e("%s: Invalid Input params\n", __func__);
@@ -1013,8 +1015,9 @@ static int msm_vidc_setup_context_bank(struct msm_vidc_platform_resources *res,
 	  * When memory is fragmented, below configuration increases the
 	  * possibility to get a mapping for buffer in the configured CB.
 	  */
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0))
 	iommu_dma_enable_best_fit_algo(cb->dev);
-
+#endif
 	 /*
 	 * configure device segment size and segment boundary to ensure
 	 * iommu mapping returns one mapping (which is required for partial
