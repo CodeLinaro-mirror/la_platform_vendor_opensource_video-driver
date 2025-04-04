@@ -2879,7 +2879,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_sera
 
 /* Default UBWC config for LPDDR5 */
 static struct msm_vidc_ubwc_config_data ubwc_config_seraph[] = {
-	UBWC_CONFIG(8, 32, 16, 0, 1, 1, 1),
+	UBWC_CONFIG(8, 32, 14, 0, 1, 1, 1),
 };
 
 static struct msm_vidc_format_capability format_data_seraph = {
@@ -2956,15 +2956,18 @@ static const struct reg_preset_table seraph_reg_preset_table[] = {
 	{ 0xB0088, 0x0,        0xFFFFFFFF},
 	{ 0x13030, 0x33332222, 0xFFFFFFFF},
 	{ 0x13034, 0x44444444, 0xFFFFFFFF},
-	{ 0x13038, 0x1022,     0xFFFFFFFF},
+	{ 0x13038, 0x1002,     0xFFFFFFFF},
 	{ 0x13040, 0x0,        0xFFFFFFFF},
 	{ 0x13048, 0xFFFF,     0xFFFFFFFF},
 	{ 0x13430, 0x33332222, 0xFFFFFFFF},
 	{ 0x13434, 0x44444444, 0xFFFFFFFF},
-	{ 0x13438, 0x1022,     0xFFFFFFFF},
+	{ 0x13438, 0x1002,     0xFFFFFFFF},
 	{ 0x13440, 0x0,        0xFFFFFFFF},
 	{ 0x13448, 0xFFFF,     0xFFFFFFFF},
 	{ 0xA013C, 0x99,       0xFFFFFFFF},
+	{ 0x13830, 0x33332222, 0xFFFFFFFF},
+	{ 0x13834, 0x44444444, 0xFFFFFFFF},
+	{ 0x13838, 0x1020,     0xFFFFFFFF},
 };
 
 /* name, phys_addr, size, device_addr, device region type */
