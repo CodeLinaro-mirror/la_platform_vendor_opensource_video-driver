@@ -17,6 +17,7 @@
 #include "msm_vidc_control.h"
 #include "msm_vidc_driver.h"
 #include "msm_vidc_fence.h"
+#include "msm_vidc_md.h"
 #include "hfi_packet.h"
 #include "hfi_property.h"
 #include "hfi_command.h"
@@ -290,7 +291,7 @@ static const struct msm_vidc_compat_handle compat_handle[] = {
 #endif
 #if defined(CONFIG_MSM_VIDC_NORDAU)
 	{
-		.compat                     = "qcom,sm8797-vidc",
+		.compat                     = "qcom,sa8797-vidc",
 		.get_platform_data          = msm_vidc_get_platform_data_nordau,
 		.init_platform              = msm_vidc_init_platform_nordau,
 		.init_iris                  = msm_vidc_init_iris36,
@@ -309,6 +310,7 @@ static int msm_vidc_init_ops(struct msm_vidc_core *core)
 	core->vb2_mem_ops = &msm_vb2_mem_ops;
 	core->media_device_ops = &msm_v4l2_media_ops;
 	core->v4l2_m2m_ops = &msm_v4l2_m2m_ops;
+	core->md_ops = get_md_ops();
 	core->mem_ops = get_mem_ops();
 	if (!core->mem_ops) {
 		d_vpr_e("%s: invalid memory ops\n", __func__);
@@ -1700,7 +1702,7 @@ int msm_vidc_adjust_b_frame(void *instance, struct v4l2_ctrl *ctrl)
 {
 	struct msm_vidc_inst *inst = (struct msm_vidc_inst *)instance;
 	s64 adjusted_value, enh_layer_count = -1;
-	const u32 max_bframe_size = 7;
+	const u32 max_bframe_size = inst->capabilities[B_FRAME].max;
 
 	adjusted_value = ctrl ? ctrl->val : inst->capabilities[B_FRAME].value;
 
