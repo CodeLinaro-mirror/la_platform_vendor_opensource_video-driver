@@ -21,6 +21,9 @@
 #define GVM_SSR                     0x300
 #endif
 
+#define INVALID_BUFFER_DEV_ADDR 0x00A00000
+
+
 enum msm_vidc_debugfs_event;
 
 static inline bool is_decode_session(struct msm_vidc_inst *inst)
@@ -477,7 +480,9 @@ void msm_vidc_ssr_handler(struct work_struct *work);
 void msm_vidc_hw_virt_ssr_handler(struct work_struct *work);
 #endif
 int msm_vidc_trigger_stability(struct msm_vidc_core *core,
-		u64 trigger_stability_val);
+			       u64 trigger_stability_val);
+int msm_vidc_trigger_s2(struct msm_vidc_core *core,
+			       u64 trigger_s2_val);
 void msm_vidc_stability_handler(struct work_struct *work);
 int cancel_stability_work_sync(struct msm_vidc_inst *inst);
 void msm_vidc_fw_unload_handler(struct work_struct *work);
