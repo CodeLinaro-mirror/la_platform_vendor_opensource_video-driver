@@ -1664,6 +1664,7 @@ _yuv_bufcount_min, is_opb, num_vpp_pipes)           \
 #define APV_MAX_TILE_COLS                    20
 #define APV_TILE_INFO_SIZE                   32 //sizeof(apv_dma_se_tile_info)
 #define APV_MAX_TILE_INFO_SIZE  (APV_TILE_INFO_SIZE * APV_MAX_TILE_COLS * APV_MAX_TILE_ROWS)
+#define APV_SEI_INFO_SIZE                    (256 * 1024)
 
 /* FW prepares Quantization matrix and tile info in single buffer and it is consumed by VPP */
 #define APV_SIZE_QM_ALIGN      (HFI_ALIGN(APV_QMATRIX_SIZE + APV_MAX_TILE_INFO_SIZE, 256))
@@ -1674,6 +1675,7 @@ _yuv_bufcount_min, is_opb, num_vpp_pipes)           \
 #define HFI_BUFFER_PERSIST_APVD(_size) { \
 		_size = (APV_NUM_SLIST * APV_SIZE_QM_ALIGN) + \
 			 HDR10_HIST_EXTRADATA_SIZE + \
+			 APV_SEI_INFO_SIZE + \
 			 CACHE_LINE_SIZE; \
 		_size = HFI_ALIGN(_size, VENUS_DMA_ALIGNMENT); \
 	}
@@ -1874,14 +1876,11 @@ _yuv_bufcount_min, is_opb, num_vpp_pipes)           \
 			profile == HFI_H265_PROFILE_MULTIVIEW_MAIN_10)) \
 			num_ref = 3; \
 		if (_total_hb_layers > 1) { \
-			if (codec_standard == HFI_CODEC_ENCODE_HEVC) { \
-				num_ref = (_total_hb_layers); \
-				if (profile == HFI_H265_PROFILE_MULTIVIEW_MAIN || \
-					profile == HFI_H265_PROFILE_MULTIVIEW_MAIN_10) \
-					num_ref = num_ref * 2; \
-			} else if (codec_standard == HFI_CODEC_ENCODE_AVC) { \
-				num_ref = (1 << (_total_hb_layers - 2)) + 1; \
-			} \
+			num_ref = _total_hb_layers; \
+			if (codec_standard == HFI_CODEC_ENCODE_HEVC && \
+				(profile == HFI_H265_PROFILE_MULTIVIEW_MAIN || \
+				profile == HFI_H265_PROFILE_MULTIVIEW_MAIN_10)) \
+				num_ref = num_ref * 2; \
 		} \
 		num_recon = num_ref + 1; \
 	} while (0)
