@@ -35,7 +35,6 @@ def _get_kernel_build_options(modules, config_options):
 
 def _get_kernel_build_module_srcs(module, options, formatter):
     srcs = module.srcs + _get_config_choices(module.config_srcs, options)
-    print("-",module.name,",",module.config_option,",srcs =",srcs)
     module_path = "{}/".format(module.path) if module.path else ""
     globbed_srcs = native.glob(["{}{}".format(module_path, formatter(src)) for src in srcs])
     return globbed_srcs
@@ -56,13 +55,15 @@ def video_module_entry(hdrs = []):
 
 def define_target_variant_modules(target, variant, registry, modules, config_options = []):
     kernel_build = "{}_{}".format(target, variant)
-    kernel_build_label = "//msm-kernel:{}".format(kernel_build)
+    kernel_build_label = select({
+            "//build/kernel/kleaf:microxr_kernel_build_true": "//:target_kernel_build",
+            "//build/kernel/kleaf:microxr_kernel_build_false": "//msm-kernel:{}".format(kernel_build)
+    })
     modules = [registry.get(module_name) for module_name in modules]
     options = _get_kernel_build_options(modules, config_options)
     build_print = lambda message : print("{}: {}".format(kernel_build, message))
     formatter = lambda s : s.replace("%b", kernel_build).replace("%t", target)
     headers = ["//msm-kernel:all_headers"] +  registry.hdrs + [":{}_headers".format(target)]
-    print(headers)
     all_module_rules = []
 
     for module in modules:
