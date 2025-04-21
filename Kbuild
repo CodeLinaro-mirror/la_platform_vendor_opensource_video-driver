@@ -6,6 +6,12 @@ LINUXINCLUDE    += -include $(VIDEO_ROOT)/config/konavidconf.h \
                    -I$(VIDEO_ROOT)/msm/vidc
 endif
 
+ifeq ($(CONFIG_ARCH_SM6150), y)
+include $(VIDEO_ROOT)/config/sm6150vid.conf
+LINUXINCLUDE    += -include $(VIDEO_ROOT)/config/sm6150vidconf.h \
+                   -I$(VIDEO_ROOT)/msm/vidc
+endif
+
 LINUXINCLUDE    += -I$(VIDEO_ROOT)/include/uapi
 
 USERINCLUDE     += -I$(VIDEO_ROOT)/include/uapi
