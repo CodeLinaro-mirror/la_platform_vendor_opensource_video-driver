@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
- * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef __VIDC_HFI_API_H__
@@ -624,7 +624,10 @@ struct hal_cmd_sys_get_property_packet {
 	u32 size;
 	u32 packet_type;
 	u32 num_properties;
-	u32 rg_property_data[2];
+	union {
+                u32 rg_property_data[1];
+                __DECLARE_FLEX_ARRAY(u32, rg_property_data_flex);
+   };
 };
 
 struct hal_hdr10_pq_sei {

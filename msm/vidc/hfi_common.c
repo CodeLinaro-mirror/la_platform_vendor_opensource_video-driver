@@ -2708,8 +2708,8 @@ static void __flush_debug_queue(struct venus_hfi_device *device, u8 *packet)
 			 * from the message fixes this to print it in a single
 			 * line.
 			 */
-			pkt->rg_msg_data[pkt->msg_size-1] = '\0';
-			dprintk_firmware(log_level, "%s", &pkt->rg_msg_data[1]);
+			pkt->rg_msg_data_flex[pkt->msg_size-1] = '\0';
+			dprintk_firmware(log_level, "%s", &pkt->rg_msg_data_flex[1]);
 		}
 	}
 #undef SKIP_INVALID_PKT

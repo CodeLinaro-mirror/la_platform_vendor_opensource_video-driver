@@ -114,8 +114,8 @@ int create_pkt_cmd_sys_debug_config(
 		sizeof(struct hfi_debug_config) + sizeof(u32);
 	pkt->packet_type = HFI_CMD_SYS_SET_PROPERTY;
 	pkt->num_properties = 1;
-	pkt->rg_property_data[0] = HFI_PROPERTY_SYS_DEBUG_CONFIG;
-	hfi = (struct hfi_debug_config *) &pkt->rg_property_data[1];
+	pkt->rg_property_data_flex[0] = HFI_PROPERTY_SYS_DEBUG_CONFIG;
+	hfi = (struct hfi_debug_config *) &pkt->rg_property_data_flex[1];
 	hfi->debug_config = mode;
 	hfi->debug_mode = HFI_DEBUG_MODE_QUEUE;
 	if (msm_vidc_fw_debug_mode
@@ -137,9 +137,9 @@ int create_pkt_cmd_sys_coverage_config(
 		sizeof(u32);
 	pkt->packet_type = HFI_CMD_SYS_SET_PROPERTY;
 	pkt->num_properties = 1;
-	pkt->rg_property_data[0] = HFI_PROPERTY_SYS_CONFIG_COVERAGE;
-	pkt->rg_property_data[1] = mode;
-	s_vpr_h(sid, "Firmware coverage mode %d\n", pkt->rg_property_data[1]);
+	pkt->rg_property_data_flex[0] = HFI_PROPERTY_SYS_CONFIG_COVERAGE;
+	pkt->rg_property_data_flex[1] = mode;
+	s_vpr_h(sid, "Firmware coverage mode %d\n", pkt->rg_property_data_flex[1]);
 	return 0;
 }
 
@@ -263,7 +263,7 @@ int create_pkt_cmd_sys_ubwc_config(
 
 	pkt->packet_type = HFI_CMD_SYS_SET_PROPERTY;
 	pkt->num_properties = 1;
-	pkt->rg_property_data[0] = HFI_PROPERTY_SYS_UBWC_CONFIG;
+	pkt->rg_property_data_flex[0] = HFI_PROPERTY_SYS_UBWC_CONFIG;
 
 	switch(ubwc_config->version) {
 	case ubwc_version_1:
@@ -272,7 +272,7 @@ int create_pkt_cmd_sys_ubwc_config(
 			sizeof(struct hfi_cmd_sys_set_ubwc_config_packet_type) + sizeof(u32);
 
 		hfi = (struct hfi_cmd_sys_set_ubwc_config_packet_type *)
-			&pkt->rg_property_data[1];
+			&pkt->rg_property_data_flex[1];
 
 		hfi->max_channels = ubwc_config->ubwc_config_data_v1.max_channels;
 		hfi->override_bit_info.max_channel_override =
@@ -300,7 +300,7 @@ int create_pkt_cmd_sys_ubwc_config(
 		pkt->size = sizeof(struct hfi_cmd_sys_set_property_packet) +
 		ubwc_config->ubwc_config_data_v2.nSize+ sizeof(u32);
 
-		memcpy(&pkt->rg_property_data[1], &(ubwc_config->ubwc_config_data_v2.config_v2), ubwc_config->ubwc_config_data_v2.nSize);
+		memcpy(&pkt->rg_property_data_flex[1], &(ubwc_config->ubwc_config_data_v2.config_v2), ubwc_config->ubwc_config_data_v2.nSize);
 
 		d_vpr_h(
 			"UBWC config nSize: %u, MaxChannels: %u, MalLength: %u, HBB: %u\n",
@@ -354,8 +354,8 @@ int create_pkt_cmd_sys_power_control(
 		sizeof(struct hfi_enable) + sizeof(u32);
 	pkt->packet_type = HFI_CMD_SYS_SET_PROPERTY;
 	pkt->num_properties = 1;
-	pkt->rg_property_data[0] = HFI_PROPERTY_SYS_CODEC_POWER_PLANE_CTRL;
-	hfi = (struct hfi_enable *) &pkt->rg_property_data[1];
+	pkt->rg_property_data_flex[0] = HFI_PROPERTY_SYS_CODEC_POWER_PLANE_CTRL;
+	hfi = (struct hfi_enable *) &pkt->rg_property_data_flex[1];
 	hfi->enable = enable;
 	return 0;
 }
@@ -623,7 +623,7 @@ int create_pkt_cmd_session_get_buf_req(
 	pkt->packet_type = HFI_CMD_SESSION_GET_PROPERTY;
 	pkt->sid = sid;
 	pkt->num_properties = 1;
-	pkt->rg_property_data[0] = HFI_PROPERTY_CONFIG_BUFFER_REQUIREMENTS;
+	pkt->rg_property_data_flex[0] = HFI_PROPERTY_CONFIG_BUFFER_REQUIREMENTS;
 
 	return rc;
 }
@@ -669,9 +669,9 @@ int create_pkt_cmd_session_set_property(
 	pkt->sid = sid;
 	pkt->num_properties = 1;
 	pkt->size += size;
-	pkt->rg_property_data[0] = ptype;
+	pkt->rg_property_data_flex[0] = ptype;
 	if (size && pdata)
-		memcpy(&pkt->rg_property_data[1], pdata, size);
+		memcpy(&pkt->rg_property_data_flex[1], pdata, size);
 
 	s_vpr_h(pkt->sid, "Setting HAL Property = 0x%x\n", ptype);
 	return 0;
@@ -735,7 +735,7 @@ int create_pkt_cmd_sys_image_version(
 	pkt->size = sizeof(struct hfi_cmd_sys_get_property_packet);
 	pkt->packet_type = HFI_CMD_SYS_GET_PROPERTY;
 	pkt->num_properties = 1;
-	pkt->rg_property_data[0] = HFI_PROPERTY_SYS_IMAGE_VERSION;
+	pkt->rg_property_data_flex[0] = HFI_PROPERTY_SYS_IMAGE_VERSION;
 	return 0;
 }
 
