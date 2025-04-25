@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2020-2025. Qualcomm Innovation Center, Inc. All rights reserved.
  */
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM msm_vidc_events
@@ -374,7 +375,7 @@ DEFINE_EVENT(msm_vidc_perf, msm_vidc_perf_bus_vote,
 	TP_ARGS(governor_mode, ab)
 );
 
-#define MAX_TRACER_LOG_LENGTH 128
+#define MAX_TRACER_LOG_LENGTH 256
 
 DECLARE_EVENT_CLASS(msm_v4l2_vidc_log,
 
