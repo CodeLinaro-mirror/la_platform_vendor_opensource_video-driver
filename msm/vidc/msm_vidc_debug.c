@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2012-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022. Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2025. Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #define CREATE_TRACE_POINTS
@@ -164,7 +164,7 @@ static ssize_t debug_level_write(struct file *filp, const char __user *buf,
 
 	/* filter partial writes and invalid commands */
 	if (*ppos != 0 || count >= sizeof(kbuf) || count == 0) {
-		d_vpr_e("returning error - pos %d, count %d\n", *ppos, count);
+		d_vpr_e("returning error - pos %lld, count %zu\n", *ppos, count);
 		rc = -EINVAL;
 	}
 

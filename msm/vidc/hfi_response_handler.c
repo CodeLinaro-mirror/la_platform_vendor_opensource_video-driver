@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2020-2025. Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/bitops.h>
@@ -430,7 +431,7 @@ static int hfi_process_event_notify(u32 device_id,
 	struct hfi_msg_event_notify_packet *pkt = _pkt;
 
 	if (pkt->size < sizeof(struct hfi_msg_event_notify_packet)) {
-		d_vpr_e("%s: invalid params %u %u\n", __func__,
+		d_vpr_e("%s: invalid params %u %lu\n", __func__,
 			pkt->size, sizeof(struct hfi_msg_event_notify_packet));
 		return -E2BIG;
 	}
