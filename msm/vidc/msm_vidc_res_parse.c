@@ -5,7 +5,6 @@
  */
 
 #include <linux/iommu.h>
-#include <linux/dma-iommu.h>
 #include <linux/of.h>
 #include <linux/sort.h>
 #include "msm_vidc_debug.h"

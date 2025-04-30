@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2012-2022, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022. Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2025. Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/dma-buf.h>
@@ -12,6 +12,8 @@
 #include "msm_vidc.h"
 #include "msm_vidc_debug.h"
 #include "msm_vidc_resources.h"
+
+MODULE_IMPORT_NS(DMA_BUF);
 
 struct msm_vidc_buf_region_name {
 	enum msm_vidc_buffer_region region;
@@ -432,7 +434,7 @@ static int alloc_dma_mem(size_t size, u32 align, u32 flags,
 
 	if (map_kernel) {
 		dma_buf_begin_cpu_access(dbuf, DMA_BIDIRECTIONAL);
-		rc = dma_buf_vmap(dbuf, &mem->dmabuf_map);
+		rc = dma_buf_vmap_unlocked(dbuf, &mem->dmabuf_map);
 		if (rc) {
 			d_vpr_e("%s: kernel map failed\n", __func__);
 			rc = -EIO;
@@ -475,7 +477,7 @@ static int free_dma_mem(struct msm_smem *mem, u32 sid)
 	}
 
 	if (mem->kvaddr) {
-		dma_buf_vunmap(dbuf, &mem->dmabuf_map);
+		dma_buf_vunmap_unlocked(dbuf, &mem->dmabuf_map);
 		mem->kvaddr = NULL;
 		dma_buf_end_cpu_access(dbuf, DMA_BIDIRECTIONAL);
 	}
