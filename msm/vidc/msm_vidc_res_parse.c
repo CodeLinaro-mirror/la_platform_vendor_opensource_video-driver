@@ -995,7 +995,7 @@ static int msm_vidc_setup_context_bank(struct msm_vidc_platform_resources *res,
 		struct context_bank_info *cb, struct device *dev)
 {
 	int rc = 0;
-	struct bus_type *bus;
+	const struct bus_type *bus;
 
 	if (!dev || !cb || !res) {
 		d_vpr_e("%s: Invalid Input params\n", __func__);
@@ -1016,8 +1016,6 @@ static int msm_vidc_setup_context_bank(struct msm_vidc_platform_resources *res,
 	  * When memory is fragmented, below configuration increases the
 	  * possibility to get a mapping for buffer in the configured CB.
 	  */
-	iommu_dma_enable_best_fit_algo(cb->dev);
-
 	 /*
 	 * configure device segment size and segment boundary to ensure
 	 * iommu mapping returns one mapping (which is required for partial
