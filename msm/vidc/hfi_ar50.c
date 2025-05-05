@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include "hfi_common.h"
@@ -289,37 +289,37 @@ void __noc_error_info_ar50(struct venus_hfi_device *device)
 
 	val = __read_register(device, noc_base_offs +
 			VCODEC_COREX_VIDEO_NOC_ERR_SWID_LOW_OFFS, DEFAULT_SID);
-	d_vpr_e("CORE%d_NOC_ERR_SWID_LOW:     %#x\n", val);
+	d_vpr_e("CORE%d_NOC_ERR_SWID_LOW:     %#x\n", val,val);
 	val = __read_register(device, noc_base_offs +
 			VCODEC_COREX_VIDEO_NOC_ERR_SWID_HIGH_OFFS, DEFAULT_SID);
-	d_vpr_e("CORE%d_NOC_ERR_SWID_HIGH:    %#x\n", val);
+	d_vpr_e("CORE%d_NOC_ERR_SWID_HIGH:    %#x\n", val,val);
 	val = __read_register(device, noc_base_offs +
 			VCODEC_COREX_VIDEO_NOC_ERR_MAINCTL_LOW_OFFS, DEFAULT_SID);
-	d_vpr_e("CORE%d_NOC_ERR_MAINCTL_LOW:  %#x\n", val);
+	d_vpr_e("CORE%d_NOC_ERR_MAINCTL_LOW:  %#x\n", val,val);
 	val = __read_register(device, noc_base_offs +
 			VCODEC_COREX_VIDEO_NOC_ERR_ERRLOG0_LOW_OFFS, DEFAULT_SID);
-	d_vpr_e("CORE%d_NOC_ERR_ERRLOG0_LOW:  %#x\n", val);
+	d_vpr_e("CORE%d_NOC_ERR_ERRLOG0_LOW:  %#x\n", val,val);
 	val = __read_register(device, noc_base_offs +
 			VCODEC_COREX_VIDEO_NOC_ERR_ERRLOG0_HIGH_OFFS, DEFAULT_SID);
-	d_vpr_e("CORE%d_NOC_ERR_ERRLOG0_HIGH: %#x\n", val);
+	d_vpr_e("CORE%d_NOC_ERR_ERRLOG0_HIGH: %#x\n", val,val);
 	val = __read_register(device, noc_base_offs +
 			VCODEC_COREX_VIDEO_NOC_ERR_ERRLOG1_LOW_OFFS, DEFAULT_SID);
-	d_vpr_e("CORE%d_NOC_ERR_ERRLOG1_LOW:  %#x\n", val);
+	d_vpr_e("CORE%d_NOC_ERR_ERRLOG1_LOW:  %#x\n", val,val);
 	val = __read_register(device, noc_base_offs +
 			VCODEC_COREX_VIDEO_NOC_ERR_ERRLOG1_HIGH_OFFS, DEFAULT_SID);
-	d_vpr_e("CORE%d_NOC_ERR_ERRLOG1_HIGH: %#x\n", val);
+	d_vpr_e("CORE%d_NOC_ERR_ERRLOG1_HIGH: %#x\n", val,val);
 	val = __read_register(device, noc_base_offs +
 			VCODEC_COREX_VIDEO_NOC_ERR_ERRLOG2_LOW_OFFS, DEFAULT_SID);
-	d_vpr_e("CORE%d_NOC_ERR_ERRLOG2_LOW:  %#x\n", val);
+	d_vpr_e("CORE%d_NOC_ERR_ERRLOG2_LOW:  %#x\n", val,val);
 	val = __read_register(device, noc_base_offs +
 			VCODEC_COREX_VIDEO_NOC_ERR_ERRLOG2_HIGH_OFFS, DEFAULT_SID);
-	d_vpr_e("CORE%d_NOC_ERR_ERRLOG2_HIGH: %#x\n", val);
+	d_vpr_e("CORE%d_NOC_ERR_ERRLOG2_HIGH: %#x\n", val,val);
 	val = __read_register(device, noc_base_offs +
 			VCODEC_COREX_VIDEO_NOC_ERR_ERRLOG3_LOW_OFFS, DEFAULT_SID);
-	d_vpr_e("CORE%d_NOC_ERR_ERRLOG3_LOW:  %#x\n", val);
+	d_vpr_e("CORE%d_NOC_ERR_ERRLOG3_LOW:  %#x\n", val,val);
 	val = __read_register(device, noc_base_offs +
 			VCODEC_COREX_VIDEO_NOC_ERR_ERRLOG3_HIGH_OFFS, DEFAULT_SID);
-	d_vpr_e("CORE%d_NOC_ERR_ERRLOG3_HIGH: %#x\n", val);
+	d_vpr_e("CORE%d_NOC_ERR_ERRLOG3_HIGH: %#x\n", val,val);
 }
 
 void __core_clear_interrupt_ar50(struct venus_hfi_device *device)
