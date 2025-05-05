@@ -7,6 +7,7 @@
 #ifndef _MSM_VIDC_PLATFORM_H_
 #define _MSM_VIDC_PLATFORM_H_
 
+#include <linux/pm_domain.h>
 #include "msm_vidc_internal.h"
 #include "msm_vidc_core.h"
 
@@ -211,6 +212,7 @@ struct msm_vidc_platform_data {
 	unsigned int pd_tbl_size;
 	const char * const *opp_tbl;
 	unsigned int opp_tbl_size;
+	struct dev_pm_domain_list *opp_pmdomain_tbl;
 	const struct clk_table *clk_tbl;
 	unsigned int clk_tbl_size;
 	const struct clk_rst_table *clk_rst_tbl;
@@ -336,6 +338,7 @@ int msm_vidc_adjust_bitrate(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_layer_bitrate(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_bitrate_mode(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_entropy_mode(void *instance, struct v4l2_ctrl *ctrl);
+int msm_vidc_adjust_session_core_id(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_profile(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_ltr_count(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_use_ltr(void *instance, struct v4l2_ctrl *ctrl);
