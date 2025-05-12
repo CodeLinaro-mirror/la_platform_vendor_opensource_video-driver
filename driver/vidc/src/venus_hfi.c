@@ -676,9 +676,8 @@ void __unload_fw(struct msm_vidc_core *core)
 		return;
 
 	cancel_delayed_work(&core->pm_work);
-	__venus_power_off(core);
-	d_vpr_h("%s: fw_unload called\n", __func__);
 	fw_unload(core);
+	__venus_power_off(core);
 
 	/* clear all substates */
 	msm_vidc_change_core_sub_state(core, CORE_SUBSTATE_MAX - 1, 0, __func__);
