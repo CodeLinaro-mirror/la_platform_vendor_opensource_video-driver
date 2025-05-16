@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2025. Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef __H_VIDC_HFI_HELPER_H__
@@ -478,6 +479,10 @@ struct hfi_debug_config {
 
 struct hfi_enable {
 	u32 enable;
+};
+
+struct hfi_priority {
+        u32 prioritytohfi;
 };
 
 #define HFI_H264_DB_MODE_DISABLE			(HFI_COMMON_BASE + 0x1)
