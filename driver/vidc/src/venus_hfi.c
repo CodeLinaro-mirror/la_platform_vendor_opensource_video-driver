@@ -675,10 +675,9 @@ void __unload_fw(struct msm_vidc_core *core)
 	if (!core->resource->fw_cookie)
 		return;
 
-	d_vpr_h("%s: unloading video firmware\n", __func__);
 	cancel_delayed_work(&core->pm_work);
-	__venus_power_off(core);
 	fw_unload(core);
+	__venus_power_off(core);
 
 	/* clear all substates */
 	msm_vidc_change_core_sub_state(core, CORE_SUBSTATE_MAX - 1, 0, __func__);
