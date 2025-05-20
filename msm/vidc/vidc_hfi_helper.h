@@ -900,7 +900,7 @@ struct hfi_cmd_sys_set_property_packet {
 	u32 size;
 	u32 packet_type;
 	u32 num_properties;
-	u32 rg_property_data[1];
+	u32 rg_property_data[2];
 };
 
 struct hfi_cmd_sys_get_property_packet {
@@ -1038,7 +1038,11 @@ struct hfi_msg_sys_debug_packet {
 	u32 msg_size;
 	u32 time_stamp_hi;
 	u32 time_stamp_lo;
+	union {
 	u8 rg_msg_data[1];
+	__DECLARE_FLEX_ARRAY(u8, rg_msg_data_flex);
+};
+
 };
 
 struct hfi_msg_sys_coverage_packet {

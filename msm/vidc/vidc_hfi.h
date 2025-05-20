@@ -307,7 +307,7 @@ struct hfi_ssr_payload {
 struct hfi_uncompressed_plane_actual_constraints_info {
 	u32 buffer_type;
 	u32 num_planes;
-	struct hfi_uncompressed_plane_constraints rg_plane_format[1];
+	struct hfi_uncompressed_plane_constraints rg_plane_format[2];
 };
 
 #define HFI_CMD_SYS_OX_START		\
@@ -526,7 +526,7 @@ struct hfi_msg_sys_property_info_packet {
 	u32 size;
 	u32 packet_type;
 	u32 num_properties;
-	u32 rg_property_data[1];
+	u32 rg_property_data[2];
 };
 
 struct hfi_msg_session_load_resources_done_packet {
@@ -684,7 +684,10 @@ struct hfi_msg_session_property_info_packet {
 	u32 packet_type;
 	u32 sid;
 	u32 num_properties;
+	union {
 	u32 rg_property_data[1];
+	__DECLARE_FLEX_ARRAY(u32, rg_property_data_flex);
+	};
 };
 
 struct hfi_msg_session_release_resources_done_packet {
