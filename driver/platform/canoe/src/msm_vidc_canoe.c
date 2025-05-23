@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2025, Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+ * All rights reserved.
  */
 
 #include <dt-bindings/clock/qcom,gcc-canoe.h>
@@ -2573,7 +2574,7 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 		HFI_PROP_ENABLE_SLICE_DELIVERY,
 		CAP_FLAG_OUTPUT_PORT},
 
-	{SIGNAL_COLOR_INFO, ENC, H264 | HEVC | HEIC,
+	{SIGNAL_COLOR_INFO, ENC, H264 | HEVC | HEIC | APV,
 		0, INT_MAX, 1, 0,
 		V4L2_CID_MPEG_VIDC_SIGNAL_COLOR_INFO,
 		HFI_PROP_SIGNAL_COLOR_INFO,
@@ -8753,7 +8754,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 		NULL,
 		msm_vidc_set_vui_timing_info},
 
-	{SIGNAL_COLOR_INFO, ENC, H264 | HEVC | HEIC,
+	{SIGNAL_COLOR_INFO, ENC, H264 | HEVC | HEIC | APV,
 		{0},
 		NULL,
 		msm_vidc_set_signal_color_info},
@@ -11135,6 +11136,7 @@ static const u32 canoe_vdec_psc_apv[] = {
 	HFI_PROP_LUMA_CHROMA_BIT_DEPTH,
 	HFI_PROP_BUFFER_FW_MIN_OUTPUT_COUNT,
 	HFI_PROP_PROFILE,
+	HFI_PROP_SIGNAL_COLOR_INFO,
 	HFI_PROP_LEVEL,
 };
 
