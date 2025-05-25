@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2012-2021, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2021-2025. Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 
 #include <linux/iommu.h>
-//#include <linux/dma-iommu.h>
 #include <linux/of.h>
 #include <linux/sort.h>
 #include "msm_vidc_debug.h"
@@ -899,15 +899,11 @@ int read_platform_resources_from_dt(
 	res->register_base = kres ? kres->start : -1;
 	res->register_size = kres ? (kres->end + 1 - kres->start) : -1;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 16, 0))
        res->irq = platform_get_irq(pdev, 0);
-#else
-	kres = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-	res->irq = kres ? kres->start : -1;
-#endif
        if(res->irq < 0)
                d_vpr_e("%s: get irq failed, %d\n", __func__, res->irq);
 
+        d_vpr_h("%s: irq %d\n", __func__, res->irq);
 	rc = msm_vidc_load_fw_name(res);
 	if (rc)
 		d_vpr_e("%s: failed to load fw name, rc %d, using default fw\n",
@@ -1021,9 +1017,6 @@ static int msm_vidc_setup_context_bank(struct msm_vidc_platform_resources *res,
 	  * When memory is fragmented, below configuration increases the
 	  * possibility to get a mapping for buffer in the configured CB.
 	  */
- #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0))
-	iommu_dma_enable_best_fit_algo(cb->dev);
-#endif
 	 /*
 	 * configure device segment size and segment boundary to ensure
 	 * iommu mapping returns one mapping (which is required for partial

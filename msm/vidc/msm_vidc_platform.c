@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2017-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2024. Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2025. Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/module.h>
@@ -1469,30 +1469,31 @@ static struct msm_vidc_vpss_capability vpss_capabilities[] = {
 };
 
 static struct msm_vidc_codec_capability qcs610_capabilities[] = {
-	/* {cap_type, domains, codecs, min, max, step_size, default_value,} */
-	{CAP_FRAME_WIDTH, DEC, CODECS_ALL, 96, 5376, 1, 5376},
-	{CAP_FRAME_HEIGHT, DOMAINS_ALL, CODECS_ALL, 96, 5376, 1, 5376},
-	{CAP_FRAME_WIDTH, ENC, CODECS_ALL, 96, 8192, 1, 5376},
-	/* ((4096*2176)/256) decode + ((4096*2176)/256) encode  */
-	{CAP_MBS_PER_FRAME, DEC, CODECS_ALL, 36, 69632, 1, 69632},
-	/* ((8192 * 4320) / 256) */
-	{CAP_MBS_PER_FRAME, ENC, CODECS_ALL, 36, 138240, 1, 138240},
-	/* ((8192 * 4320) / 256) @30 */
-	{CAP_MBS_PER_SECOND, DOMAINS_ALL, CODECS_ALL, 36, 4147200, 1, 4147200},
-	{CAP_FRAMERATE, DOMAINS_ALL, CODECS_ALL, 1, 480, 1, 30},
-	//{CAP_OPERATINGRATE, DOMAINS_ALL, CODECS_ALL, 1, INT_MAX, 1, 30},
-	{CAP_BITRATE, DOMAINS_ALL, CODECS_ALL, 1, 120000000, 1, 12000000},
-	{CAP_CABAC_BITRATE, ENC, H264, 1, 120000000, 1, 12000000},
-	{CAP_SCALE_X, ENC, CODECS_ALL, 8192, 65536, 1, 4096},
-	{CAP_SCALE_Y, ENC, CODECS_ALL, 8192, 65536, 1, 4096},
+	/* {cap_type, domains, codecs, min, max, step_size, default_value} */
+	{CAP_FRAME_WIDTH, DEC, CODECS_ALL, 96, 4096, 1, 1920},
+	{CAP_FRAME_HEIGHT, DEC, CODECS_ALL, 96, 4096, 1, 1080},
+	{CAP_FRAME_WIDTH, ENC, CODECS_ALL, 96, 4096, 2, 1920},
+	{CAP_FRAME_HEIGHT, ENC, CODECS_ALL, 96, 4096, 2, 1080},
+	/*  ((4096 * 2176) / 256) */
+	{CAP_MBS_PER_FRAME, DEC, CODECS_ALL, 36, 34816, 1, 8160},
+	{CAP_MBS_PER_FRAME, ENC, CODECS_ALL, 36, 34816, 1, 8160},
+	/* ((3840 * 2176) / 256) * 30 fps  + WFD at 1080p@30 */
+	{CAP_MBS_PER_SECOND, DEC, CODECS_ALL, 36, 1216800, 1, 489600},
+	{CAP_MBS_PER_SECOND, ENC, CODECS_ALL, 36, 1216800, 1, 489600},
+	{CAP_FRAMERATE, DOMAINS_ALL, CODECS_ALL, 1, 240, 1, 30},
+	{CAP_BITRATE, DEC, CODECS_ALL, 1, 100000000, 1, 20000000},
+	{CAP_BITRATE, ENC, CODECS_ALL, 1, 100000000, 1, 20000000},
+	{CAP_CABAC_BITRATE, ENC, H264, 1, 100000000, 1, 20000000},
+	{CAP_SCALE_X, ENC, CODECS_ALL, 8192, 65536, 1, 8192},
+	{CAP_SCALE_Y, ENC, CODECS_ALL, 8192, 65536, 1, 8192},
 	{CAP_SCALE_X, DEC, CODECS_ALL, 65536, 65536, 1, 65536},
 	{CAP_SCALE_Y, DEC, CODECS_ALL, 65536, 65536, 1, 65536},
 	{CAP_BFRAME, ENC, H264|HEVC, 0, 1, 1, 0},
 	{CAP_HIER_P_NUM_ENH_LAYERS, ENC, H264|HEVC, 0, 6, 1, 0},
 	{CAP_LTR_COUNT, ENC, H264|HEVC, 0, 4, 1, 0},
-	/* (4096 × 2176) /256 *60 fps + (4096 × 2176) /256 * 30 fps*/
+	/* ((1920 * 1088) / 256) * 30 fps */
 	{CAP_MBS_PER_SECOND_POWER_SAVE, ENC, CODECS_ALL,
-		0, 3133440, 1, 3133440},
+		0, 244800, 1, 244800},
 	{CAP_I_FRAME_QP, ENC, H264|HEVC, 0, 51, 1, 10},
 	{CAP_P_FRAME_QP, ENC, H264|HEVC, 0, 51, 1, 20},
 	{CAP_B_FRAME_QP, ENC, H264|HEVC, 0, 51, 1, 20},
@@ -1502,47 +1503,51 @@ static struct msm_vidc_codec_capability qcs610_capabilities[] = {
 	/* 10 slices */
 	{CAP_SLICE_BYTE, ENC, H264|HEVC, 1, 10, 1, 10},
 	{CAP_SLICE_MB, ENC, H264|HEVC, 1, 10, 1, 10},
-	{CAP_MAX_VIDEOCORES, DOMAINS_ALL, CODECS_ALL, 0, 2, 1, 2},
+	{CAP_MAX_VIDEOCORES, DOMAINS_ALL, CODECS_ALL, 0, 1, 1, 1},
 
 	/* VP8 specific */
 	{CAP_FRAME_WIDTH, ENC|DEC, VP8, 96, 3840, 1, 1920},
-	{CAP_FRAME_HEIGHT, ENC|DEC, VP8, 96, 3840, 1, 1080},
+	{CAP_FRAME_HEIGHT, ENC|DEC, VP8, 96, 3840, 1, 1088},
 	/* (3840 * 2176) / 256 */
 	{CAP_MBS_PER_FRAME, ENC|DEC, VP8, 36, 32640, 1, 8160},
-	/* (3840 * 2176) / 256  * 30*/
-	{CAP_MBS_PER_SECOND, ENC|DEC, VP8, 36, 979200 , 1, 979200 },
-	{CAP_BFRAME, ENC, VP8, 0, 0, 1, 0},
+	/* ((1920 * 1088) / 256) * 60*/
+	{CAP_MBS_PER_SECOND, ENC|DEC, VP8, 36, 489600, 1, 979200},
 	{CAP_FRAMERATE, ENC|DEC, VP8, 1, 240, 1, 30},
-	{CAP_BITRATE, ENC|DEC, VP8, 1, 120000000, 1, 20000000},
+	{CAP_BITRATE, ENC, VP8, 1, 60000000, 1, 20000000},
+	{CAP_BITRATE, DEC, VP8, 1, 60000000, 1, 20000000},
 
 	/* Mpeg2 decoder specific */
 	{CAP_FRAME_WIDTH, DEC, MPEG2, 96, 1920, 1, 1920},
-	{CAP_FRAME_HEIGHT, DEC, MPEG2, 96, 1920, 1, 1080},
+	{CAP_FRAME_HEIGHT, DEC, MPEG2, 96, 1920, 1, 1088},
 	/* (1920 * 1088) / 256 */
 	{CAP_MBS_PER_FRAME, DEC, MPEG2, 36, 8160, 1, 8160},
-	/*((1920 * 1088) / 256) * 30*/
+	/* ((1920 * 1088) / 256) * 30*/
 	{CAP_MBS_PER_SECOND, DEC, MPEG2, 36, 244800, 1, 244800},
 	{CAP_FRAMERATE, DEC, MPEG2, 1, 30, 1, 30},
 	{CAP_BITRATE, DEC, MPEG2, 1, 40000000, 1, 20000000},
 
 	/* Secure usecase specific */
-	{CAP_SECURE_FRAME_WIDTH, DOMAINS_ALL, CODECS_ALL, 96, 3840, 1, 1920},
-	{CAP_SECURE_FRAME_HEIGHT, DOMAINS_ALL, CODECS_ALL, 96, 3840, 1, 1080},
-	/* (3840 * 2176) / 256 */
-	{CAP_SECURE_MBS_PER_FRAME, DOMAINS_ALL, CODECS_ALL, 36, 32640, 1, 36864},
+	{CAP_SECURE_FRAME_WIDTH, DEC, CODECS_ALL, 96, 3840, 1, 1920},
+	{CAP_SECURE_FRAME_HEIGHT, DEC, CODECS_ALL, 96, 3840, 1, 1080},
+	{CAP_SECURE_FRAME_WIDTH, ENC, CODECS_ALL, 96, 3840, 2, 1920},
+	{CAP_SECURE_FRAME_HEIGHT, ENC, CODECS_ALL, 96, 3840, 2, 1080},
+        /* (3840 * 2176) / 256 */
+	{CAP_SECURE_MBS_PER_FRAME, DOMAINS_ALL, CODECS_ALL, 36, 32640, 1, 8160},
 	{CAP_SECURE_BITRATE, DOMAINS_ALL, CODECS_ALL, 1, 35000000, 1, 20000000},
 
 	/* Batch Mode Decode */
-	{CAP_BATCH_MAX_MB_PER_FRAME, DEC, CODECS_ALL, 36, 34816, 1, 34816},
-	/* (4096 * 2176) / 256 */
-	{CAP_BATCH_MAX_FPS, DEC, CODECS_ALL, 1, 240, 1, 120},
+	{CAP_BATCH_MAX_MB_PER_FRAME, DEC, CODECS_ALL, 36, 8160, 1, 8160},
+	/* (1920 * 1080) / 256 */
+	{CAP_BATCH_MAX_FPS, DEC, CODECS_ALL, 1, 30, 1, 30},
 
 	/* All intra encoding usecase specific */
 	{CAP_ALLINTRA_MAX_FPS, ENC, H264|HEVC, 1, 240, 1, 30},
 
 	/* Image specific */
-	{CAP_HEVC_IMAGE_FRAME_WIDTH, ENC, HEVC, 96, 512, 1, 512},
-	{CAP_HEVC_IMAGE_FRAME_HEIGHT, ENC, HEVC, 96, 512, 1, 512},
+	{CAP_HEVC_IMAGE_FRAME_WIDTH, ENC, HEVC, 128, 512, 2, 512},
+	{CAP_HEVC_IMAGE_FRAME_HEIGHT, ENC, HEVC, 128, 512, 2, 512},
+	{CAP_HEIC_IMAGE_FRAME_WIDTH, ENC, HEVC, 512, 8192, 2, 8192},
+	{CAP_HEIC_IMAGE_FRAME_HEIGHT, ENC, HEVC, 512, 8192, 2, 8192},
 
 	/* Level for AVC and HEVC encoder specific.
 	   Default for levels is UNKNOWN value. But if we use unknown
@@ -2881,7 +2886,7 @@ static struct msm_vidc_common_data qcs3165_common_data[] = {
 	},
 };
 
-static struct msm_vidc_common_data qcs610_common_data_v0[] = {
+static struct msm_vidc_common_data qcs610_common_data[] = {
 	{
 		.key = "qcom,never-unload-fw",
 		.value = 1,
@@ -2908,12 +2913,15 @@ static struct msm_vidc_common_data qcs610_common_data_v0[] = {
 	},
 	{
 		.key = "qcom,max-hw-load",
-		.value = 4147200,
-		/* ((8192 * 4320) / 256) @30 */
+		.value = 1216800,
+	},
+	{
+		.key = "qcom,max-image-load",
+		.value = 1048576, /* ((16384x16384)/256)@1fps */
 	},
 	{
 		.key = "qcom,max-mbpf",
-		.value = 195840, /* 24x(1920x1088)/256 */
+		.value = 139264, /* ((4096x2176)/256) x 4 */
 	},
 	{
 		.key = "qcom,max-hq-mbs-per-frame",
@@ -2922,6 +2930,14 @@ static struct msm_vidc_common_data qcs610_common_data_v0[] = {
 	{
 		.key = "qcom,max-hq-mbs-per-sec",
 		.value = 244800,  /* 1920 x 1088 @ 30 fps */
+	},
+	{
+		.key = "qcom,max-b-frame-mbs-per-frame",
+		.value = 8160,
+	},
+	{
+		.key = "qcom,max-b-frame-mbs-per-sec",
+		.value = 489600,
 	},
 	{
 		.key = "qcom,max-hq-frames-per-sec",
@@ -2944,87 +2960,20 @@ static struct msm_vidc_common_data qcs610_common_data_v0[] = {
 		.value = 1000,
 	},
 	{
-		.key = "qcom,dcvs",
+		.key = "qcom,debug-timeout",
+		.value = 0,
+	},
+	{
+		.key = "qcom,cvp-external",
 		.value = 1,
 	},
 	{
-		.key = "qcom,fw-cycles",
-		.value = 733003,
-	},
-	{
-		.key = "qcom,fw-vpp-cycles",
-		.value = 225975,
-	},
-	{
-		.key = "qcom,no-cvp",
+		.key = "qcom,decode-batching",
 		.value = 1,
 	},
 	{
-		.key = "qcom,boost_margin_disable",
-		.value = 1,
-	},
-};
-
-static struct msm_vidc_common_data qcs610_common_data_v1[] = {
-	{
-		.key = "qcom,never-unload-fw",
-		.value = 1,
-	},
-	{
-		.key = "qcom,sw-power-collapse",
-		.value = 1,
-	},
-	{
-		.key = "qcom,fw-unload-delay",
-		.value = 1000,
-	},
-	{
-		.key = "qcom,domain-attr-non-fatal-faults",
-		.value = 1,
-	},
-	{
-		.key = "qcom,max-secure-instances",
-		.value = 3,
-	},
-	{
-		.key = "qcom,domain-attr-cache-pagetables",
-		.value = 1,
-	},
-	{
-		.key = "qcom,max-hw-load",
-		.value = 1224000,/* 3840 x 2176 @ 30 fps + 1920x1088 @30 fps*/
-	},
-	{
-		.key = "qcom,max-mbpf",
-		.value = 195840, /* 24x(1920x1088)/256 */
-	},
-	{
-		.key = "qcom,max-hq-mbs-per-frame",
-		.value = 8160,
-	},
-	{
-		.key = "qcom,max-hq-mbs-per-sec",
-		.value = 244800,  /* 1920 x 1088 @ 30 fps */
-	},
-	{
-		.key = "qcom,max-hq-frames-per-sec",
-		.value = 60,
-	},
-	{
-		.key = "qcom,max-b-frame-size",
-		.value = 8160,
-	},
-	{
-		.key = "qcom,max-b-frames-per-sec",
-		.value = 60,
-	},
-	{
-		.key = "qcom,power-collapse-delay",
-		.value = 1500,
-	},
-	{
-		.key = "qcom,hw-resp-timeout",
-		.value = 1000,
+		.key = "qcom,batch-timeout",
+		.value = 200,
 	},
 	{
 		.key = "qcom,dcvs",
@@ -3087,11 +3036,6 @@ static struct msm_vidc_ubwc_config_data kona_ubwc_data[] = {
 
 static struct msm_vidc_ubwc_config_data qcs610_ubwc_data[] = {
 	UBWC_CONFIG(1, 1, 1, 1, 0, 0, 0, 8, 32, 16, 0, 0),
-};
-
-
-static struct msm_vidc_efuse_data qcs610_efuse_data[] = {
-	EFUSE_ENTRY(0x007801A0, 4, 0x00008000, 0x0f, SKU_VERSION),
 };
 
 static struct msm_vidc_platform_data default_data = {
@@ -3332,13 +3276,13 @@ static struct msm_vidc_platform_data qcs3165_data = {
 static struct msm_vidc_platform_data qcs610_data = {
 	.codec_data = qcs610_codec_data,
 	.codec_data_length =  ARRAY_SIZE(qcs610_codec_data),
-	.common_data = qcs610_common_data_v0,
-	.common_data_length =  ARRAY_SIZE(qcs610_common_data_v0),
+	.common_data = qcs610_common_data,
+	.common_data_length =  ARRAY_SIZE(qcs610_common_data),
 	.csc_data.vpe_csc_custom_bias_coeff = vpe_csc_custom_bias_coeff,
 	.csc_data.vpe_csc_custom_matrix_coeff = vpe_csc_custom_matrix_coeff,
 	.csc_data.vpe_csc_custom_limit_coeff = vpe_csc_custom_limit_coeff,
-	.efuse_data = qcs610_efuse_data,
-	.efuse_data_length = ARRAY_SIZE(qcs610_efuse_data),
+	.efuse_data =NULL,
+	.efuse_data_length = 0,
 	.sku_version = 0,
 	.vpu_ver = VPU_VERSION_AR50,
 	.num_vpp_pipes = 0x1,
@@ -3347,7 +3291,7 @@ static struct msm_vidc_platform_data qcs610_data = {
 	.codecs_count = ARRAY_SIZE(default_codecs),
 	.codec_caps = qcs610_capabilities,
 	.codec_caps_count = ARRAY_SIZE(qcs610_capabilities),
-	.max_inst_count = MAX_SUPPORTED_INSTANCES_24,
+	.max_inst_count = MAX_SUPPORTED_INSTANCES,
 };
 
 static const struct of_device_id msm_vidc_dt_device[] = {
@@ -3579,13 +3523,7 @@ void *vidc_get_drv_data(struct device *dev)
 				goto exit;
 		}
 
-		if (driver_data->sku_version == SKU_VERSION_1) {
-			driver_data->common_data = qcs610_common_data_v1;
-			driver_data->common_data_length =
-			ARRAY_SIZE(qcs610_common_data_v1);
-		}
 	}
-	
 exit:
 	return driver_data;
 }

@@ -1,17 +1,16 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2012-2022, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022-2025. Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef _MSM_VIDC_H_
 #define _MSM_VIDC_H_
 
-#include <linux/videodev2.h>
-//#include <linux/dma-buf-map.h>
-#include "vidc/media/msm_vidc_utils.h"
-#include <media/media-device.h>
-#include <linux/version.h>
 #include <linux/iosys-map.h>
+#include <linux/videodev2.h>
+#include <media/media-device.h>
+#include "vidc/media/msm_vidc_utils.h"
 
 #define HAL_BUFFER_MAX 0xe
 #define CVP_FRAME_RATE_MAX (60)
@@ -76,11 +75,7 @@ struct msm_smem {
 	unsigned long flags;
 	enum hal_buffer buffer_type;
 	struct dma_mapping_info mapping_info;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 16, 0))
 	struct iosys_map            dmabuf_map;
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
-	struct dma_buf_map          dmabuf_map;
-#endif
 };
 
 enum smem_cache_ops {
