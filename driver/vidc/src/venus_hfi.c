@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024, 2025 Qualcomm Innovation Center, Inc. All rights reserved.
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
  */
 
@@ -1524,7 +1524,7 @@ static int __register_mmrm(struct msm_vidc_core *core)
 		desc.client_type = MMRM_CLIENT_CLOCK;
 		desc.client_info.desc.client_domain = MMRM_CLIENT_DOMAIN_VIDEO;
 		desc.client_info.desc.client_id = cl->clk_id;
-		strlcpy(name, cl->name, sizeof(desc.client_info.desc.name));
+		strscpy(name, cl->name, sizeof(desc.client_info.desc.name));
 		desc.client_info.desc.clk = cl->clk;
 		desc.priority = MMRM_CLIENT_PRIOR_LOW;
 		desc.pvt_data = notifier_data.pvt_data;
@@ -2386,7 +2386,7 @@ int venus_hfi_interface_queues_init(struct msm_vidc_core *core)
 			core->iface_q_table.align_virtual_addr;
 	q_tbl_hdr->qtbl_version = 0;
 	q_tbl_hdr->device_addr = (void *)core;
-	strlcpy(q_tbl_hdr->name, "msm_v4l2_vidc", sizeof(q_tbl_hdr->name));
+	strscpy(q_tbl_hdr->name, "msm_v4l2_vidc", sizeof(q_tbl_hdr->name));
 	q_tbl_hdr->qtbl_size = VIDC_IFACEQ_TABLE_SIZE;
 	q_tbl_hdr->qtbl_qhdr0_offset = sizeof(struct hfi_queue_table_header);
 	q_tbl_hdr->qtbl_qhdr_size = sizeof(struct hfi_queue_header);

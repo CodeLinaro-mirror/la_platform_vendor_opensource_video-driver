@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * Copyright (c) 2020-2022, The Linux Foundation. All rights reserved.
  */
 
@@ -9,6 +10,7 @@
 #include <linux/of.h>
 #include <linux/of_platform.h>
 #include <linux/interrupt.h>
+#include <linux/suspend.h>
 
 #include "msm_vidc_internal.h"
 #include "msm_vidc_debug.h"
@@ -318,7 +320,7 @@ exit:
 	return rc;
 }
 
-static int msm_vidc_remove(struct platform_device* pdev)
+static int __remove(struct platform_device* pdev)
 {
 	struct msm_vidc_core* core;
 
@@ -362,6 +364,18 @@ static int msm_vidc_remove(struct platform_device* pdev)
 
 	return 0;
 }
+
+#if (KERNEL_VERSION(6, 10, 0) <= LINUX_VERSION_CODE)
+static void msm_vidc_remove(struct platform_device *pdev)
+{
+	__remove(pdev);
+}
+#else
+static int msm_vidc_remove(struct platform_device *pdev)
+{
+	return __remove(pdev);
+}
+#endif
 
 static int msm_vidc_probe_video_device(struct platform_device *pdev)
 {
@@ -552,7 +566,16 @@ static int msm_vidc_pm_suspend(struct device *dev)
 	}
 
 	d_vpr_h("%s\n", __func__);
+#ifdef CONFIG_DEEPSLEEP
+	if (pm_suspend_target_state == PM_SUSPEND_MEM) {
+		d_vpr_l("%s : deepsleep is triggered\n", __func__);
+		rc = msm_vidc_schedule_core_deinit(core, true);
+	} else {
+		rc = msm_vidc_suspend(core);
+	}
+#else
 	rc = msm_vidc_suspend(core);
+#endif
 	if (rc == -ENOTSUPP)
 		rc = 0;
 	else if (rc)
@@ -588,8 +611,68 @@ static int msm_vidc_pm_resume(struct device *dev)
 	return 0;
 }
 
+#ifdef CONFIG_HIBERNATION
+static int msm_vidc_pm_freeze(struct device *dev)
+{
+	int rc = 0;
+	struct msm_vidc_core *core;
+
+	/*
+	 * Bail out if
+	 * - driver possibly not probed yet
+	 * - not the main device. We don't support power management on
+	 *   subdevices (e.g. context banks)
+	 */
+	if (!dev || !dev->driver ||
+		!of_device_is_compatible(dev->of_node, "qcom,msm-vidc"))
+		return 0;
+
+	core = dev_get_drvdata(dev);
+	if (!core) {
+		d_vpr_e("%s: invalid core\n", __func__);
+		return -EINVAL;
+	}
+
+	d_vpr_h("%s\n", __func__);
+	rc = msm_vidc_schedule_core_deinit(core, true);
+
+	if (rc)
+		d_vpr_e("Failed to freeze: %d\n", rc);
+	else
+		core->pm_suspended  = true;
+
+	if (core->state == MSM_VIDC_CORE_DEINIT) {
+		d_vpr_e("%s: video core uninitialized\n", __func__);
+	}
+
+	return rc;
+}
+
+static int msm_vidc_pm_restore(struct device* dev) {
+	struct msm_vidc_core *core;
+
+	if (!dev || !dev->driver ||
+		!of_device_is_compatible(dev->of_node, "qcom,msm-vidc"))
+		return 0;
+
+	core = dev_get_drvdata(dev);
+	if (!core) {
+		d_vpr_e("%s: invalid core\n", __func__);
+		return -EINVAL;
+	}
+
+	d_vpr_h("%s\n", __func__);
+	core->pm_suspended  = false;
+	return 0;
+}
+#endif
+
 static const struct dev_pm_ops msm_vidc_pm_ops = {
 	SET_SYSTEM_SLEEP_PM_OPS(msm_vidc_pm_suspend, msm_vidc_pm_resume)
+#ifdef CONFIG_HIBERNATION
+	.freeze = msm_vidc_pm_freeze,
+	.restore = msm_vidc_pm_restore,
+#endif
 };
 
 struct platform_driver msm_vidc_driver = {

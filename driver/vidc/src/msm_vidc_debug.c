@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024, 2025 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 #define CREATE_TRACE_POINTS
+#include <media/videobuf2-core.h>
+#include <linux/vmalloc.h>
+
 #include "msm_vidc_debug.h"
 #include "msm_vidc_driver.h"
 #include "msm_vidc_dt.h"
@@ -487,9 +490,13 @@ static ssize_t inst_info_read(struct file *file, char __user *buf,
 		cur += write_str(cur, end - cur,
 			"type: %s\n", i == INPUT_PORT ?
 			"Output" : "Capture");
+#if (KERNEL_VERSION(6, 10, 0) <= LINUX_VERSION_CODE)
+		cur += write_str(cur, end - cur, "count: %u\n",
+				vb2_get_num_buffers(&inst->vb2q[i]));
+#else
 		cur += write_str(cur, end - cur, "count: %u\n",
 				inst->vb2q[i].num_buffers);
-
+#endif
 		for (j = 0; j < f->fmt.pix_mp.num_planes; j++)
 			cur += write_str(cur, end - cur,
 				"size for plane %d: %u\n",
