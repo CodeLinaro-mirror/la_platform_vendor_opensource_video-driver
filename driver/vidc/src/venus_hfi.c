@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/iommu.h>
@@ -62,6 +62,29 @@ int __strict_check(struct msm_vidc_core *core, const char *function)
 		d_vpr_e("%s: strict check failed\n", function);
 
 	return fatal ? -EINVAL : 0;
+}
+
+static bool __is_valid_instance(struct msm_vidc_core *core,
+		struct msm_vidc_inst *inst, const char *func)
+{
+	bool valid = false;
+	struct msm_vidc_inst *temp;
+	int rc = 0;
+
+	rc = __strict_check(core, func);
+	if (rc)
+		return false;
+
+	list_for_each_entry(temp, &core->instances, list) {
+		if (temp == inst) {
+			valid = true;
+			break;
+		}
+	}
+	if (!valid)
+		i_vpr_e(inst, "%s: invalid inst\n", func);
+
+	return valid;
 }
 
 static void __schedule_power_collapse_work(struct msm_vidc_core *core)
@@ -617,7 +640,7 @@ void __unload_fw(struct msm_vidc_core *core)
 	d_vpr_h("%s unloaded video firmware\n", __func__);
 }
 
-static inline struct msm_vidc_inst *get_inst(
+static inline struct msm_vidc_inst *find_instance(
 	struct msm_vidc_inst *const *const instances, const s32 count, u32 session_id)
 {
 	struct msm_vidc_inst *inst = NULL;
@@ -657,15 +680,27 @@ static int __process_msg_q(struct msm_vidc_core *core,
 		if (!hdr->session_id) {
 			rc = handle_system_response(core, hdr);
 		} else {
-			inst = get_inst(instances, num_instances, hdr->session_id);
+			bool local_inst = false;
+
+			inst = find_instance(instances, num_instances, hdr->session_id);
 			if (!inst) {
-				d_vpr_e("%s: Invalid inst - %#x\n", __func__, hdr->session_id);
-				rc = -EINVAL;
-				goto error;
+				d_vpr_l("%s: inst not found in cache - %#x\n",
+					__func__, hdr->session_id);
+				inst = get_inst(core, hdr->session_id);
+				if (!inst) {
+					d_vpr_e("%s: Invalid inst - %#x\n",
+						__func__, hdr->session_id);
+					rc = -EINVAL;
+					goto error;
+				}
+				local_inst = true;
 			}
 			inst_lock(inst, __func__);
 			rc = handle_session_response(inst, hdr);
 			inst_unlock(inst, __func__);
+
+			if (local_inst)
+				put_inst(inst);
 		}
 error:
 		if (rc)
@@ -1012,7 +1047,9 @@ static int venus_hfi_session_command_locked(struct msm_vidc_inst *inst,
 	 * make sure to always allow sync cmd(even if session is in error state),
 	 * that will help to do a proper cleanup at FW side.
 	 */
-	if (!is_sync_session_cmd(pkt_type) && is_session_error(inst)) {
+	if (!(is_sync_session_cmd(pkt_type) &&
+		__is_valid_instance(core, inst, __func__)) &&
+		is_session_error(inst)) {
 		i_vpr_e(inst, "%s: failled. Session error. cmd %#x\n", func, pkt_type);
 		return -EINVAL;
 	}
