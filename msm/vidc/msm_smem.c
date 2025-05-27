@@ -12,51 +12,6 @@
 #include "msm_vidc.h"
 #include "msm_vidc_debug.h"
 #include "msm_vidc_resources.h"
-#include <linux/iommu.h>
-#include <linux/version.h>
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 16, 0))
-	MODULE_IMPORT_NS(DMA_BUF);
-#endif
-static void * __cvp_dma_buf_vmap(struct dma_buf *dbuf)
-{
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0))
-	struct dma_buf_map map;
-#else
-	struct iosys_map map;
-#endif
-	void *dma_map;
-	int err;
-
-	err = dma_buf_vmap(dbuf, &map);
-	dma_map = err ? NULL : map.vaddr;
-	if (!dma_map)
-		printk(KERN_ERR"%s: map to kvaddr failed\n",__func__);
-
-	return dma_map;
-}
-
-static void __cvp_dma_buf_vunmap(struct dma_buf *dbuf, void *vaddr)
-{
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0))
-	struct dma_buf_map map = { \
-			.vaddr = vaddr, \
-			.is_iomem = false, \
-	};
-#else
-	struct iosys_map map = { \
-			.vaddr = vaddr, \
-			.is_iomem = false, \
-	};
-#endif
-	if (vaddr)
-		dma_buf_vunmap(dbuf, &map);
-}
-
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 16, 0))
-	MODULE_IMPORT_NS(DMA_BUF);
-#endif
 
 MODULE_IMPORT_NS(DMA_BUF);
 
@@ -485,7 +440,7 @@ static int alloc_dma_mem(size_t size, u32 align, u32 flags,
 			rc = -EIO;
 			goto fail_map;
 		}
-		//mem->kvaddr = mem->dmabuf_map.vaddr;
+		mem->kvaddr = mem->dmabuf_map.vaddr;
 	}
 
 	s_vpr_h(sid,
