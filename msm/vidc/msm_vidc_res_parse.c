@@ -4,14 +4,12 @@
  * Copyright (c) 2021-2025. Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
-
 #include <linux/iommu.h>
 #include <linux/of.h>
 #include <linux/sort.h>
 #include "msm_vidc_debug.h"
 #include "msm_vidc_resources.h"
 #include "msm_vidc_res_parse.h"
-#include <linux/version.h>
 
 enum clock_properties {
 	CLOCK_PROP_HAS_SCALING = 1 << 0,
