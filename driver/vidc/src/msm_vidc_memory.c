@@ -539,8 +539,8 @@ exit:
 	return rc;
 }
 
-static u32 msm_vidc_buffer_region(struct msm_vidc_inst *inst,
-	enum msm_vidc_buffer_type buffer_type)
+u32 msm_vidc_buffer_region(struct msm_vidc_inst *inst,
+	enum msm_vidc_buffer_type buffer_type, const char *func)
 {
 	return MSM_VIDC_NON_SECURE;
 }
