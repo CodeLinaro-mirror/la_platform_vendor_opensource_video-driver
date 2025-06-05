@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022,2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include <linux/dma-buf.h>
@@ -77,7 +77,7 @@ static struct dma_buf_attachment *msm_vidc_dma_buf_attach_ext(struct msm_vidc_co
 	attach->dma_map_attrs |= DMA_ATTR_DELAYED_UNMAP;
 #endif
 	if (is_sys_cache_present(core))
-		attach->dma_map_attrs |= DMA_ATTR_IOMMU_USE_UPSTREAM_HINT;
+		attach->dma_map_attrs |= 0UL /* TODO: define DMA_ATTR_IOMMU_USE_UPSTREAM_HINT*/;
 
 	return attach;
 }

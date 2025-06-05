@@ -1,16 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
-/* Copyright (c) 2022,2024 Qualcomm Innovation Center, Inc. All rights reserved. */
 
 #include <linux/iommu.h>
-#include <linux/qcom_scm.h>
 #include <linux/soc/qcom/smem.h>
 #include <linux/irqreturn.h>
 #include <linux/of_address.h>
 #include <linux/firmware.h>
+#include <linux/version.h>
+#if (KERNEL_VERSION(6, 12, 0) <= LINUX_VERSION_CODE)
+#include <linux/firmware/qcom/qcom_scm.h>
+#else
 #include <linux/qcom_scm.h>
+#endif
 #include <linux/soc/qcom/llcc-qcom.h>
 #include <linux/iopoll.h>
 
