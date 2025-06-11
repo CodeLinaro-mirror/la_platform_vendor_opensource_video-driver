@@ -1802,7 +1802,7 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 		V4L2_MPEG_VIDC_APV_LEVEL_BAND0_5_1,
 		V4L2_CID_MPEG_VIDC_APV_LEVEL,
 		HFI_PROP_LEVEL,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{LEVEL, DEC, H264,
 		V4L2_MPEG_VIDEO_H264_LEVEL_1_0,
@@ -8249,7 +8249,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 		msm_vidc_set_bitrate},
 
 	{BIT_RATE, ENC, APV,
-		{PEAK_BITRATE},
+		{PEAK_BITRATE, LEVEL},
 		msm_vidc_adjust_bitrate_apv,
 		msm_vidc_set_bitrate},
 
@@ -8573,9 +8573,9 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 		NULL,
 		msm_vidc_set_level},
 
-	{LEVEL, ENC | DEC, APV,
+	{LEVEL, ENC, APV,
 		{0},
-		NULL,
+		msm_vidc_adjust_level_tier,
 		msm_vidc_set_apv_level_band},
 
 	{AV1_TIER, DEC, AV1,

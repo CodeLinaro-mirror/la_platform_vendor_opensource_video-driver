@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+ * All rights reserved.
  */
 
 #ifndef _MSM_VIDC_PLATFORM_H_
@@ -302,6 +303,12 @@ struct h265_level_table {
 	u64 max_frame_size;
 	u64 max_br_main_tier;
 	u64 max_br_high_tier;
+};
+
+struct apv_level_table {
+	u64 level;
+	u64 max_luma_sample;
+	u64 max_coded_rate;
 };
 
 static inline bool is_sys_cache_present(struct msm_vidc_core *core)
