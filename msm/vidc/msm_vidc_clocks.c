@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
- * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include "msm_vidc_common.h"
@@ -1823,6 +1823,9 @@ int msm_vidc_decide_core_and_power_mode_ar50(struct msm_vidc_inst *inst)
 		/* Move all instances to LP mode and return */
 		inst->clk_data.core_id = min_lp_core_id;
 		msm_vidc_move_core_to_power_save_mode(core, min_lp_core_id);
+	}else if(inst->adjust_core_load){
+		/*Assign the core with min core id*/
+		inst->clk_data.core_id = min_core_id;
 	} else {
 		s_vpr_e(inst->sid, "Core cannot support this load\n");
 		msm_print_core_status(core, VIDC_CORE_ID_1, inst->sid);
@@ -1847,6 +1850,14 @@ decision_done:
 
 	msm_print_core_status(core, VIDC_CORE_ID_1, inst->sid);
 	msm_print_core_status(core, VIDC_CORE_ID_2, inst->sid);
+
+	if (inst->adjust_core_load){
+		rc = msm_check_and_adjust_core_load(inst);
+		if (rc) {
+			s_vpr_e(inst->sid, "%s:Failed to adjust core load\n",__func__);
+			return rc;
+		}
+	}
 
 	return rc;
 }

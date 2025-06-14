@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2012-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022. Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022,2025. Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include "msm_vidc_common.h"
@@ -31,6 +31,7 @@ static void msm_vidc_print_running_insts(struct msm_vidc_core *core);
 #define SSR_SUB_CLIENT_ID_SHIFT 4
 #define SSR_ADDR_ID 0xFFFFFFFF00000000
 #define SSR_ADDR_SHIFT 32
+#define PRIORITY_OFFSET 10
 
 int msm_comm_g_ctrl_for_id(struct msm_vidc_inst *inst, int id)
 {
@@ -3542,6 +3543,7 @@ static int msm_vidc_load_resources(int flipped_state,
 	struct msm_vidc_core *core;
 	int max_video_load = 0, max_image_load = 0;
 	int video_load = 0, image_load = 0;
+	int video_load_decoder = 0, video_load_encoder = 0, total_load_encoder = 0;
 	enum load_calc_quirks quirks = LOAD_ADMISSION_CONTROL;
 
 	if (!inst || !inst->core || !inst->core->device) {
@@ -3563,31 +3565,40 @@ static int msm_vidc_load_resources(int flipped_state,
 	image_load = msm_comm_get_device_load(core,
 					MSM_VIDC_ENCODER, MSM_VIDC_IMAGE,
 					quirks);
-	video_load = msm_comm_get_device_load(core,
+	video_load_decoder = msm_comm_get_device_load(core,
 					MSM_VIDC_DECODER, MSM_VIDC_VIDEO,
 					quirks);
-	video_load += msm_comm_get_device_load(core,
+	video_load_encoder = msm_comm_get_device_load(core,
 					MSM_VIDC_ENCODER, MSM_VIDC_VIDEO,
 					quirks);
+	total_load_encoder = video_load_encoder + image_load;
+	video_load = video_load_decoder + video_load_encoder;
 
 	max_video_load = inst->core->resources.max_load +
 				inst->capability.cap[CAP_MBS_PER_FRAME].max;
 	max_image_load = inst->core->resources.max_image_load;
 
+	if ((video_load_encoder > max_video_load) || (total_load_encoder > max_video_load + max_image_load)) {
+                s_vpr_e(inst->sid,
+                                "H/W is overloaded. needed: %d max: %d\n",
+                                video_load_encoder, max_video_load);
+                return -ENOMEM;
+        }
+
 	if (video_load > max_video_load) {
 		s_vpr_e(inst->sid,
-			"H/W is overloaded. needed: %d max: %d\n",
+			"H/W is overloaded. needed: %d max: %d, hence adjusting core load\n",
 			video_load, max_video_load);
 		msm_vidc_print_running_insts(inst->core);
-		return -EBUSY;
+		inst->adjust_core_load = true;
 	}
 
 	if (video_load + image_load > max_video_load + max_image_load) {
 		s_vpr_e(inst->sid,
-			"H/W is overloaded. needed: [video + image][%d + %d], max: [video + image][%d + %d]\n",
+			"H/W is overloaded. needed: [video + image][%d + %d], max: [video + image][%d + %d], hence adjusting core load\n",
 			video_load, image_load, max_video_load, max_image_load);
 		msm_vidc_print_running_insts(inst->core);
-		return -EBUSY;
+		inst->adjust_core_load = true;
 	}
 
 	hdev = core->device;
@@ -6007,43 +6018,105 @@ int msm_comm_check_memory_supported(struct msm_vidc_inst *vidc_inst)
 	return 0;
 }
 
+int msm_check_and_adjust_core_load(struct msm_vidc_inst *current_inst)
+{
+	int rc = 0;
+	struct hfi_device *hdev = NULL;
+	struct hfi_priority hfi_property;
+	struct msm_vidc_core *core = NULL;
+	struct msm_vidc_inst *inst = NULL;
+
+	if (!current_inst || !current_inst->core) {
+		d_vpr_e("%s: Invalid params %pK\n", __func__, current_inst);
+		return -EINVAL;
+	}
+
+	core = current_inst->core;
+	hdev = core->device;
+
+	if(current_inst->session_type == MSM_VIDC_ENCODER){
+		list_for_each_entry(inst, &core->instances, list) {
+			if ((inst->session_type  == MSM_VIDC_DECODER) && (is_realtime_session(inst))) {
+				inst->priority = HAL_PRIORITY_HIGH;
+				inst->adjusted_priority = inst->priority - PRIORITY_OFFSET;
+				hfi_property.prioritytohfi = inst->adjusted_priority;
+
+				rc = call_hfi_op(hdev, session_set_property, inst->session,
+						HFI_PROPERTY_CONFIG_PRIORITY, &hfi_property,
+						sizeof(hfi_property));
+				if (rc) {
+					s_vpr_e(inst->sid, "%s: set property failed\n", __func__);
+					return rc;
+				}
+			}
+		}
+	}
+	else {
+		if ((current_inst->session_type  == MSM_VIDC_DECODER) && (is_realtime_session(current_inst))) {
+			current_inst->priority = HAL_PRIORITY_HIGH;
+			current_inst->adjusted_priority = current_inst->priority - PRIORITY_OFFSET;
+			hfi_property.prioritytohfi = current_inst->adjusted_priority;
+
+			rc = call_hfi_op(hdev, session_set_property, current_inst->session,
+					HFI_PROPERTY_CONFIG_PRIORITY, &hfi_property,
+					sizeof(hfi_property));
+			if (rc) {
+				s_vpr_e(current_inst->sid, "%s: set property failed\n", __func__);
+				return rc;
+			}
+		}
+	}
+	return 0;
+}
+
 static int msm_vidc_check_mbps_supported(struct msm_vidc_inst *inst)
 {
 	int max_video_load = 0, max_image_load = 0;
 	int video_load = 0, image_load = 0;
+	int video_load_decoder = 0, video_load_encoder = 0, total_load_encoder = 0;
 	enum load_calc_quirks quirks = LOAD_ADMISSION_CONTROL;
 
 	if (inst->state == MSM_VIDC_OPEN_DONE) {
 		image_load = msm_comm_get_device_load(inst->core,
 					MSM_VIDC_ENCODER, MSM_VIDC_IMAGE,
 					quirks);
-		video_load = msm_comm_get_device_load(inst->core,
+		video_load_decoder = msm_comm_get_device_load(inst->core,
 					MSM_VIDC_DECODER, MSM_VIDC_VIDEO,
 					quirks);
-		video_load += msm_comm_get_device_load(inst->core,
+		video_load_encoder = msm_comm_get_device_load(inst->core,
 					MSM_VIDC_ENCODER, MSM_VIDC_VIDEO,
 					quirks);
+		total_load_encoder = video_load_encoder + image_load;
+		video_load = video_load_decoder + video_load_encoder;
 
 		max_video_load = inst->core->resources.max_load;
 		max_image_load = inst->core->resources.max_image_load;
 
+		if ((video_load_encoder > max_video_load) || (total_load_encoder > max_video_load + max_image_load)) {
+                        s_vpr_e(inst->sid,
+                                        "H/W is overloaded. needed: %d max: %d\n",
+                                        video_load_encoder, max_video_load);
+                        return -ENOMEM;
+                }
+
 		if (video_load > max_video_load) {
 			s_vpr_e(inst->sid,
-				"H/W is overloaded. needed: %d max: %d\n",
+				"H/W is overloaded. needed: %d max: %d hence adjusting core load\n",
 				video_load, max_video_load);
 			msm_vidc_print_running_insts(inst->core);
-			return -ENOMEM;
+			inst->adjust_core_load = true;
 		}
 
 		if (video_load + image_load > max_video_load + max_image_load) {
 			s_vpr_e(inst->sid,
-				"H/W is overloaded. needed: [video + image][%d + %d], max: [video + image][%d + %d]\n",
+				"H/W is overloaded. needed: [video + image][%d + %d], max: [video + image][%d + %d], hence adjusting core load\n",
 				video_load, image_load,
 				max_video_load, max_image_load);
 			msm_vidc_print_running_insts(inst->core);
-			return -ENOMEM;
+			inst->adjust_core_load = true;
 		}
 	}
+
 	return 0;
 }
 
