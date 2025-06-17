@@ -35,6 +35,7 @@ LOCAL_PATH := $(call my-dir)
 
 ifeq ($(TARGET_BOARD_PLATFORM), gen5)
 ifeq ($(ENABLE_HYP), true)
+KBUILD_OPTIONS += ENABLE_HYP=true
 KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(PWD)/$(call intermediates-dir-for,DLKM,virtio-video-symvers)/Module.symvers
 endif
 endif
