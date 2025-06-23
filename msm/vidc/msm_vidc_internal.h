@@ -638,9 +638,6 @@ struct msm_vidc_inst {
 	u32 boost_min_qp;
 	u32 boost_max_qp;
 	u32 pframe_size;
-	bool core_adjusted;
-	u32 priority;
-	u32 adjusted_priority;
 };
 
 extern struct msm_vidc_drv *vidc_driver;
