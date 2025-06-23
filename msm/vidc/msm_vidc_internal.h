@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2012-2021, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2025. Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef _MSM_VIDC_INTERNAL_H_
@@ -638,6 +639,9 @@ struct msm_vidc_inst {
 	u32 boost_min_qp;
 	u32 boost_max_qp;
 	u32 pframe_size;
+	bool adjust_core_load;
+	u32 priority;
+	u32 adjusted_priority;
 };
 
 extern struct msm_vidc_drv *vidc_driver;
