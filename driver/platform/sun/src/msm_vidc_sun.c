@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2020-2022, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
  * Copyright (c) 2022-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
@@ -1909,6 +1909,23 @@ static struct msm_platform_inst_capability instance_cap_data_sun[] = {
 		0, MSM_VIDC_META_DISABLE,
 		V4L2_CID_MPEG_VIDC_METADATA_VIEW_ID,
 		HFI_PROP_VIEW_ID,
+		CAP_FLAG_BITMASK | CAP_FLAG_META},
+
+	{META_VIEW_ID, DEC, HEVC,
+		MSM_VIDC_META_DISABLE,
+		MSM_VIDC_META_ENABLE | MSM_VIDC_META_RX_OUTPUT |
+		MSM_VIDC_META_TX_OUTPUT,
+		0, MSM_VIDC_META_DISABLE,
+		V4L2_CID_MPEG_VIDC_METADATA_VIEW_ID,
+		HFI_PROP_VIEW_ID,
+		CAP_FLAG_BITMASK | CAP_FLAG_META},
+
+	{META_VIEW_PAIR, DEC, HEVC,
+		MSM_VIDC_META_DISABLE,
+		MSM_VIDC_META_ENABLE | MSM_VIDC_META_TX_OUTPUT,
+		0, MSM_VIDC_META_DISABLE,
+		V4L2_CID_MPEG_VIDC_METADATA_VIEW_PAIR,
+		HFI_PROP_PAIRED_YUV,
 		CAP_FLAG_BITMASK | CAP_FLAG_META},
 
 	{META_THREE_DIMENSIONAL_REF_DISP_INFO, ENC, HEVC,
