@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2022, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022,2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include <linux/iommu.h>
@@ -4251,6 +4251,12 @@ int msm_vidc_session_open(struct msm_vidc_inst *inst)
 	if (core->is_hw_virt) {
 #ifdef MSM_VIDC_HW_VIRT
 		rc = virtio_video_msm_cmd_open_gvm_session(&inst->device_id, &inst->session_id);
+		if (!rc) {
+			core_lock(core, __func__);
+			__resume(core);
+			call_venus_op(core, enable_intr, core);
+			core_unlock(core, __func__);
+		}
 #endif
 	} else {
 		rc = venus_hfi_session_open(inst);
@@ -4900,28 +4906,33 @@ int msm_vidc_core_init(struct msm_vidc_core *core)
 	msm_vidc_change_core_sub_state(core, CORE_SUBSTATE_PAGE_FAULT, 0, __func__);
 
 	/* open gvm */
-	if (core->is_hw_virt && !core->is_gvm_open) {
-		d_vpr_h("%s: Hardware virtualization enabled.\n"
-			"Calling open_gvm\n", __func__);
+	if (core->is_hw_virt) {
+		if (!core->is_gvm_open) {
+			d_vpr_h("%s: Hardware virtualization enabled.\n"
+				"Calling open_gvm\n", __func__);
 #ifdef MSM_VIDC_HW_VIRT
-		rc = virtio_video_msm_cmd_open_gvm(core->vmid, core->capabilities[NUM_VPU].value,
-			&core->device_core_mask);
+			rc = virtio_video_msm_cmd_open_gvm(core->vmid,
+				core->capabilities[NUM_VPU].value,
+				&core->device_core_mask);
 #endif
-		if (rc) {
-			d_vpr_e("%s: open_gvm failed\n", __func__);
-			goto unlock;
-		} else {
-			core->is_gvm_open = true;
-			/* set up core state and substate */
-			msm_vidc_change_core_state(core, MSM_VIDC_CORE_INIT,
-				__func__);
-			msm_vidc_change_core_sub_state(core, 0,
-				CORE_SUBSTATE_POWER_ENABLE, __func__);
+			if (rc) {
+				d_vpr_e("%s: open_gvm failed\n", __func__);
+				goto unlock;
+			}
 #ifdef MSM_VIDC_HW_VIRT
-			core->pvm_event_handler_thread = kthread_run(msm_vidc_pvm_event_handler,
-					core, "msm_vidc_pvm_evt_handler");
+			core->pvm_event_handler_thread = kthread_run(
+				msm_vidc_pvm_event_handler,
+				core, "msm_vidc_pvm_evt_handler");
 #endif
 		}
+		core->is_gvm_open = true;
+		/* set up core state and substate */
+		msm_vidc_change_core_state(core, MSM_VIDC_CORE_INIT,
+			__func__);
+		msm_vidc_change_core_sub_state(core, 0,
+			CORE_SUBSTATE_POWER_ENABLE, __func__);
+		call_venus_op(core, enable_intr, core);
+
 	}
 
 	rc = venus_hfi_core_init(core);
@@ -5169,6 +5180,7 @@ int msm_vidc_trigger_ssr(struct msm_vidc_core *core,
 void msm_vidc_hw_virt_ssr_handler(struct work_struct *work)
 {
 	struct msm_vidc_core *core = NULL;
+	bool bug_on = false;
 
 	core = container_of(work, struct msm_vidc_core, hw_virt_ssr_work);
 	if (!core) {
@@ -5176,7 +5188,8 @@ void msm_vidc_hw_virt_ssr_handler(struct work_struct *work)
 		return;
 	}
 
-	MSM_VIDC_FATAL(true);
+	bug_on = !!(msm_vidc_enable_bugon & MSM_VIDC_BUG_ON_FATAL);
+	MSM_VIDC_FATAL(bug_on);
 	msm_vidc_core_deinit(core, true);
 
 	if (core->ssr_dev == GVM_SSR_DEVICE_DRIVER) {

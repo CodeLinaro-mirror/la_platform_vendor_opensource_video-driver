@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-ifeq ($(filter y,$(CONFIG_ARCH_LEMANS) $(CONFIG_QTI_QUIN_GVM)),)
+ifeq ($(filter y,$(CONFIG_ARCH_LEMANS) $(CONFIG_ARCH_QTI_VM)),)
 KBUILD_CPPFLAGS += -DCONFIG_MSM_MMRM=1
 endif
 
-ifeq ($(CONFIG_QTI_QUIN_GVM), y)
+ifeq ($(CONFIG_ARCH_QTI_VM), y)
 export CONFIG_MSM_VIDC_V4L2=n
 else
 export CONFIG_MSM_VIDC_V4L2=m

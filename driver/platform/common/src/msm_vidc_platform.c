@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022,2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022,2024-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/io.h>
@@ -432,7 +432,7 @@ static int msm_vidc_init_vpu(struct msm_vidc_core *core, struct device *dev)
 	}
 #endif
 #if defined(CONFIG_MSM_VIDC_IRIS33_AU)
-	if (of_device_is_compatible(dev->of_node, "qcom,sm8797-vidc")) {
+	if (of_device_is_compatible(dev->of_node, "qcom,sa8797-vidc")) {
 		rc = msm_vidc_init_iris33_au(core);
 		if (rc)
 			d_vpr_e("%s: failed with %d\n", __func__, rc);
@@ -3791,6 +3791,10 @@ int msm_vidc_set_stage(void *instance,
 	}
 
 	stage = inst->capabilities->cap[STAGE].value;
+#if defined(CONFIG_MSM_VIDC_NORDAU)
+	if (inst->codec == MSM_VIDC_HEIC)
+		stage = MSM_VIDC_STAGE_1;
+#endif
 
 	rc = msm_vidc_packetize_control(inst, cap_id, HFI_PAYLOAD_U32,
 		&stage, sizeof(u32), __func__);
