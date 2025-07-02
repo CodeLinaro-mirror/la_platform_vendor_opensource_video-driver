@@ -2,7 +2,6 @@
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
- * All rights reserved.
  */
 
 #ifndef _MSM_VIDC_PLATFORM_H_
@@ -234,8 +233,12 @@ struct msm_vidc_platform_data {
 	bool supports_mmrm;
 	const struct msm_platform_core_capability *core_data;
 	u32 core_data_size;
+	const struct msm_platform_core_capability *sku_core_data;
+	u32 sku_core_data_size;
 	struct msm_platform_inst_capability *inst_cap_data;
 	u32 inst_cap_data_size;
+	struct msm_platform_inst_capability *sku_inst_cap_data;
+	u32 sku_inst_cap_data_size;
 	struct msm_platform_inst_cap_dependency *inst_cap_dependency_data;
 	u32 inst_cap_dependency_data_size;
 	struct msm_vidc_csc_coeff csc_data;
@@ -432,5 +435,6 @@ int msm_vidc_set_conceal_color(void *instance, enum msm_vidc_inst_capability_typ
 int msm_vidc_adjust_lookahead_encode_enable(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_lookahead_encode_size(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_set_lookahead_encode_size(void *instance, enum msm_vidc_inst_capability_type cap_id);
+int msm_vidc_adjust_log_mode(void *instance, struct v4l2_ctrl *ctrl);
 
 #endif // _MSM_VIDC_PLATFORM_H_

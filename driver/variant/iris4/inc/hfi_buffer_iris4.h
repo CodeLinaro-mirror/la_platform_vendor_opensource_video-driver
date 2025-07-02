@@ -2,7 +2,6 @@
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
- * All rights reserved.
  */
 
 #ifndef __HFI_BUFFER_IRIS4__
@@ -2699,7 +2698,7 @@ _yuv_bufcount_min, is_opb, num_vpp_pipes)           \
 		if (lookahead) { \
 			_size = (_size << 1); \
 		} \
-		if (lookahead && (frame_width_coded * frame_height_coded <= 352*288)) { \
+		if (lookahead && (frame_width_coded * frame_height_coded <= 640*480)) { \
 			_size = _size + 16000; \
 		} \
 	} while (0)
