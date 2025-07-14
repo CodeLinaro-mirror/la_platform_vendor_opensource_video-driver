@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2024,2025 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef MSM_VIDC_HW_VIRT
@@ -298,8 +298,8 @@ static struct msm_platform_core_capability core_data_nordau[] = {
 	{MAX_NUM_4K_SESSIONS, 16},
 	{MAX_NUM_8K_SESSIONS, 1},
 	{MAX_SECURE_SESSION_COUNT, 4},
-	{MAX_RT_MBPF, 174080},	/* (8192x4352)/256 + (4096x2176)/256*/
-	{MAX_MBPF, 278528}, /* ((8192x4352)/256) * 2 */
+	{MAX_RT_MBPF, 765952},	/* ((4096*2176)/256) * 22 */
+	{MAX_MBPF, 765952}, /* ((4096*2176)/256) * 22 */
 	{MAX_MBPS, 17925000},	/* max_load
 				 * 3840x2176@550fps
 				 */
