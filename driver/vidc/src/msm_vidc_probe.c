@@ -709,6 +709,13 @@ static int msm_vidc_probe_video_device(struct platform_device *pdev)
 			core->is_hw_virt = true;
 	}
 
+	if (of_property_read_u32(pdev->dev.of_node, "hyp-assign", &core->hyp_assign)) {
+		d_vpr_h("Failed to read hyp-assign. Defaulting to 1");
+		core->hyp_assign = 1;
+	} else {
+		d_vpr_h("Read hyp_assign %u from DT", core->hyp_assign);
+	}
+
 	core->debugfs_parent = msm_vidc_debugfs_init_drv();
 	if (!core->debugfs_parent)
 		d_vpr_h("Failed to create debugfs for msm_vidc\n");
