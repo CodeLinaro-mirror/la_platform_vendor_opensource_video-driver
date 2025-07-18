@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2025. Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef __H_VIDC_HFI_HELPER_H__
@@ -747,10 +746,7 @@ struct hfi_uncompressed_plane_constraints {
 struct hfi_uncompressed_plane_info {
 	u32 format;
 	u32 num_planes;
-	union {
 	struct hfi_uncompressed_plane_constraints rg_plane_format[1];
-	__DECLARE_FLEX_ARRAY(struct hfi_uncompressed_plane_constraints, rg_plane_format_flex);
-	};
 };
 
 struct hfi_vpe_color_space_conversion {
@@ -904,20 +900,14 @@ struct hfi_cmd_sys_set_property_packet {
 	u32 size;
 	u32 packet_type;
 	u32 num_properties;
-	union {
-               u32 rg_property_data[1];
-               __DECLARE_FLEX_ARRAY(u32, rg_property_data_flex);
-   };
+	u32 rg_property_data[2];
 };
 
 struct hfi_cmd_sys_get_property_packet {
 	u32 size;
 	u32 packet_type;
 	u32 num_properties;
-	union {
-               u32 rg_property_data[1];
-               __DECLARE_FLEX_ARRAY(u32, rg_property_data_flex);
-   };
+	u32 rg_property_data[1];
 };
 
 struct hfi_cmd_sys_session_init_packet {
@@ -967,10 +957,7 @@ struct hfi_cmd_session_set_property_packet {
 	u32 packet_type;
 	u32 sid;
 	u32 num_properties;
-	union {
-               u32 rg_property_data[1];
-               __DECLARE_FLEX_ARRAY(u32, rg_property_data_flex);
-   };
+	u32 rg_property_data[1];
 };
 
 struct hfi_cmd_session_set_buffers_packet {
@@ -1051,11 +1038,7 @@ struct hfi_msg_sys_debug_packet {
 	u32 msg_size;
 	u32 time_stamp_hi;
 	u32 time_stamp_lo;
-	union {
-                u8 rg_msg_data[1];
-                __DECLARE_FLEX_ARRAY(u8, rg_msg_data_flex);
-  };
-
+	u8 rg_msg_data[1];
 };
 
 struct hfi_msg_sys_coverage_packet {
