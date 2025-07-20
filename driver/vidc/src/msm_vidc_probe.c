@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2022, The Linux Foundation. All rights reserved.
- * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include <linux/workqueue.h>
@@ -16,8 +16,6 @@
 #include <linux/soc/qcom/msm_mmrm.h>
 #endif
 
-#include <soc/qcom/boot_stats.h>
-
 #include "msm_vidc_internal.h"
 #include "msm_vidc_debug.h"
 #include "msm_vidc_driver.h"
@@ -25,18 +23,18 @@
 #include "msm_vidc_core.h"
 #include "msm_vidc_memory.h"
 #include "venus_hfi.h"
-#include "video_generated_h"
 #ifdef MSM_VIDC_HW_VIRT
-#include "vidc_hw_virt.h"
 #include <linux/reboot.h>
+#include "vidc_hw_virt.h"
 #endif
 
 #define BASE_DEVICE_NUMBER 32
 
 struct msm_vidc_core *g_core;
 
-const char video_banner[] = "Video-Banner: (" VIDEO_COMPILE_BY "@"
-	VIDEO_COMPILE_HOST ") (" VIDEO_COMPILE_TIME ")";
+const char video_banner[] = "Video-Banner: (" __stringify(VIDEO_COMPILE_BY) "@"
+	__stringify(VIDEO_COMPILE_HOST) ") (" __stringify(VIDEO_COMPILE_TIME) ")";
+
 
 static inline bool is_video_device(struct device *dev)
 {
@@ -621,7 +619,7 @@ static int msm_vidc_remove_context_bank(struct platform_device *pdev)
 	return 0;
 }
 
-static int msm_vidc_remove(struct platform_device *pdev)
+static int __remove(struct platform_device *pdev)
 {
 	/*
 	 * Sub devices remove will be triggered by of_platform_depopulate()
@@ -637,6 +635,18 @@ static int msm_vidc_remove(struct platform_device *pdev)
 	WARN_ON(1);
 	return -EINVAL;
 }
+
+#if (KERNEL_VERSION(6, 12, 0) <= LINUX_VERSION_CODE)
+static void msm_vidc_remove(struct platform_device *pdev)
+{
+        __remove(pdev);
+}
+#else
+static int msm_vidc_remove(struct platform_device *pdev)
+{
+        return __remove(pdev);
+}
+#endif
 
 #ifdef MSM_VIDC_HW_VIRT
 static int vidc_reboot_notify(
