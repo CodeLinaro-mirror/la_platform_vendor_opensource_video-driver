@@ -3687,6 +3687,8 @@ int msm_vidc_vb2_queue_init(struct msm_vidc_inst *inst)
 		goto fail_in_meta_alloc;
 	}
 
+	inst->bufq[INPUT_META_PORT].vb2q->lock = &inst->ctx_q_lock;
+
 	/* do input meta port queues initialization */
 	rc = vb2q_init(inst, inst->bufq[INPUT_META_PORT].vb2q, INPUT_META_PLANE);
 	if (rc)
@@ -3698,6 +3700,8 @@ int msm_vidc_vb2_queue_init(struct msm_vidc_inst *inst)
 		rc = -ENOMEM;
 		goto fail_out_meta_alloc;
 	}
+
+	inst->bufq[OUTPUT_META_PORT].vb2q->lock = &inst->ctx_q_lock;
 
 	/* do output meta port queues initialization */
 	rc = vb2q_init(inst, inst->bufq[OUTPUT_META_PORT].vb2q, OUTPUT_META_PLANE);
@@ -5311,6 +5315,24 @@ struct msm_vidc_inst *get_inst_ref(struct msm_vidc_core *core,
 	mutex_lock(&core->lock);
 	list_for_each_entry(inst, &core->instances, list) {
 		if (inst == instance) {
+			matches = true;
+			break;
+		}
+	}
+	inst = matches ? get_inst_ref_locked(inst) : NULL;
+	mutex_unlock(&core->lock);
+	return inst;
+}
+
+struct msm_vidc_inst *get_inst_using_session_id(struct msm_vidc_core *core,
+		u32 session_id)
+{
+	struct msm_vidc_inst *inst = NULL;
+	bool matches = false;
+
+	mutex_lock(&core->lock);
+	list_for_each_entry(inst, &core->instances, list) {
+		if (inst->session_id == session_id) {
 			matches = true;
 			break;
 		}
