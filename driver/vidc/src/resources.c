@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
-/* Copyright (c) 2022,2024 Qualcomm Innovation Center, Inc. All rights reserved. */
 
 #include <linux/sort.h>
 #include <linux/clk.h>
@@ -113,7 +113,7 @@ static int __init_register_base(struct msm_vidc_core *core)
 			__func__, PTR_ERR(res->register_base_addr));
 		return -EINVAL;
 	}
-	d_vpr_h("%s: reg_base %#x\n", __func__, res->register_base_addr);
+	d_vpr_h("%s: reg_base %pK\n", __func__, res->register_base_addr);
 
 	return 0;
 }
@@ -178,7 +178,7 @@ static int __init_bus(struct msm_vidc_core *core)
 	bus_count = core->platform->data.bw_tbl_size;
 
 	if (!bus_tbl || !bus_count) {
-		d_vpr_e("%s: invalid bus tbl %#x or count %d\n",
+		d_vpr_e("%s: invalid bus tbl %pK or count %d\n",
 			__func__, bus_tbl, bus_count);
 		return -EINVAL;
 	}
@@ -251,7 +251,7 @@ static int __init_regulators(struct msm_vidc_core *core)
 	regulator_count = core->platform->data.regulator_tbl_size;
 
 	if (!regulator_tbl || !regulator_count) {
-		d_vpr_e("%s: invalid regulator tbl %#x or count %d\n",
+		d_vpr_e("%s: invalid regulator tbl %pK or count %d\n",
 			__func__, regulator_tbl, regulator_count);
 		return -EINVAL;
 	}
@@ -310,7 +310,7 @@ static int __init_clocks(struct msm_vidc_core *core)
 	clk_count = core->platform->data.clk_tbl_size;
 
 	if (!clk_tbl || !clk_count) {
-		d_vpr_e("%s: invalid clock tbl %#x or count %d\n",
+		d_vpr_e("%s: invalid clock tbl %pK or count %d\n",
 			__func__, clk_tbl, clk_count);
 		return -EINVAL;
 	}
@@ -370,7 +370,7 @@ static int __init_reset_clocks(struct msm_vidc_core *core)
 	rst_count = core->platform->data.clk_rst_tbl_size;
 
 	if (!rst_tbl || !rst_count) {
-		d_vpr_e("%s: invalid reset tbl %#x or count %d\n",
+		d_vpr_e("%s: invalid reset tbl %pK or count %d\n",
 			__func__, rst_tbl, rst_count);
 		return -EINVAL;
 	}
@@ -430,7 +430,7 @@ static int __init_subcaches(struct msm_vidc_core *core)
 	llcc_count = core->platform->data.subcache_tbl_size;
 
 	if (!llcc_tbl || !llcc_count) {
-		d_vpr_e("%s: invalid llcc tbl %#x or count %d\n",
+		d_vpr_e("%s: invalid llcc tbl %pK or count %d\n",
 			__func__, llcc_tbl, llcc_count);
 		return -EINVAL;
 	}
@@ -488,7 +488,7 @@ static int __init_freq_table(struct msm_vidc_core *core)
 	freq_count = core->platform->data.freq_tbl_size;
 
 	if (!freq_tbl || !freq_count) {
-		d_vpr_e("%s: invalid freq tbl %#x or count %d\n",
+		d_vpr_e("%s: invalid freq tbl %pK or count %d\n",
 			__func__, freq_tbl, freq_count);
 		return -EINVAL;
 	}
@@ -535,7 +535,7 @@ static int __init_context_banks(struct msm_vidc_core *core)
 	cb_count = core->platform->data.context_bank_tbl_size;
 
 	if (!cb_tbl || !cb_count) {
-		d_vpr_e("%s: invalid context bank tbl %#x or count %d\n",
+		d_vpr_e("%s: invalid context bank tbl %pK or count %d\n",
 			__func__, cb_tbl, cb_count);
 		return -EINVAL;
 	}

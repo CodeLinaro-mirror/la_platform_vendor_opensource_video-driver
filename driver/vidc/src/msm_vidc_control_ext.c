@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include <media/v4l2_vidc_extensions.h>
@@ -187,7 +187,7 @@ int msm_vidc_set_ir_period(void *instance,
 		ir_type = HFI_PROP_IR_CYCLIC_PERIOD;
 	} else {
 		i_vpr_e(inst, "%s: invalid ir_type %d\n",
-			__func__, inst->capabilities->cap[IR_TYPE]);
+			__func__, inst->capabilities->cap[IR_TYPE].value);
 		return -EINVAL;
 	}
 
