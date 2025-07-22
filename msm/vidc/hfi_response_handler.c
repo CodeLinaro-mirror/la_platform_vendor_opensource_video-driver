@@ -549,13 +549,13 @@ static void hfi_process_sess_get_prop_buf_req(
 	req_bytes = prop->size - sizeof(
 			struct hfi_msg_session_property_info_packet);
 	if (!req_bytes || req_bytes % sizeof(struct hfi_buffer_requirements) ||
-		!prop->rg_property_data[1]) {
+		!prop->rg_property_data_flex[1]) {
 		s_vpr_e(sid, "%s: bad_pkt: %d\n", __func__,	req_bytes);
 		return;
 	}
 
 	hfi_buf_req = (struct hfi_buffer_requirements *)
-		&prop->rg_property_data[1];
+		&prop->rg_property_data_flex[1];
 
 	if (!hfi_buf_req) {
 		s_vpr_e(sid, "%s: invalid buffer req pointer\n", __func__);
@@ -653,7 +653,7 @@ static int hfi_process_session_prop_info(u32 device_id,
 	}
 	s_vpr_h(pkt->sid, "Received SESSION_PROPERTY_INFO\n");
 
-	switch (pkt->rg_property_data[0]) {
+	switch (pkt->rg_property_data_flex[0]) {
 	case HFI_PROPERTY_CONFIG_BUFFER_REQUIREMENTS:
 		hfi_process_sess_get_prop_buf_req(pkt, &buff_req, pkt->sid);
 		cmd_done.device_id = device_id;
@@ -668,7 +668,7 @@ static int hfi_process_session_prop_info(u32 device_id,
 		return 0;
 	default:
 		s_vpr_h(pkt->sid, "%s: unknown_prop_id: %x\n",
-				__func__, pkt->rg_property_data[0]);
+				__func__, pkt->rg_property_data_flex[0]);
 		return -ENOTSUPP;
 	}
 }

@@ -488,7 +488,7 @@ struct hfi_cmd_session_get_property_packet {
 	u32 packet_type;
 	u32 sid;
 	u32 num_properties;
-	u32 rg_property_data[2];
+	u32 rg_property_data[1];
 };
 
 struct hfi_cmd_session_release_buffer_packet {
@@ -684,7 +684,10 @@ struct hfi_msg_session_property_info_packet {
 	u32 packet_type;
 	u32 sid;
 	u32 num_properties;
-	u32 rg_property_data[2];
+	union {
+	u32 rg_property_data[1];
+	__DECLARE_FLEX_ARRAY(u32, rg_property_data_flex);
+	};
 };
 
 struct hfi_msg_session_release_resources_done_packet {

@@ -1038,7 +1038,11 @@ struct hfi_msg_sys_debug_packet {
 	u32 msg_size;
 	u32 time_stamp_hi;
 	u32 time_stamp_lo;
+	union {
 	u8 rg_msg_data[1];
+	__DECLARE_FLEX_ARRAY(u8, rg_msg_data_flex);
+};
+
 };
 
 struct hfi_msg_sys_coverage_packet {
