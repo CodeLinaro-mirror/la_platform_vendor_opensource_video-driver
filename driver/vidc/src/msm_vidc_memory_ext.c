@@ -143,7 +143,10 @@ static int msm_vidc_memory_alloc_ext(struct msm_vidc_core *core, struct msm_vidc
 			heap_name = "qcom,secure-non-pixel";
 			break;
 		case MSM_VIDC_SECURE_BITSTREAM:
-			heap_name = "qcom,system";
+			if (core->hyp_assign)
+				heap_name = "qcom,system";
+			else
+				heap_name = "system-secure";
 			break;
 		default:
 			d_vpr_e("invalid secure region : %#x\n", mem->region);
@@ -168,7 +171,7 @@ static int msm_vidc_memory_alloc_ext(struct msm_vidc_core *core, struct msm_vidc
 		goto error;
 	}
 
-	if (mem->secure && mem->type == MSM_VIDC_BUF_BIN)
+	if (mem->secure && mem->type == MSM_VIDC_BUF_BIN && core->hyp_assign)
 	{
 		vmids[0] = VMID_CP_BITSTREAM;
 		perms[0] = PERM_READ | PERM_WRITE;
