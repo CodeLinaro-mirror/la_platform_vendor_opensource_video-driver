@@ -721,7 +721,7 @@ static struct msm_platform_inst_capability instance_cap_data_sun[] = {
 		CAP_FLAG_INPUT_PORT},
 
 	{EARLY_NOTIFY_LINE_COUNT, DEC, H264 | HEVC | AV1,
-		0, 1, 1, 0,
+		0, 8192, 256, 0,
 		V4L2_CID_MPEG_VIDC_EARLY_NOTIFY_LINE_COUNT,
 		HFI_PROP_EARLY_NOTIFY_LINE_COUNT,
 		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
