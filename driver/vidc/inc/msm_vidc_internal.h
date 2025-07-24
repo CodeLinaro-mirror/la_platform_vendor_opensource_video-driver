@@ -210,6 +210,7 @@ enum msm_vidc_metadata_bits {
 #define SW_PC_DELAY_VALUE             (HW_RESPONSE_TIMEOUT_VALUE + 500)
 #define FW_UNLOAD_DELAY_VALUE         (SW_PC_DELAY_VALUE + 1500)
 
+#define MAX_FENCE_COUNT 10
 #define MAX_DPB_COUNT 32
  /*
   * max dpb count in firmware = 16
@@ -301,6 +302,9 @@ enum msm_vidc_metadata_bits {
 	CAP(DELIVERY_MODE)                        \
 	CAP(VUI_TIMING_INFO)                      \
 	CAP(SLICE_DECODE)                         \
+	CAP(EARLY_NOTIFY_ENABLE)                  \
+	CAP(EARLY_NOTIFY_LINE_COUNT)              \
+	CAP(EARLY_NOTIFY_FENCE_COUNT)             \
 	CAP(INBUF_FENCE_TYPE)                     \
 	CAP(OUTBUF_FENCE_TYPE)                    \
 	CAP(INBUF_FENCE_DIRECTION)                \
@@ -851,10 +855,11 @@ struct msm_vidc_hfi_frame_info {
 	u32                    cf;
 	u32                    data_corrupt;
 	u32                    overflow;
-	u32                    fence_id;
 	u32                    fence_error;
 	u32                    av1_tile_rows_columns;
 	bool                   av1_non_uniform_tile_spacing;
+	u32                    fence_id[MAX_FENCE_COUNT];
+	u32                    fence_count;
 };
 
 struct msm_vidc_decode_vpp_delay {
@@ -943,6 +948,7 @@ struct msm_vidc_fence {
 	int                         fd;
 	u64                         fence_id;
 	void                        *session;
+	struct dma_fence            *imp_fence;
 };
 
 struct msm_vidc_mem {
@@ -994,9 +1000,10 @@ struct msm_vidc_buffer {
 	struct sg_table                   *sg_table;
 	struct dma_buf_attachment         *attach;
 	u32                                dbuf_get:1;
-	u64                                fence_id;
 	u32                                start_time_ms;
 	u32                                end_time_ms;
+	u64                                fence_id[MAX_FENCE_COUNT];
+	u32                                fence_count;
 };
 
 struct msm_vidc_buffers {

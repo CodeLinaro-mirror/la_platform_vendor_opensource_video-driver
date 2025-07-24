@@ -67,6 +67,11 @@ static inline bool is_output_meta_buffer(enum msm_vidc_buffer_type buffer_type)
 	return buffer_type == MSM_VIDC_BUF_OUTPUT_META;
 }
 
+static inline bool is_early_notify_enabled(struct msm_vidc_inst *inst)
+{
+	return !!(inst->capabilities[EARLY_NOTIFY_ENABLE].value);
+}
+
 static inline bool is_ts_reorder_allowed(struct msm_vidc_inst *inst)
 {
 	return !!(inst->capabilities[TS_REORDER].value &&
