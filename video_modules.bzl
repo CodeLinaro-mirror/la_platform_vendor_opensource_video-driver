@@ -85,10 +85,6 @@ module_entry(
             "driver/vidc/src/msm_vidc_md.c",
         ],
     },
-    deps = [
-            "//vendor/qcom/opensource/virtio-video:autogvm_perf_msm_virtio_video",
-            "//vendor/qcom/opensource/virtio-video:virtio_video_driver_headers",
-        ],
 )
 
 module_entry(
@@ -169,8 +165,4 @@ module_entry(
             "driver/vidc/src/msm_vidc_md.c",
         ],
     },
-    deps = [
-            "//vendor/qcom/opensource/virtio-video:autogvm_perf_msm_virtio_video",
-            "//vendor/qcom/opensource/virtio-video:virtio_video_driver_headers",
-        ],
 )

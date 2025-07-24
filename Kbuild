@@ -35,20 +35,16 @@ LINUXINCLUDE    += -include $(VIDEO_ROOT)/config/anorak_video.h \
 endif
 
 ifeq ($(CONFIG_ARCH_LEMANS), y)
-ifeq ($(BOARD_PLATFORM), gen5)
-KBUILD_CPPFLAGS += -DMSM_VIDC_HW_VIRT
-include $(VIDEO_ROOT)/config/nordau_video.conf
-LINUXINCLUDE    += -include $(VIDEO_ROOT)/config/nordau_video.h \
-                   -I$(VIDEO_ROOT)/driver/platform/nordau/inc
-else
+ifneq ($(BOARD_PLATFORM), gen5) #Lemans and not Nordy HGY
 include $(VIDEO_ROOT)/config/lemans_video.conf
 LINUXINCLUDE    += -include $(VIDEO_ROOT)/config/lemans_video.h \
                    -I$(VIDEO_ROOT)/driver/platform/lemans/inc
 endif
 endif
 
-ifeq ($(CONFIG_ARCH_NORDAU), y)
+ifeq ($(BOARD_PLATFORM), gen5)
 ifeq ($(ENABLE_HYP), true)
+$(warning "Hw virt enabled")
 KBUILD_CPPFLAGS += -DMSM_VIDC_HW_VIRT
 endif
 include $(VIDEO_ROOT)/config/nordau_video.conf

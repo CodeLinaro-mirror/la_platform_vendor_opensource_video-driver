@@ -127,6 +127,7 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
     kernel_build = "{}_{}".format(target, variant)
 
     deps = []
+    auto_deps = []
     all_module_deps = select({
         "//build/kernel/kleaf:socrepo_true": [
             "//soc-repo:all_headers",
@@ -168,6 +169,10 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
                 "CONFIG_MSM_VIDC_IRIS33_AU",
                 "MSM_VIDC_HW_VIRT",
             ]
+            auto_deps = [
+                "//vendor/qcom/opensource/virtio-video:{}_msm_virtio_video".format(kernel_build),
+                "//vendor/qcom/opensource/virtio-video:virtio_video_driver_headers",
+            ]
         else:
             config_options = [
                 "CONFIG_MSM_VIDC_ANDROID",
@@ -206,7 +211,7 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
             name = rule_name,
             srcs = module_srcs,
             out = "{}.ko".format(module.name),
-            deps = headers + all_module_deps + _get_kernel_build_module_deps(module, options, formatter),
+            deps = headers + all_module_deps + auto_deps + _get_kernel_build_module_deps(module, options, formatter),
             kernel_build = kernel_build_label,
             local_defines = options.keys(),
         )
