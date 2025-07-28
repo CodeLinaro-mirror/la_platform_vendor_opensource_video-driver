@@ -12,11 +12,6 @@
 #include <linux/firmware/qcom/qcom_scm.h>
 #include <linux/soc/qcom/mdt_loader.h>
 #include <linux/soc/qcom/llcc-qcom.h>
-#include <linux/dma-fence.h>
-#include <linux/iosys-map.h>
-#include <linux/dma-direction.h>
-#include <media/videobuf2-core.h>
-#include <linux/vmalloc.h>
 #include <linux/iopoll.h>
 
 #include "venus_hfi.h"
@@ -827,7 +822,7 @@ void venus_hfi_pm_work_handler(struct work_struct *work)
 		core->skip_pc_count++;
 		d_vpr_e("%s: retry power collapse (count %d)\n",
 			__func__, core->skip_pc_count);
-		//__schedule_power_collapse_work(core);
+		__schedule_power_collapse_work(core);
 		break;
 	default:
 		d_vpr_e("%s: power collapse failed\n", __func__);

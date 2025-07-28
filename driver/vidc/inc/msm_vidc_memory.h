@@ -81,7 +81,7 @@ struct msm_vidc_memory_ops {
 	int (*mem_dma_unmap_page)(struct msm_vidc_core *core,
 				  struct msm_vidc_mem *mem);
 	u32 (*buffer_region)(struct msm_vidc_inst *inst,
-			     enum msm_vidc_buffer_type buffer_type, const char *func);
+			     enum msm_vidc_buffer_type buffer_type);
 	int (*iommu_map)(struct msm_vidc_core *core,
 			 struct msm_vidc_mem *mem);
 	int (*iommu_unmap)(struct msm_vidc_core *core,

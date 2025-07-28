@@ -346,7 +346,7 @@ static inline bool is_crc_enabled(struct msm_vidc_core *core)
 }
 
 static u32 msm_vidc_buffer_region_ext(struct msm_vidc_inst *inst,
-	enum msm_vidc_buffer_type buffer_type, const char *func)
+	enum msm_vidc_buffer_type buffer_type)
 {
 	struct msm_vidc_core *core = inst->core;
 	u32 region = MSM_VIDC_NON_SECURE;

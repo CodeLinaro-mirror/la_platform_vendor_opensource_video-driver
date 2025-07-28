@@ -385,7 +385,7 @@ int msm_vb2_queue_setup(struct vb2_queue *q,
 		return rc;
 	}
 
-	region = call_platform_op(core, buffer_region, inst, buffer_type, __func__);
+	region = call_mem_op(core, buffer_region, inst, buffer_type);
 	cb = msm_vidc_get_context_bank_for_region(core, region);
 	if (!cb) {
 		d_vpr_e("%s: Failed to get context bank device\n",

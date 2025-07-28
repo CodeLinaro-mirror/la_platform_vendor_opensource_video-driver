@@ -3,10 +3,6 @@
  * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
-#include <linux/sync_file.h>
-#include <linux/file.h>
-#include <linux/vmalloc.h>
-
 #include "msm_vidc_fence.h"
 #include "msm_vidc_driver.h"
 #include "msm_vidc_debug.h"
