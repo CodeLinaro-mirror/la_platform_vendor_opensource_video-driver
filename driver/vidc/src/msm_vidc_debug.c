@@ -26,8 +26,8 @@ extern struct msm_vidc_core *g_core;
 #define MSM_VIDC_MIN_STATS_DELAY_MS     200
 #define MSM_VIDC_MAX_STATS_DELAY_MS     10000
 
-unsigned int msm_vidc_debug = 0x0FFFFFFF; //DRV_LOG;
-unsigned int msm_fw_debug = 0x0FFFFFFF; //FW_LOG;
+unsigned int msm_vidc_debug = DRV_LOG;
+unsigned int msm_fw_debug = FW_LOG;
 
 /* disabled synx fence by default temporarily */
 bool msm_vidc_synx_fence_enable = false;

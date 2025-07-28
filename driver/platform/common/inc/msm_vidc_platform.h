@@ -38,14 +38,6 @@
 	.purpose = p                     \
 }
 
-#define LICENSE_DATA(sa, s, lv_sh, sku_sh) \
-{	                                       \
-	.start_address = sa,                   \
-	.header_size = s,                      \
-	.license_validity_shift = lv_sh,       \
-	.sku_id_shift = sku_sh,                \
-}
-
 extern u32 vpe_csc_custom_matrix_coeff[MAX_MATRIX_COEFFS];
 extern u32 vpe_csc_custom_bias_coeff[MAX_BIAS_COEFFS];
 extern u32 vpe_csc_custom_limit_coeff[MAX_LIMIT_COEFFS];
@@ -193,14 +185,6 @@ struct msm_vidc_efuse_data {
 	enum efuse_purpose purpose;
 };
 
-struct msm_vidc_license_data {
- 	u32 start_address;
- 	u32 header_size;
- 	u32 license_validity_shift;
- 	u32 sku_id_shift;
-};
-
-
 struct msm_vidc_format_capability {
 	struct codec_info *codec_info;
 	u32 codec_info_size;
@@ -286,8 +270,6 @@ struct msm_vidc_platform_data {
 	unsigned int dec_output_prop_size_av1;
 	const u32  *msm_vidc_ssr_type;
 	unsigned int msm_vidc_ssr_type_size;
-	struct msm_vidc_license_data *license_data;
-	unsigned int license_data_size;
 
 };
 
@@ -323,8 +305,6 @@ static inline bool is_mmrm_supported(struct msm_vidc_core *core)
 
 int msm_vidc_init_platform(struct msm_vidc_core *core);
 int msm_vidc_read_efuse(struct msm_vidc_core *core);
-int msm_vidc_get_license_fp_info(struct msm_vidc_core *core);
-
 
 /* control framework support functions */
 
@@ -374,7 +354,6 @@ int msm_vidc_adjust_brs(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_bitrate_boost(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_min_quality(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_enc_lowlatency_mode(void *instance, struct v4l2_ctrl *ctrl);
-int msm_vidc_adjust_dec_lowlatency_mode(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_session_priority(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_roi_info(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_all_intra(void *instance, struct v4l2_ctrl *ctrl);

@@ -16,7 +16,6 @@
 #include "msm_vidc_debug.h"
 #include "msm_vidc_variant.h"
 #include "venus_hfi.h"
-#include "msm_vidc_buffer.h"
 
 #define VIDEO_ARCH_LX 1
 
@@ -316,6 +315,11 @@ disable_power:
 		d_vpr_e("%s: disable regulator vcodec failed\n", __func__);
 		rc = 0;
 	}
+	rc = call_res_op(core, clk_disable, core, "vcodec_clk"); //need to check
+	if (rc) {
+		d_vpr_e("%s: disable unprepare vcodec_clk failed\n", __func__);
+		rc = 0;
+	}
 
 	return rc;
 }
@@ -370,6 +374,13 @@ static int __power_off_iris2_controller(struct msm_vidc_core *core)
 		rc = 0;
 	}
 
+	/* Disable gcc_video_axi0_clk clock */
+	/*rc = call_res_op(core, clk_disable, core, "gcc_video_axi0_clk"); //update correct clock
+	if (rc) {
+		d_vpr_e("%s: disable unprepare gcc_video_axi0_clk failed\n", __func__);
+		rc = 0;
+	}*/
+
 	rc = call_res_op(core, reset_bridge, core);
 	if (rc) {
 		d_vpr_e("%s: reset bridge failed\n", __func__);
@@ -412,7 +423,7 @@ static int __power_off_iris2(struct msm_vidc_core *core)
 		d_vpr_e("%s: failed to unvote buses\n", __func__);
 
 	if (!call_venus_op(core, watchdog, core, core->intr_status))
-		disable_irq_nosync(core->irq);
+		disable_irq_nosync(core->resource->irq);
 
 	msm_vidc_change_core_sub_state(core, CORE_SUBSTATE_POWER_ENABLE, 0, __func__);
 
@@ -439,12 +450,6 @@ static int __power_on_iris2_controller(struct msm_vidc_core *core)
 	if (rc)
 		goto fail_clk_controller;
 
-	int ret = call_res_op(core, clk_enable, core, "video_cc_mvsc_ctl_axi");
-	if (rc)
-		goto fail_clk_controller;
-
-	ret = call_res_op(core, clk_enable, core, "video_cc_mvs0_ctl_axi");
-
 	return 0;
 
 fail_clk_controller:
@@ -465,10 +470,6 @@ static int __power_on_iris2_hardware(struct msm_vidc_core *core)
 		goto fail_regulator;
 
 	rc = call_res_op(core, clk_enable, core, "vcodec_clk");
-	if (rc)
-		goto fail_clk_controller;
-
-	rc = call_res_op(core, clk_enable, core, "iface_clk");
 	if (rc)
 		goto fail_clk_controller;
 
@@ -518,7 +519,7 @@ static int __power_on_iris2(struct msm_vidc_core *core)
 	if (rc)
 		goto fail_power_on_substate;
 
-	freq_tbl = core->freq_tbl;
+	freq_tbl = core->resource->freq_set.freq_tbl;
 	freq = core->power.clk_freq ? core->power.clk_freq :
 				      freq_tbl[0].freq;
 
@@ -538,7 +539,7 @@ static int __power_on_iris2(struct msm_vidc_core *core)
 
 	__interrupt_init_iris2(core);
 	core->intr_status = 0;
-	enable_irq(core->irq);
+	enable_irq(core->resource->irq);
 
 	return rc;
 
@@ -802,7 +803,7 @@ int msm_vidc_decide_work_mode_iris2(struct msm_vidc_inst *inst)
 	}
 
 exit:
-	i_vpr_h(inst, "Configuring work mode = %u low latency = %lld, gop size = %lld\n",
+	i_vpr_h(inst, "Configuring work mode = %u low latency = %u, gop size = %u\n",
 		work_mode, inst->capabilities[LOWLATENCY_MODE].value,
 		inst->capabilities[GOP_SIZE].value);
 	msm_vidc_update_cap_value(inst, STAGE, work_mode, __func__);
@@ -850,8 +851,8 @@ int msm_vidc_adjust_blur_type_iris2(void *instance, struct v4l2_ctrl *ctrl)
 {
 	s32 adjusted_value;
 	struct msm_vidc_inst *inst = (struct msm_vidc_inst *)instance;
-	s64 rc_type = -1, cac = -1;
-	s64 pix_fmts = -1, min_quality = -1;
+	s32 rc_type = -1, cac = -1;
+	s32 pix_fmts = -1, min_quality = -1;
 
 	adjusted_value = ctrl ? ctrl->val :
 		inst->capabilities[BLUR_TYPES].value;

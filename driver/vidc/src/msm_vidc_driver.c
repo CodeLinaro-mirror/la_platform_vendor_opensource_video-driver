@@ -2061,7 +2061,7 @@ int msm_vidc_allocate_buffers(struct msm_vidc_inst *inst,
 		list_add_tail(&buf->list, &buffers->list);
 		buf->type = buf_type;
 		buf->index = idx;
-		buf->region = call_platform_op(core, buffer_region, inst, buf_type, __func__);
+		buf->region = call_mem_op(core, buffer_region, inst, buf_type);
 	}
 	i_vpr_h(inst, "%s: allocated %d buffers for type %s\n",
 		__func__, num_buffers, buf_name(buf_type));
@@ -2846,7 +2846,7 @@ int msm_vidc_create_internal_buffer(struct msm_vidc_inst *inst,
 	}
 	INIT_LIST_HEAD(&mem->list);
 	mem->type = buffer_type;
-	mem->region = call_platform_op(core, buffer_region, inst, buffer_type, __func__);
+	mem->region = call_mem_op(core, buffer_region, inst, buffer_type);
 	mem->size = buffer->buffer_size;
 	mem->secure = is_secure_region(mem->region);
 	rc = call_mem_op(core, memory_alloc_map, core, mem);
