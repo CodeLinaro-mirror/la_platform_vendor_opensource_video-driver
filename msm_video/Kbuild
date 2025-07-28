@@ -4,11 +4,6 @@ KBUILD_CPPFLAGS += -DCONFIG_MSM_MMRM=1
 VIDEO_DRIVER_ABS_PATH := $(VIDEO_ROOT)/msm_video/driver
 VIDEO_DRIVER_REL_PATH := ../msm_video/driver
 
-ifeq ($(CONFIG_ARCH_YUPIK), y)
-include $(VIDEO_ROOT)/config/yupik_video.conf
-LINUXINCLUDE   += -include $(VIDEO_ROOT)/config/yupik_video.h
-endif
-
 ifeq ($(CONFIG_ARCH_PINEAPPLE), y)
 include $(VIDEO_ROOT)/config/pineapple_video.conf
 LINUXINCLUDE   += -include $(VIDEO_ROOT)/config/pineapple_video.h
@@ -22,11 +17,6 @@ endif
 ifeq ($(CONFIG_MSM_VIDC_PINEAPPLE), y)
 LINUXINCLUDE   += -I$(VIDEO_DRIVER_ABS_PATH)/platform/pineapple/inc \
                   -I$(VIDEO_DRIVER_ABS_PATH)/variant/iris33/inc
-endif
-
-ifeq ($(CONFIG_MSM_VIDC_YUPIK), y)
-LINUXINCLUDE   += -I$(VIDEO_DRIVER_ABS_PATH)/platform/yupik/inc \
-                  -I$(VIDEO_DRIVER_ABS_PATH)/variant/iris2/inc
 endif
 
 ifeq ($(CONFIG_MSM_VIDC_SUN), y)
@@ -47,12 +37,6 @@ USERINCLUDE    += -I$(VIDEO_ROOT)/include/uapi/vidc/media \
 
 obj-m += msm_video.o
 
-ifeq ($(CONFIG_MSM_VIDC_YUPIK), y)
-msm_video-objs += $(VIDEO_DRIVER_REL_PATH)/variant/iris2/src/msm_vidc_buffer_iris2.o \
-                  $(VIDEO_DRIVER_REL_PATH)/variant/iris2/src/msm_vidc_iris2.o \
-                  $(VIDEO_DRIVER_REL_PATH)/variant/iris2/src/msm_vidc_power_iris2.o \
-                  $(VIDEO_DRIVER_REL_PATH)/platform/volcano/src/msm_vidc_yupik.o
-endif
 ifeq ($(CONFIG_MSM_VIDC_PINEAPPLE), y)
 msm_video-objs += $(VIDEO_DRIVER_REL_PATH)/platform/pineapple/src/msm_vidc_pineapple.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/iris33/src/msm_vidc_buffer_iris33.o \
