@@ -30,14 +30,6 @@ ddk_headers(
 )
 
 ddk_headers(
-    name = "lahaina_headers",
-    hdrs = glob([
-      "driver/platform/yupik/inc/*.h",
-    ]),
-    includes = ["driver/platform/yupik/inc"]
-)
-
-ddk_headers(
     name = "tuna_headers",
     hdrs = glob([
       "driver/platform/tuna/inc/*.h",
@@ -62,14 +54,6 @@ ddk_headers(
 )
 
 ddk_headers(
-    name = "iris2_headers",
-    hdrs = glob([
-      "driver/variant/iris2/inc/*.h",
-    ]),
-    includes = ["driver/variant/iris2/inc"]
-)
-
-ddk_headers(
     name = "iris35_headers",
     hdrs = glob([
       "driver/variant/iris35/inc/*.h",
@@ -89,7 +73,7 @@ ddk_headers(
 
 ddk_headers(
     name = "video_driver_headers",
-    hdrs = [":uapi_headers", "pineapple_headers", "sun_headers", "tuna_headers", "kera_headers", "lahaina_headers", "iris2_headers", "iris33_headers", "iris35_headers", "vidc_headers"]
+    hdrs = [":uapi_headers", "pineapple_headers", "sun_headers", "tuna_headers", "kera_headers", "iris33_headers", "iris35_headers", "vidc_headers"]
 )
 
 load(":target.bzl", "define_target_modules")

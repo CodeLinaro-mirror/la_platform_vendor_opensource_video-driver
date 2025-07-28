@@ -22,10 +22,6 @@
 #include "hfi_property.h"
 #include "venus_hfi.h"
 
-#if defined(CONFIG_MSM_VIDC_YUPIK)
-#include "msm_vidc_yupik.h"
-#include "msm_vidc_iris2.h"
-#endif
 #if defined(CONFIG_MSM_VIDC_SUN)
 #include "msm_vidc_sun.h"
 #include "msm_vidc_iris35.h"
@@ -219,13 +215,6 @@ static const struct msm_vidc_compat_handle compat_handle[] = {
 		.compat                     = "qcom,sm8650-vidc-v2",
 		.init_platform              = msm_vidc_init_platform_pineapple,
 		.init_iris                  = msm_vidc_init_iris33,
-	},
-#endif
-#if defined(CONFIG_MSM_VIDC_YUPIK)
-	{
-		.compat                     = "qcom,yupik-vidc",
-		.init_platform              = msm_vidc_init_platform_yupik,
-		.init_iris                  = msm_vidc_init_iris2,
 	},
 #endif
 #if defined(CONFIG_MSM_VIDC_SUN)
