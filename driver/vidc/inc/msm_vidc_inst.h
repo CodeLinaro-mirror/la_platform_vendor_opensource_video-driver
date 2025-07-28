@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #ifndef _MSM_VIDC_INST_H_
@@ -17,6 +17,10 @@ struct msm_vidc_inst;
 #define call_session_op(c, op, ...)			\
 	(((c) && (c)->session_ops && (c)->session_ops->op) ? \
 	((c)->session_ops->op(__VA_ARGS__)) : 0)
+
+#define call_platform_op(c, op, ...)			\
+	(((c) && (c)->platform_ops && (c)->platform_ops->op) ? \
+	((c)->platform_ops->op(__VA_ARGS__)) : 0)
 
 struct msm_vidc_session_ops {
 	u64 (*calc_freq)(struct msm_vidc_inst *inst, u32 data_size);

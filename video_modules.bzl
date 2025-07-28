@@ -14,7 +14,6 @@ module_entry(
         "driver/vidc/src/msm_vidc_driver.c",
         "driver/vidc/src/msm_vidc_state.c",
         "driver/vidc/src/msm_vidc_control.c",
-        "driver/vidc/src/msm_vidc_control_ext.c",
         "driver/vidc/src/msm_vidc_buffer.c",
         "driver/vidc/src/msm_vidc_power.c",
         "driver/vidc/src/msm_vidc_probe.c",
@@ -58,6 +57,12 @@ module_entry(
             "driver/platform/tuna/src/msm_vidc_tuna.c",
             "driver/platform/kera/src/msm_vidc_kera.c",
         ],
+        "CONFIG_MSM_VIDC_YUPIK" : [
+            "driver/variant/iris2/src/msm_vidc_buffer_iris2.c",
+            "driver/variant/iris2/src/msm_vidc_iris2.c",
+            "driver/variant/iris2/src/msm_vidc_power_iris2.c",
+            "driver/platform/yupik/src/msm_vidc_yupik.c",
+        ],
     },
     deps = [
             "//vendor/qcom/opensource/mm-drivers:mm_drivers_headers",
@@ -81,16 +86,20 @@ module_entry(
         "driver/vidc/src/msm_vidc_power.c",
         "driver/vidc/src/msm_vidc_probe.c",
         "driver/vidc/src/resources.c",
+        "driver/vidc/src/resources_ext.c",
         "driver/vidc/src/firmware.c",
         "driver/vidc/src/msm_vidc_debug.c",
         "driver/vidc/src/msm_vidc_memory.c",
+        "driver/vidc/src/msm_vidc_memory_ext.c",
         "driver/vidc/src/msm_vidc_fence.c",
         "driver/vidc/src/venus_hfi.c",
         "driver/vidc/src/venus_hfi_queue.c",
         "driver/vidc/src/hfi_packet.c",
         "driver/vidc/src/venus_hfi_response.c",
         "driver/platform/common/src/msm_vidc_platform.c",
+        "driver/platform/common/src/msm_vidc_platform_ext.c",
         "driver/variant/common/src/msm_vidc_variant.c",
+        "driver/vidc/src/msm_vidc_synx.c",
         ],
     config_srcs = {
         "CONFIG_MSM_VIDC_PINEAPPLE" : [
@@ -116,5 +125,15 @@ module_entry(
             "driver/variant/iris33/src/msm_vidc_power_iris33.c",
             "driver/variant/iris33/src/msm_vidc_iris33.c",
         ],
-    }
+        "CONFIG_MSM_VIDC_YUPIK" : [
+            "driver/variant/iris2/src/msm_vidc_buffer_iris2.c",
+            "driver/variant/iris2/src/msm_vidc_iris2.c",
+            "driver/variant/iris2/src/msm_vidc_power_iris2.c",
+            "driver/platform/yupik/src/msm_vidc_yupik.c",
+        ],
+
+    },
+    deps = [
+        "//vendor/qcom/opensource/mmrm-driver:%b_mmrm_driver",
+    ],
 )

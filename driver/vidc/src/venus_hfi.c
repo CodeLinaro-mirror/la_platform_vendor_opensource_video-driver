@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include <linux/iommu.h>
@@ -13,6 +13,7 @@
 #include <linux/soc/qcom/mdt_loader.h>
 #include <linux/soc/qcom/llcc-qcom.h>
 #include <linux/iopoll.h>
+#include <linux/vmalloc.h>
 
 #include "venus_hfi.h"
 #include "msm_vidc_core.h"

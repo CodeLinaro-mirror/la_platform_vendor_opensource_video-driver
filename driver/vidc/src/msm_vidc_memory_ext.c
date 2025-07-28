@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include <linux/dma-buf.h>
@@ -346,7 +346,7 @@ static inline bool is_crc_enabled(struct msm_vidc_core *core)
 }
 
 static u32 msm_vidc_buffer_region_ext(struct msm_vidc_inst *inst,
-	enum msm_vidc_buffer_type buffer_type)
+	enum msm_vidc_buffer_type buffer_type, const char *func)
 {
 	struct msm_vidc_core *core = inst->core;
 	u32 region = MSM_VIDC_NON_SECURE;

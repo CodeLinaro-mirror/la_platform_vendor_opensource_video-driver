@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #ifndef _MSM_VIDC_MEMORY_H_
@@ -81,7 +81,7 @@ struct msm_vidc_memory_ops {
 	int (*mem_dma_unmap_page)(struct msm_vidc_core *core,
 				  struct msm_vidc_mem *mem);
 	u32 (*buffer_region)(struct msm_vidc_inst *inst,
-			     enum msm_vidc_buffer_type buffer_type);
+			     enum msm_vidc_buffer_type buffer_type, const char *func);
 	int (*iommu_map)(struct msm_vidc_core *core,
 			 struct msm_vidc_mem *mem);
 	int (*iommu_unmap)(struct msm_vidc_core *core,
