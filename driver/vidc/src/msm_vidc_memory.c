@@ -7,8 +7,6 @@
 #include <linux/dma-buf.h>
 #include <linux/dma-heap.h>
 #include <linux/dma-mapping.h>
-#include <linux/iommu.h>
-#include <linux/vmalloc.h>
 
 #include "msm_vidc_memory.h"
 #include "msm_vidc_internal.h"
@@ -18,7 +16,6 @@
 #include "msm_vidc_events.h"
 #include "msm_vidc_platform.h"
 #include "venus_hfi.h"
-#include "resources.h"
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 16, 0))
 	MODULE_IMPORT_NS(DMA_BUF);
