@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #ifndef _MSM_VIDC_CORE_H_
@@ -38,6 +38,7 @@ struct msm_vidc_venus_ops {
 	int (*sw_ctrl_gdsc)(struct msm_vidc_core *core);
 	int (*scm_mem_protect)(struct msm_vidc_core *core);
 	int (*enable_intr)(struct msm_vidc_core *core);
+	int (*setup_ucregion_memmap)(struct msm_vidc_core *core);
 };
 
 struct msm_vidc_md_ops {
