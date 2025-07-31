@@ -502,16 +502,6 @@ static struct msm_vidc_ctrl msm_venc_ctrls[] = {
 		.qmenu = NULL,
 	},
 	{
-		.id = V4L2_CID_MPEG_VIDEO_CYCLIC_INTRA_REFRESH_MB,
-		.name = "Cyclic Intra Refresh MBs",
-		.type = V4L2_CTRL_TYPE_INTEGER,
-		.minimum = 0,
-		.maximum = MAX_INTRA_REFRESH_MBS,
-		.default_value = 0,
-		.step = 1,
-		.qmenu = NULL,
-	},
-	{
 		.id = V4L2_CID_MPEG_VIDEO_H264_LOOP_FILTER_ALPHA,
 		.name = "H.264 Loop Filter Alpha Offset",
 		.type = V4L2_CTRL_TYPE_INTEGER,
@@ -2110,8 +2100,6 @@ int msm_venc_s_ctrl(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 	case V4L2_CID_MPEG_VIDEO_H264_VUI_EXT_SAR_WIDTH:
 	case V4L2_CID_MPEG_VIDEO_H264_VUI_EXT_SAR_HEIGHT:
 	case V4L2_CID_MPEG_VIDC_VIDEO_PRIORITY:
-	case V4L2_CID_MPEG_VIDC_VIDEO_INTRA_REFRESH_RANDOM:
-	case V4L2_CID_MPEG_VIDEO_CYCLIC_INTRA_REFRESH_MB:
 	case V4L2_CID_MPEG_VIDEO_VIDC_INTRA_REFRESH_TYPE:
 	case V4L2_CID_MPEG_VIDC_INTRA_REFRESH_PERIOD:
 	case V4L2_CID_MPEG_VIDC_VENC_CVP_DISABLE:
@@ -3184,8 +3172,8 @@ static void set_all_intra_preconditions(struct msm_vidc_inst *inst)
 	}
 
 	/* Disable IR */
-	ctrl = get_ctrl(inst, V4L2_CID_MPEG_VIDC_VIDEO_INTRA_REFRESH_RANDOM);
-	ctrl_t = get_ctrl(inst, V4L2_CID_MPEG_VIDEO_CYCLIC_INTRA_REFRESH_MB);
+	ctrl = get_ctrl(inst, V4L2_CID_MPEG_VIDC_INTRA_REFRESH_PERIOD);
+	ctrl_t = get_ctrl(inst, V4L2_CID_MPEG_VIDEO_VIDC_INTRA_REFRESH_TYPE);
 	if (ctrl->val || ctrl_t->val) {
 		s_vpr_h(inst->sid, "Disable IR for all intra\n");
 		update_ctrl(ctrl, 0, inst->sid);
