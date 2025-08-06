@@ -769,28 +769,38 @@ static int handle_input_buffer(struct msm_vidc_inst *inst,
 static int msm_vidc_handle_fence_signal(struct msm_vidc_inst *inst,
 					struct msm_vidc_buffer *buf)
 {
-	int rc = 0;
+	int cnt, rc = 0;
 	bool signal_error = false;
-	struct msm_vidc_core *core = inst->core;
+	struct msm_vidc_core *core = NULL;
+	core = inst->core;
 
 	if (inst->capabilities[OUTBUF_FENCE_TYPE].value ==
 		MSM_VIDC_FENCE_NONE)
 		return 0;
 
-	if (is_meta_rx_inp_enabled(inst, META_OUTBUF_FENCE)) {
-		if (!inst->hfi_frame_info.fence_id) {
-			i_vpr_e(inst,
-				"%s: fence id is not received although fencing is enabled\n",
-				__func__);
-			return -EINVAL;
+	if (is_outbuf_fence_enabled(inst)) {
+		for (cnt = 0; cnt < inst->hfi_frame_info.fence_count; cnt++) {
+			if (!inst->hfi_frame_info.fence_id[cnt]) {
+				i_vpr_e(inst,
+					"%s: fence id is not received although fencing is enabled\n",
+					__func__);
+				return -EINVAL;
+			}
 		}
 	} else {
-		if (!inst->hfi_frame_info.fence_id) {
-			return 0;
+		bool fence_flag = false;
+		for (cnt = 0; cnt < inst->hfi_frame_info.fence_count; cnt++) {
+			if (inst->hfi_frame_info.fence_id[cnt]) {
+				fence_flag = true;
+				break;
+			}
 		}
+		if (!fence_flag)
+			return 0;
+
 		i_vpr_e(inst,
 			"%s: fence id: %d is received although fencing is not enabled\n",
-			__func__, inst->hfi_frame_info.fence_id);
+			__func__, inst->hfi_frame_info.fence_id[cnt]);
 		signal_error = true;
 		goto signal;
 	}
@@ -815,20 +825,32 @@ static int msm_vidc_handle_fence_signal(struct msm_vidc_inst *inst,
 
 signal:
 	/* fence signalling */
-	if (signal_error) {
-		/* signal fence error */
-		i_vpr_l(inst,
-			"%s: signalling fence error for buf idx %d daddr %#llx\n",
-			__func__, buf->index, buf->device_addr);
-		call_fence_op(core, fence_destroy, inst,
-			      inst->hfi_frame_info.fence_id);
-	} else {
-		/* signal fence success*/
-		rc = call_fence_op(core, fence_signal, inst,
-				   inst->hfi_frame_info.fence_id);
-		if (rc) {
-			i_vpr_e(inst, "%s: failed to signal fence\n", __func__);
-			return -EINVAL;
+	for (cnt = 0; cnt < inst->hfi_frame_info.fence_count; cnt++) {
+		if (signal_error) {
+			/* signal fence error */
+			i_vpr_l(inst,
+				"%s: signalling fence error for buf idx %d daddr %#llx\n",
+				__func__, buf->index, buf->device_addr);
+			call_fence_op(core, fence_destroy, inst,
+					inst->hfi_frame_info.fence_id[cnt]);
+			inst->fences_per_output_counter++;
+			inst->prev_fence_id = inst->hfi_frame_info.fence_id[cnt];
+		} else {
+			/* signal fence success*/
+			if (inst->hfi_frame_info.fence_id[cnt] > inst->prev_fence_id) {
+				rc = call_fence_op(core, fence_signal, inst,
+						inst->hfi_frame_info.fence_id[cnt]);
+				if (rc) {
+					i_vpr_e(inst, "%s: failed to signal fence\n", __func__);
+					return -EINVAL;
+				}
+				inst->fences_per_output_counter++;
+				inst->prev_fence_id = inst->hfi_frame_info.fence_id[cnt];
+			} else {
+				i_vpr_e(inst, "%s: invalid fence id %u, prev fence id %u\n",
+					__func__, inst->hfi_frame_info.fence_id[cnt], inst->prev_fence_id);
+				msm_vidc_change_state(inst, MSM_VIDC_ERROR, __func__);
+			}
 		}
 	}
 
@@ -973,6 +995,16 @@ static int handle_output_buffer(struct msm_vidc_inst *inst,
 	rc = msm_vidc_handle_fence_signal(inst, buf);
 	if (rc)
 		msm_vidc_change_state(inst, MSM_VIDC_ERROR, __func__);
+
+	/* validate firmware returned all the fences or not */
+	if (inst->fences_per_output_counter >= buf->fence_count) {
+		/* reset fence_count value after FBD handling */
+		inst->fences_per_output_counter -= buf->fence_count;
+	} else {
+		i_vpr_e(inst, "%s: fence count mismatch. value %d, min expected %d\n",
+			__func__, inst->fences_per_output_counter, buf->fence_count);
+		msm_vidc_change_state(inst, MSM_VIDC_ERROR, __func__);
+	}
 
 	if (is_decode_session(inst)) {
 		inst->power.fw_cr = inst->hfi_frame_info.cr;
@@ -1512,6 +1544,57 @@ static int handle_session_stability(struct msm_vidc_inst *inst,
 	return 0;
 }
 
+static int handle_session_early_notify_partial_frame(struct msm_vidc_inst *inst,
+	struct hfi_packet *pkt)
+{
+	struct msm_vidc_core *core = NULL;
+	u32 port;
+	u64 fence_id = 0;
+	int rc = 0;
+
+	if (!inst) {
+		d_vpr_e("%s: Invalid params\n", __func__);
+		return -EINVAL;
+	}
+	core = inst->core;
+
+	port = vidc_port_from_hfi(inst, pkt->port);
+	if (port >= MAX_PORT) {
+		i_vpr_e(inst,
+			"%s: invalid port: %d %#x\n", __func__, pkt->port, pkt->type);
+		return -EINVAL;
+	}
+
+	if (!check_for_packet_payload(inst, pkt, __func__)) {
+		i_vpr_e(inst, "%s: invalid packet\n", __func__);
+		msm_vidc_change_state(inst, MSM_VIDC_ERROR, __func__);
+		return 0;
+	}
+
+	fence_id = *(u64 *)((u8 *)pkt + sizeof(struct hfi_packet));
+	if (fence_id < inst->prev_fence_id) {
+		i_vpr_e(inst, "%s: invalid fence id %llu, prev fence id %u\n",
+			__func__, fence_id, inst->prev_fence_id);
+		msm_vidc_change_state(inst, MSM_VIDC_ERROR, __func__);
+		return -EINVAL;
+	}
+	rc = call_fence_op(core, fence_signal, inst, fence_id);
+
+	if (rc) {
+		i_vpr_e(inst,
+			"%s: fence signal failed. invalid fence_id %llu, count %d\n",
+			__func__, fence_id, inst->fences_per_output_counter);
+		return rc;
+	}
+	inst->fences_per_output_counter++;
+	inst->prev_fence_id = fence_id;
+
+	i_vpr_l(inst, "%s: received fence id %llu, count %d\n",
+		__func__, fence_id, inst->fences_per_output_counter);
+
+	return 0;
+}
+
 static int handle_session_command(struct msm_vidc_inst *inst,
 				  struct hfi_packet *pkt)
 {
@@ -1529,6 +1612,8 @@ static int handle_session_command(struct msm_vidc_inst *inst,
 		{HFI_CMD_PAUSE,             handle_session_pause              },
 		{HFI_CMD_RESUME,            handle_session_resume             },
 		{HFI_CMD_STABILITY,         handle_session_stability          },
+		{HFI_CMD_EARLY_NOTIFY_PARTIAL_FRAME,
+		    handle_session_early_notify_partial_frame                 },
 	};
 
 	/* handle session pkt */
@@ -1618,6 +1703,49 @@ static int handle_dpb_list_property(struct msm_vidc_inst *inst,
 		if (!found)
 			ro_buf->attr |= MSM_VIDC_ATTR_RELEASE_ELIGIBLE;
 	}
+
+	return 0;
+}
+
+static int handle_property_fence_array(struct msm_vidc_inst *inst,
+	struct hfi_packet *pkt)
+{
+	u64 cur_fence_id = 0, prev_fence_id = 0;
+	int i = 0, fence_count = 0;
+	u32 payload_size;
+	u8 *payload_start;
+
+	if (!inst || !pkt) {
+		i_vpr_e(inst, "%s: invalid params\n", __func__);
+		return -EINVAL;
+	}
+
+	payload_size = pkt->size - sizeof(struct hfi_packet);
+	fence_count = payload_size / sizeof(u64);
+	payload_start = (u8 *)((u8 *)pkt + sizeof(struct hfi_packet));
+
+	if (payload_size > sizeof(inst->hfi_frame_info.fence_id)) {
+		i_vpr_e(inst,
+			"%s: fence list payload size %d exceeds expected max size %lu\n",
+			__func__, payload_size, sizeof(inst->hfi_frame_info.fence_id));
+		msm_vidc_change_state(inst, MSM_VIDC_ERROR, __func__);
+	}
+
+	for (i = 0; i < fence_count; i++) {
+		cur_fence_id = *((u64 *)payload_start + i);
+		if (prev_fence_id > cur_fence_id) {
+			i_vpr_e(inst, "%s: invalid fence id %llu, prev %llu\n",
+				__func__, cur_fence_id, prev_fence_id);
+			msm_vidc_change_state(inst, MSM_VIDC_ERROR, __func__);
+			return -EINVAL;
+		}
+		inst->hfi_frame_info.fence_id[i] = cur_fence_id;
+		inst->hfi_frame_info.fence_count++;
+		prev_fence_id = cur_fence_id;
+	}
+	i_vpr_l(inst, "%s: fence_id[0] %u, received %d, expected %d\n", __func__,
+		inst->hfi_frame_info.fence_id[0], inst->fences_per_output_counter,
+		inst->hfi_frame_info.fence_count);
 
 	return 0;
 }
@@ -1742,8 +1870,10 @@ static int handle_property_with_payload(struct msm_vidc_inst *inst,
 				"%s: fw pipe mode(%d) not matching the capability value(%lld)\n",
 				__func__,  payload_ptr[0], inst->capabilities[PIPE].value);
 		break;
-	case HFI_PROP_FENCE:
-		inst->hfi_frame_info.fence_id = payload_ptr[0];
+	case HFI_PROP_FENCE_OUTPUT:
+		rc = handle_property_fence_array(inst, pkt);
+		if (rc)
+			break;
 		break;
 	default:
 		i_vpr_e(inst, "%s: invalid property %#x\n",

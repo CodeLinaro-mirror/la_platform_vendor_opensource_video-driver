@@ -1565,7 +1565,7 @@ int vb2_buffer_to_driver(struct vb2_buffer *vb2,
 	buf->timestamp = vb2->timestamp;
 	buf->flags = vbuf->flags;
 	buf->attr = 0;
-	buf->fence_id = 0;
+	buf->fence_id[0] = 0;
 
 	return rc;
 }
@@ -1743,6 +1743,24 @@ int msm_vidc_flush_input_timer(struct msm_vidc_inst *inst)
 	list_for_each_entry_safe(input_timer, dummy_timer, &inst->input_timer_list, list) {
 		list_del_init(&input_timer->list);
 		msm_vidc_pool_free(inst, input_timer);
+	}
+	return 0;
+}
+
+static int msm_vidc_flush_output_fences(struct msm_vidc_inst *inst)
+{
+	struct msm_vidc_fence *fence, *dummy_fence;
+	struct msm_vidc_core *core;
+
+	if (!inst) {
+		d_vpr_e("%s: invalid params\n", __func__);
+		return -EINVAL;
+	}
+	core = inst->core;
+
+	list_for_each_entry_safe(fence, dummy_fence, &inst->fence_list, list) {
+		i_vpr_e(inst, "%s: destroying fence %s\n", __func__, fence->name);
+		call_fence_op(core, fence_destroy, inst, fence->fence_id);
 	}
 	return 0;
 }
@@ -2513,6 +2531,78 @@ void msm_vidc_stats_handler(struct work_struct *work)
 	put_inst(inst);
 }
 
+static int msm_vidc_destroy_fence_array(struct msm_vidc_inst *inst, struct msm_vidc_buffer *buf)
+{
+	struct msm_vidc_core *core = NULL;
+	int cnt = 0;
+
+	if (!inst || !buf || !inst->core) {
+		d_vpr_e("%s: invalid params\n", __func__);
+		return -EINVAL;
+	}
+	core = inst->core;
+
+	/* return if fence not allocated */
+	if (!buf->fence_count)
+		return 0;
+
+	/* check if fence count valid */
+	if (buf->fence_count > MAX_FENCE_COUNT) {
+		i_vpr_e(inst, "%s: invalid fence count %d\n", __func__, buf->fence_count);
+		return -EINVAL;
+	}
+	cnt = buf->fence_count;
+
+	for (cnt = cnt - 1; cnt >= 0; cnt--) {
+		call_fence_op(core, fence_destroy, inst, buf->fence_id[cnt]);
+		buf->fence_count--;
+		buf->fence_id[cnt] = 0;
+	}
+	return 0;
+}
+
+static int msm_vidc_prepare_fence_array(struct msm_vidc_inst *inst, struct msm_vidc_buffer *buf)
+{
+	struct msm_vidc_fence *fence = NULL;
+	struct msm_vidc_core *core = NULL;
+	int cnt, rc = 0, fence_count = 0;
+
+	if (!inst || !buf || !inst->core) {
+		d_vpr_e("%s: invalid params\n", __func__);
+		return -EINVAL;
+	}
+	core = inst->core;
+
+	if (is_early_notify_enabled(inst))
+		fence_count = inst->capabilities[EARLY_NOTIFY_FENCE_COUNT].value;
+	else if (is_outbuf_fence_enabled(inst))
+		fence_count = 1;
+	else
+		return 0;
+
+	if (fence_count < 1 || fence_count > MAX_FENCE_COUNT) {
+		i_vpr_e(inst, "%s: invalid fence count %d\n", __func__, fence_count);
+		return -EINVAL;
+	}
+
+	memset(buf->fence_id, 0, sizeof(buf->fence_id));
+	for (cnt = 0; cnt < fence_count; cnt++) {
+		fence = call_fence_op(core, fence_create, inst);
+		if (!fence) {
+			rc = -EINVAL;
+			goto error;
+		}
+		buf->fence_id[cnt] = fence->fence_id;
+		if (buf->fence_count < fence_count)
+			buf->fence_count++;
+	}
+	return 0;
+
+error:
+	msm_vidc_destroy_fence_array(inst, buf);
+	return rc;
+}
+
 static int msm_vidc_queue_buffer(struct msm_vidc_inst *inst, struct msm_vidc_buffer *buf)
 {
 	struct msm_vidc_buffer *meta;
@@ -2617,7 +2707,6 @@ int msm_vidc_alloc_and_queue_input_internal_buffers(struct msm_vidc_inst *inst)
 
 int msm_vidc_queue_deferred_buffers(struct msm_vidc_inst *inst, enum msm_vidc_buffer_type buf_type)
 {
-	struct msm_vidc_fence *fence = NULL;
 	struct msm_vidc_core *core = NULL;
 	struct msm_vidc_buffers *buffers;
 	struct msm_vidc_buffer *buf;
@@ -2638,14 +2727,6 @@ int msm_vidc_queue_deferred_buffers(struct msm_vidc_inst *inst, enum msm_vidc_bu
 	list_for_each_entry(buf, &buffers->list, list) {
 		if (!(buf->attr & MSM_VIDC_ATTR_DEFERRED))
 			continue;
-
-		if (create_fence) {
-			fence = call_fence_op(core, fence_create, inst);
-			if (!fence)
-				return -EINVAL;
-			buf->fence_id = fence->fence_id;
-		}
-
 		rc = msm_vidc_queue_buffer(inst, buf);
 		if (rc)
 			return rc;
@@ -2671,9 +2752,8 @@ int msm_vidc_queue_buffer_single(struct msm_vidc_inst *inst, struct vb2_buffer *
 {
 	int rc = 0;
 	struct msm_vidc_buffer *buf = NULL;
-	struct msm_vidc_fence *fence = NULL;
 	struct msm_vidc_core *core = NULL;
-
+	struct msm_vidc_fence *fence = NULL;
 	core = inst->core;
 
 	buf = msm_vidc_get_driver_buf(inst, vb2);
@@ -2682,10 +2762,9 @@ int msm_vidc_queue_buffer_single(struct msm_vidc_inst *inst, struct vb2_buffer *
 
 	if (is_meta_rx_inp_enabled(inst, META_OUTBUF_FENCE) &&
 		is_output_buffer(buf->type)) {
-		fence = call_fence_op(core, fence_create, inst);
-		if (!fence)
-			return -EINVAL;
-		buf->fence_id = fence->fence_id;
+		rc = msm_vidc_prepare_fence_array(inst, buf);
+		if (rc)
+			return rc;
 	}
 
 	rc = inst->event_handle(inst, MSM_VIDC_BUF_QUEUE, buf);
@@ -2695,8 +2774,10 @@ int msm_vidc_queue_buffer_single(struct msm_vidc_inst *inst, struct vb2_buffer *
 exit:
 	if (rc) {
 		i_vpr_e(inst, "%s: qbuf failed\n", __func__);
-		if (fence)
-			call_fence_op(core, fence_destroy, inst, fence->fence_id);
+		if (fence && fence->imp_fence)
+			call_fence_op(core, fence_release, inst, fence->fence_id);
+		else
+			msm_vidc_destroy_fence_array(inst, buf);
 	}
 	return rc;
 }
@@ -3479,6 +3560,11 @@ int msm_vidc_session_streamoff(struct msm_vidc_inst *inst,
 	if (port == INPUT_PORT) {
 		/* flush input timer list */
 		msm_vidc_flush_input_timer(inst);
+	}
+
+	if (port == OUTPUT_PORT) {
+		/* flush pending fences */
+		msm_vidc_flush_output_fences(inst);
 	}
 
 	/* no more queued buffers after streamoff */
