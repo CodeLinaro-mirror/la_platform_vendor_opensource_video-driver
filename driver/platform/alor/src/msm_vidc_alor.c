@@ -2575,12 +2575,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_alor
 		NULL,
 		msm_vidc_set_u32_enum},
 
-	{PROFILE, ENC, HEIC,
-		{META_SEI_MASTERING_DISP, META_SEI_CLL, META_HDR10PLUS},
-		msm_vidc_adjust_profile,
-		msm_vidc_set_u32_enum},
-
-	{PROFILE, ENC, HEVC,
+	{PROFILE, ENC, HEVC | HEIC,
 		{META_SEI_MASTERING_DISP, META_SEI_CLL, META_HDR10PLUS,
 		META_HIST_INFO, META_HDR10_MAX_RGB_INFO},
 		msm_vidc_adjust_profile,
