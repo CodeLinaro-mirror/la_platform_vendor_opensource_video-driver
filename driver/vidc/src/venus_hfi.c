@@ -321,9 +321,11 @@ static u32 __get_hfi_subcache_type(u32 llcc_id)
 	case LLCC_VIDDEC:
 		subcache_type = HFI_BUF_SUBCACHE_VIDSC_DECODE;
 		break;
+#ifdef CONFIG_MSM_VIDC_LLCC
 	case LLCC_VIDEO_APV:
 		subcache_type = HFI_BUF_SUBCACHE_VIDEO_APV;
 		break;
+#endif
 #endif
 	default:
 		d_vpr_e("%s: Invalid llcc_id %u\n", __func__, llcc_id);
