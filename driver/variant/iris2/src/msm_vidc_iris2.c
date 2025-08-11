@@ -274,26 +274,6 @@ static int __power_off_iris2_hardware(struct msm_vidc_core *core)
 				__func__, i, value);
 	}
 
-	/* Apply partial reset on MSF interface and wait for ACK */
-	rc = __write_register(core, AON_WRAPPER_MVP_NOC_RESET_REQ, 0x3);
-	if (rc)
-		return rc;
-
-	rc = __read_register_with_poll_timeout(core, AON_WRAPPER_MVP_NOC_RESET_ACK,
-			0x3, 0x3, 200, 2000);
-	if (rc)
-		d_vpr_h("%s: AON_WRAPPER_MVP_NOC_RESET assert failed\n", __func__);
-
-	/* De-assert partial reset on MSF interface and wait for ACK */
-	rc = __write_register(core, AON_WRAPPER_MVP_NOC_RESET_REQ, 0x0);
-	if (rc)
-		return rc;
-
-	rc = __read_register_with_poll_timeout(core, AON_WRAPPER_MVP_NOC_RESET_ACK,
-			0x3, 0x0, 200, 2000);
-	if (rc)
-		d_vpr_h("%s: AON_WRAPPER_MVP_NOC_RESET de-assert failed\n", __func__);
-
 	/*
 	 * Reset both sides of 2 ahb2ahb_bridges (TZ and non-TZ)
 	 * do we need to check status register here?
@@ -312,7 +292,19 @@ disable_power:
 	/* power down process */
 	rc = call_res_op(core, gdsc_off, core, "vcodec");
 	if (rc) {
-		d_vpr_e("%s: disable regulator vcodec failed\n", __func__);
+		d_vpr_e("%s: disable power domain vcodec failed\n", __func__);
+		rc = 0;
+	}
+
+	rc = call_res_op(core, clk_disable, core, "video_cc_mvs0_ctl_axi");
+	if (rc) {
+		d_vpr_e("%s: disable unprepare vcodec_bus failed\n", __func__);
+		rc = 0;
+	}
+
+	rc = call_res_op(core, clk_disable, core, "vcodec_clk");
+	if (rc) {
+		d_vpr_e("%s: disable unprepare vcodec_clk failed\n", __func__);
 		rc = 0;
 	}
 
@@ -331,20 +323,7 @@ static int __power_off_iris2_controller(struct msm_vidc_core *core)
 	if (rc)
 		return rc;
 
-	/* HPG 6.1.2 Step 2, noc to low power) */
-	if (core->platform->data.vpu_ver != VPU_VERSION_IRIS2_1) {
-		rc = __write_register_masked(core, AON_WRAPPER_MVP_NOC_LPI_CONTROL,
-				0x1, BIT(0));
-		if (rc)
-			return rc;
-
-		rc = __read_register_with_poll_timeout(core, AON_WRAPPER_MVP_NOC_LPI_STATUS,
-				0x1, 0x1, 200, 2000);
-		if (rc)
-			d_vpr_h("%s: AON_WRAPPER_MVP_NOC_LPI_CONTROL failed\n", __func__);
-	}
-
-	/* HPG 6.1.2 Step 3, debug bridge to low power */
+	/* Set Debug bridge Low power */
 	rc = __write_register(core, WRAPPER_DEBUG_BRIDGE_LPI_CONTROL_IRIS2, 0x7);
 	if (rc)
 		return rc;
@@ -364,10 +343,21 @@ static int __power_off_iris2_controller(struct msm_vidc_core *core)
 	if (rc)
 		d_vpr_h("%s: debug bridge release failed\n", __func__);
 
-	/* Turn off MVP MVS0C core clock */
 	rc = call_res_op(core, clk_disable, core, "core_clk");
 	if (rc) {
-		d_vpr_e("%s: disable unprepare core_clk failed\n", __func__);
+		d_vpr_e("%s: disable unprepare bus failed\n", __func__);
+		rc = 0;
+	}
+
+	rc = call_res_op(core, clk_disable, core, "iface_clk");
+	if (rc) {
+		d_vpr_e("%s: disable unprepare bus failed\n", __func__);
+		rc = 0;
+	}
+
+	rc = call_res_op(core, clk_disable, core, "video_cc_mvsc_ctl_axi");
+	if (rc) {
+		d_vpr_e("%s: disable unprepare bus failed\n", __func__);
 		rc = 0;
 	}
 
@@ -381,30 +371,6 @@ static int __power_off_iris2_controller(struct msm_vidc_core *core)
 	rc = call_res_op(core, gdsc_off, core, "iris-ctl");
 	if (rc) {
 		d_vpr_e("%s: disable regulator iris-ctl failed\n", __func__);
-		rc = 0;
-	}
-
-	rc = call_res_op(core, clk_disable, core, "video_cc_mvsc_ctl_axi");
-	if (rc) {
-		d_vpr_e("%s: disable video_cc_mvsc_ctl_axi failed, rc: %d\n", __func__, rc);
-		rc = 0;
-	}
-
-	rc = call_res_op(core, clk_disable, core, "video_cc_mvs0_ctl_axi");
-	if (rc) {
-		d_vpr_e("%s: disable video_cc_mvs0_ctl_axi failed, rc: %d\n", __func__, rc);
-		rc = 0;
-	}
-
-	rc = call_res_op(core, clk_disable, core, "iface_clk");
-	if (rc) {
-		d_vpr_e("%s: disable iface_clk failed, rc: %d\n", __func__, rc);
-		rc = 0;
-	}
-
-	rc = call_res_op(core, clk_disable, core, "vcodec_clk");
-	if (rc) {
-		d_vpr_e("%s: disable vcodec_clk failed, rc: %d\n", __func__, rc);
 		rc = 0;
 	}
 
@@ -456,13 +422,13 @@ static int __power_on_iris2_controller(struct msm_vidc_core *core)
 	if (rc)
 		goto fail_reset_ahb2axi;
 
-/*	rc = call_res_op(core, clk_enable, core, "gcc_video_axi0_clk");
-	if (rc)
-		goto fail_clk_axi;*/
-
 	rc = call_res_op(core, clk_enable, core, "core_clk");
 	if (rc)
-		goto fail_clk_controller;
+		goto fail_clk_axi;
+
+	rc = call_res_op(core, clk_enable, core, "iface_clk");
+	if (rc)
+		goto fail_clk_axi;
 
 	rc = call_res_op(core, clk_enable, core, "video_cc_mvsc_ctl_axi");
 	if (rc)
@@ -471,8 +437,10 @@ static int __power_on_iris2_controller(struct msm_vidc_core *core)
 	return 0;
 
 fail_clk_controller:
-//	call_res_op(core, clk_disable, core, "gcc_video_axi0_clk");
-//fail_clk_axi:
+	call_res_op(core, clk_disable, core, "core_clk");
+	call_res_op(core, clk_disable, core, "iface_clk");
+	call_res_op(core, clk_disable, core, "video_cc_mvsc_ctl_axi");
+fail_clk_axi:
 fail_reset_ahb2axi:
 	call_res_op(core, gdsc_off, core, "iris-ctl");
 fail_regulator:
@@ -487,21 +455,31 @@ static int __power_on_iris2_hardware(struct msm_vidc_core *core)
 	if (rc)
 		goto fail_regulator;
 
-	rc = call_res_op(core, clk_enable, core, "vcodec_clk");
+	/* video controller and hardware powered on successfully */
+	rc = msm_vidc_change_core_sub_state(core, 0, CORE_SUBSTATE_POWER_ENABLE, __func__);
 	if (rc)
-		goto fail_clk_controller;
+		goto fail_power_on_substate;
 
-	rc = call_res_op(core, clk_enable, core, "iface_clk");
+	rc = call_res_op(core, gdsc_sw_ctrl, core);
 	if (rc)
-		goto fail_clk_controller;
+		goto fail_sw_ctrl;
 
 	rc = call_res_op(core, clk_enable, core, "video_cc_mvs0_ctl_axi");
 	if (rc)
-		goto fail_clk_controller;
+		goto fail_bus_clk;
+
+	rc = call_res_op(core, clk_enable, core, "vcodec_clk");
+	if (rc)
+		goto fail_core_clk;
 
 	return 0;
 
-fail_clk_controller:
+fail_core_clk:
+	call_res_op(core, clk_disable, core, "video_cc_mvs0_ctl_axi");
+fail_bus_clk:
+	call_res_op(core, gdsc_hw_ctrl, core);
+fail_power_on_substate:
+fail_sw_ctrl:
 	call_res_op(core, gdsc_off, core, "vcodec");
 fail_regulator:
 	return rc;
@@ -540,10 +518,6 @@ static int __power_on_iris2(struct msm_vidc_core *core)
 		d_vpr_e("%s: failed to power on iris2 hardware\n", __func__);
 		goto fail_power_on_hardware;
 	}
-	/* video controller and hardware powered on successfully */
-	rc = msm_vidc_change_core_sub_state(core, 0, CORE_SUBSTATE_POWER_ENABLE, __func__);
-	if (rc)
-		goto fail_power_on_substate;
 
 	freq_tbl = core->freq_tbl;
 	freq = core->power.clk_freq ? core->power.clk_freq :
@@ -569,8 +543,6 @@ static int __power_on_iris2(struct msm_vidc_core *core)
 
 	return rc;
 
-fail_power_on_substate:
-	__power_off_iris2_hardware(core);
 fail_power_on_hardware:
 	__power_off_iris2_controller(core);
 fail_power_on_controller:
