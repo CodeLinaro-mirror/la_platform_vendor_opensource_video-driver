@@ -320,13 +320,11 @@ static const struct msm_platform_core_capability core_data_canoe[] = {
 	{MAX_NUM_4K_SESSIONS, 8},
 	{MAX_NUM_8K_SESSIONS, 2},
 	{MAX_SECURE_SESSION_COUNT, 3},
-	{MAX_RT_MBPF, 259200},	/* ((7680x4320)/256) * 2)*/
+	{MAX_RT_MBPF, 276480},	/* ((8192x4320)/256) * 2)*/
 	{MAX_MBPF, 278528}, /* ((8192x4352)/256) * 2 */
-	{MAX_MBPS, 7833600},
+	{MAX_MBPS, 8355840},
 	/* max_load
-	 * 7680x4320@60fps or 3840x2176@240fps
-	 * which is greater than 4096x2176@120fps,
-	 * 8192x4320@48fps
+	 * 8192x4320@60fps or 4096x2176@240fps
 	 */
 	{MAX_IMAGE_MBPF, 1048576},  /* (16384x16384)/256 */
 	{MAX_MBPF_HQ, 8160}, /* ((1920x1088)/256) */
@@ -2036,11 +2034,11 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 		HFI_PROP_CODED_FRAMES,
 		CAP_FLAG_VOLATILE},
 
-	{BIT_DEPTH, DEC, CODECS_ALL, BIT_DEPTH_8, BIT_DEPTH_10, 1, BIT_DEPTH_8,
+	{BIT_DEPTH, DEC | ENC, CODECS_ALL, BIT_DEPTH_8, BIT_DEPTH_10, 1, BIT_DEPTH_8,
 		0,
 		HFI_PROP_LUMA_CHROMA_BIT_DEPTH},
 
-	{BIT_DEPTH, DEC, APV, BIT_DEPTH_10, BIT_DEPTH_10, 1, BIT_DEPTH_10,
+	{BIT_DEPTH, DEC | ENC, APV, BIT_DEPTH_10, BIT_DEPTH_10, 1, BIT_DEPTH_10,
 		0,
 		HFI_PROP_LUMA_CHROMA_BIT_DEPTH},
 
@@ -3070,15 +3068,15 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 	 */
 
 	{PIX_FMTS, ENC, H264,
-		{IR_PERIOD, CSC}},
+		{IR_PERIOD, CSC, BIT_DEPTH}},
 
 	{PIX_FMTS, ENC, HEVC,
 		{PROFILE, MIN_FRAME_QP, MAX_FRAME_QP, I_FRAME_QP, P_FRAME_QP,
 			B_FRAME_QP, MIN_QUALITY, BLUR_TYPES, IR_PERIOD,
-			LTR_COUNT, CSC, LOG_VIDEO_ENCODE}},
+			LTR_COUNT, CSC, LOG_VIDEO_ENCODE, BIT_DEPTH}},
 
 	{PIX_FMTS, ENC, HEIC,
-		{PROFILE, CSC}},
+		{PROFILE, CSC, BIT_DEPTH}},
 
 	{PIX_FMTS, DEC, HEVC | HEIC,
 		{PROFILE}},
@@ -3087,7 +3085,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 		{0}},
 
 	{PIX_FMTS, ENC, APV,
-		{LOG_VIDEO_ENCODE},
+		{LOG_VIDEO_ENCODE, BIT_DEPTH},
 		NULL,
 		NULL},
 
@@ -3095,6 +3093,10 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 		{0},
 		NULL,
 		NULL},
+
+	{BIT_DEPTH, ENC, CODECS_ALL,
+		{0},
+		msm_vidc_adjust_bitdepth},
 
 	{FRAME_RATE, ENC, CODECS_ALL,
 		{LEVEL},
