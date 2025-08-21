@@ -35,6 +35,7 @@ LOCAL_PATH := $(call my-dir)
 
 ifeq ($(TARGET_BOARD_PLATFORM), gen5)
 ifeq ($(ENABLE_HYP), true)
+KBUILD_OPTIONS += ENABLE_HYP=true
 KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(PWD)/$(call intermediates-dir-for,DLKM,virtio-video-symvers)/Module.symvers
 endif
 endif
@@ -52,8 +53,8 @@ LOCAL_MODULE              := msm_video.ko
 LOCAL_MODULE_KBUILD_NAME  := msm_video.ko
 LOCAL_MODULE_TAGS         := optional
 LOCAL_MODULE_DEBUG_ENABLE := true
+LOCAL_MODULE_DDK_BUILD    := true
 LOCAL_MODULE_PATH         := $(KERNEL_MODULES_OUT)
-
 
 # Include kp_module.ko in the /vendor/lib/modules (vendor.img)
 include $(DLKM_DIR)/Build_external_kernelmodule.mk

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2020-2022, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
@@ -31,7 +31,7 @@
 extern struct msm_vidc_core *g_core;
 
 #define is_odd(val) ((val) % 2 == 1)
-#define in_range(val, min, max) (((min) <= (val)) && ((val) <= (max)))
+#define is_in_range(val, min, max) (((min) <= (val)) && ((val) <= (max)))
 #define COUNT_BITS(a, out) {       \
 	while ((a) >= 1) {          \
 		(out) += (a) & (1); \
@@ -1164,10 +1164,10 @@ int msm_vidc_change_sub_state(struct msm_vidc_inst *inst,
 
 	/* print substates only when there is a change */
 	if (inst->sub_state != prev_sub_state) {
-		strlcpy(inst->sub_state_name, "\0", sizeof(inst->sub_state_name));
+		strscpy(inst->sub_state_name, "\0", sizeof(inst->sub_state_name));
 		for (i = 0; i < MSM_VIDC_MAX_SUB_STATES; i++) {
 			if (inst->sub_state == MSM_VIDC_SUB_STATE_NONE) {
-				strlcpy(inst->sub_state_name, "SUB_STATE_NONE",
+				strscpy(inst->sub_state_name, "SUB_STATE_NONE",
 					sizeof(inst->sub_state_name));
 				break;
 			}
@@ -4469,7 +4469,7 @@ int msm_vidc_session_close(struct msm_vidc_inst *inst)
 
 	msm_vidc_change_state(inst, MSM_VIDC_CLOSE, __func__);
 	inst->sub_state = MSM_VIDC_SUB_STATE_NONE;
-	strlcpy(inst->sub_state_name, "SUB_STATE_NONE", sizeof(inst->sub_state_name));
+	strscpy(inst->sub_state_name, "SUB_STATE_NONE", sizeof(inst->sub_state_name));
 
 	return rc;
 }
@@ -6261,8 +6261,8 @@ static bool msm_vidc_allow_image_encode_session(struct msm_vidc_inst *inst)
 	min_height = capability->cap[FRAME_HEIGHT].min;
 	max_height = capability->cap[FRAME_HEIGHT].max;
 	fmt = &inst->fmts[INPUT_PORT];
-	if (!in_range(fmt->fmt.pix_mp.width, min_width, max_width) ||
-		!in_range(fmt->fmt.pix_mp.height, min_height, max_height)) {
+	if (!is_in_range(fmt->fmt.pix_mp.width, min_width, max_width) ||
+		!is_in_range(fmt->fmt.pix_mp.height, min_height, max_height)) {
 		i_vpr_e(inst, "unsupported wxh [%u x %u], allowed [%u x %u] to [%u x %u]\n",
 			fmt->fmt.pix_mp.width, fmt->fmt.pix_mp.height,
 			min_width, min_height, max_width, max_height);
@@ -6378,8 +6378,8 @@ static int msm_vidc_check_resolution_supported(struct msm_vidc_inst *inst)
 
 	/* check if input width and height is in supported range */
 	if (is_decode_session(inst) || is_encode_session(inst)) {
-		if (!in_range(width, min_width, max_width) ||
-			!in_range(height, min_height, max_height)) {
+		if (!is_in_range(width, min_width, max_width) ||
+			!is_in_range(height, min_height, max_height)) {
 			i_vpr_e(inst,
 				"%s: unsupported input wxh [%u x %u], allowed range: [%u x %u] to [%u x %u]\n",
 				__func__, width, height, min_width,

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include <linux/reset.h>
@@ -888,7 +888,7 @@ int msm_vidc_decide_work_mode_iris33_au(struct msm_vidc_inst *inst)
 	}
 
 exit:
-	i_vpr_h(inst, "Configuring work mode = %u low latency = %llu, gop size = %llu\n",
+	i_vpr_h(inst, "Configuring work mode = %u low latency = %d, gop size = %d\n",
 		work_mode, inst->capabilities->cap[LOWLATENCY_MODE].value,
 		inst->capabilities->cap[GOP_SIZE].value);
 	msm_vidc_update_cap_value(inst, STAGE, work_mode, __func__);
