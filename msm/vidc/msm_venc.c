@@ -480,8 +480,8 @@ static struct msm_vidc_ctrl msm_venc_ctrls[] = {
 		.qmenu = NULL,
 	},
 	{
-		.id = V4L2_CID_MPEG_VIDC_VIDEO_INTRA_REFRESH_RANDOM,
-		.name = "Random Intra Refresh MBs",
+		.id = V4L2_CID_MPEG_VIDC_INTRA_REFRESH_PERIOD,
+		.name = "Intra Refresh Period",
 		.type = V4L2_CTRL_TYPE_INTEGER,
 		.minimum = 0,
 		.maximum = MAX_INTRA_REFRESH_MBS,
@@ -491,13 +491,14 @@ static struct msm_vidc_ctrl msm_venc_ctrls[] = {
 		.qmenu = NULL,
 	},
 	{
-		.id = V4L2_CID_MPEG_VIDEO_CYCLIC_INTRA_REFRESH_MB,
-		.name = "Cyclic Intra Refresh MBs",
+		.id = V4L2_CID_MPEG_VIDEO_VIDC_INTRA_REFRESH_TYPE,
+		.name = "Intra Refresh Type",
 		.type = V4L2_CTRL_TYPE_INTEGER,
-		.minimum = 0,
-		.maximum = MAX_INTRA_REFRESH_MBS,
-		.default_value = 0,
+		.default_value = V4L2_MPEG_VIDEO_VIDC_INTRA_REFRESH_RANDOM,
+		.minimum = V4L2_MPEG_VIDEO_VIDC_INTRA_REFRESH_RANDOM,
+		.maximum = V4L2_MPEG_VIDEO_VIDC_INTRA_REFRESH_CYCLIC,
 		.step = 1,
+		.menu_skip_mask = 0,
 		.qmenu = NULL,
 	},
 	{
@@ -2099,8 +2100,8 @@ int msm_venc_s_ctrl(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 	case V4L2_CID_MPEG_VIDEO_H264_VUI_EXT_SAR_WIDTH:
 	case V4L2_CID_MPEG_VIDEO_H264_VUI_EXT_SAR_HEIGHT:
 	case V4L2_CID_MPEG_VIDC_VIDEO_PRIORITY:
-	case V4L2_CID_MPEG_VIDC_VIDEO_INTRA_REFRESH_RANDOM:
-	case V4L2_CID_MPEG_VIDEO_CYCLIC_INTRA_REFRESH_MB:
+	case V4L2_CID_MPEG_VIDEO_VIDC_INTRA_REFRESH_TYPE:
+	case V4L2_CID_MPEG_VIDC_INTRA_REFRESH_PERIOD:
 	case V4L2_CID_MPEG_VIDC_VENC_CVP_DISABLE:
 	case V4L2_CID_MPEG_VIDC_VENC_NATIVE_RECORDER:
 	case V4L2_CID_MPEG_VIDC_VENC_RC_TIMESTAMP_DISABLE:
@@ -3171,8 +3172,8 @@ static void set_all_intra_preconditions(struct msm_vidc_inst *inst)
 	}
 
 	/* Disable IR */
-	ctrl = get_ctrl(inst, V4L2_CID_MPEG_VIDC_VIDEO_INTRA_REFRESH_RANDOM);
-	ctrl_t = get_ctrl(inst, V4L2_CID_MPEG_VIDEO_CYCLIC_INTRA_REFRESH_MB);
+	ctrl = get_ctrl(inst, V4L2_CID_MPEG_VIDC_INTRA_REFRESH_PERIOD);
+	ctrl_t = get_ctrl(inst, V4L2_CID_MPEG_VIDEO_VIDC_INTRA_REFRESH_TYPE);
 	if (ctrl->val || ctrl_t->val) {
 		s_vpr_h(inst->sid, "Disable IR for all intra\n");
 		update_ctrl(ctrl, 0, inst->sid);
@@ -3446,6 +3447,7 @@ int msm_venc_set_intra_refresh_mode(struct msm_vidc_inst *inst)
 	int rc = 0;
 	struct hfi_device *hdev;
 	struct v4l2_ctrl *ctrl = NULL;
+	struct v4l2_ctrl *ctrlP = NULL;
 	struct hfi_intra_refresh intra_refresh;
 	struct v4l2_format *f;
 
@@ -3459,26 +3461,27 @@ int msm_venc_set_intra_refresh_mode(struct msm_vidc_inst *inst)
 		inst->rc_type == V4L2_MPEG_VIDEO_BITRATE_MODE_CBR))
 		return 0;
 
-	ctrl = get_ctrl(inst, V4L2_CID_MPEG_VIDC_VIDEO_INTRA_REFRESH_RANDOM);
+	ctrl = get_ctrl(inst, V4L2_CID_MPEG_VIDEO_VIDC_INTRA_REFRESH_TYPE);
+	ctrlP = get_ctrl(inst, V4L2_CID_MPEG_VIDC_INTRA_REFRESH_PERIOD);
+
 	intra_refresh.mbs = 0;
 	f = &inst->fmts[OUTPUT_PORT].v4l2_fmt;
-	if (ctrl->val) {
+	if (ctrlP->val) {
 		u32 num_mbs_per_frame = 0;
 		u32 width = f->fmt.pix_mp.width;
 		u32 height = f->fmt.pix_mp.height;
 
 		num_mbs_per_frame = NUM_MBS_PER_FRAME(height, width);
-		intra_refresh.mode = HFI_INTRA_REFRESH_RANDOM;
-		intra_refresh.mbs = num_mbs_per_frame / ctrl->val;
-		if (num_mbs_per_frame % ctrl->val) {
+		intra_refresh.mbs = num_mbs_per_frame / ctrlP->val;
+		if (num_mbs_per_frame % ctrlP->val)
 			intra_refresh.mbs++;
-		}
-	} else {
-		ctrl = get_ctrl(inst,
-			V4L2_CID_MPEG_VIDEO_CYCLIC_INTRA_REFRESH_MB);
-		intra_refresh.mode = HFI_INTRA_REFRESH_CYCLIC;
-		intra_refresh.mbs = ctrl->val;
 	}
+	if (ctrl->val == V4L2_MPEG_VIDEO_VIDC_INTRA_REFRESH_RANDOM)
+		intra_refresh.mode = HFI_INTRA_REFRESH_RANDOM;
+
+	else if (ctrl->val == V4L2_MPEG_VIDEO_VIDC_INTRA_REFRESH_CYCLIC)
+		intra_refresh.mode = HFI_INTRA_REFRESH_CYCLIC;
+
 	if (!intra_refresh.mbs) {
 		intra_refresh.mode = HFI_INTRA_REFRESH_NONE;
 		intra_refresh.mbs = 0;
