@@ -394,7 +394,7 @@ static int msm_vidc_setup_context_bank(struct msm_vidc_core *core,
 	cb->domain = iommu_get_domain_for_dev(cb->dev);
 	/* update context bank address and size only for nordau */
 #if defined(CONFIG_MSM_VIDC_NORDAU)
-	prop = of_get_property(dev->of_node, "qcom,iommu-dma-addr-pool", &len);
+	prop = of_get_property(dev->of_node, "qcom,iommu-geometry", &len);
 	cb->addr_range.start = be32_to_cpup(&prop[0]);
 	cb->addr_range.size = be32_to_cpup(&prop[1]);
 #endif
