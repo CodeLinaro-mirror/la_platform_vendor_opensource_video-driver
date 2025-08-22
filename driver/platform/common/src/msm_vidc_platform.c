@@ -255,10 +255,12 @@ static int msm_vidc_deinit_platform_variant(struct msm_vidc_core *core, struct d
 
 static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct device *dev)
 {
+/*
 #if defined(CONFIG_MSM_VIDC_KALAMA)
 	struct msm_platform_core_capability *platform_data;
 	int i, num_platform_caps;
 #endif
+*/
 	int rc = -EINVAL;
 
 	if (!core || !dev) {
@@ -289,6 +291,7 @@ static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct dev
 			d_vpr_e("%s: failed with %d\n", __func__, rc);
 			return rc;
 		}
+		/*
 		if (!core || !core->platform) {
 			d_vpr_e("%s: Invalid params\n", __func__);
 			return -EINVAL;
@@ -303,6 +306,7 @@ static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct dev
 			else if (platform_data[i].type == MAX_NUM_1080P_SESSIONS)
 				platform_data[i].value = 32;
 		}
+		*/
 	}
 #endif
 #if defined(CONFIG_MSM_VIDC_ANORAK)
