@@ -343,10 +343,10 @@ u32 msm_vidc_encoder_output_size(struct msm_vidc_inst *inst)
 
 	/*if ((inst->rc_type == RATE_CONTROL_OFF) ||
 		(inst->rc_type == V4L2_MPEG_VIDEO_BITRATE_MODE_CQ))
-		frame_size = frame_size << 1;
+		frame_size = frame_size << 1; */
 
-	if (inst->rc_type == RATE_CONTROL_LOSSLESS)
-		frame_size = (width * height * 9) >> 2; */
+	if (inst->capabilities->cap[LOSSLESS].value == V4L2_MPEG_MSM_VIDC_ENABLE)
+		frame_size = (width * height * 9) >> 2;
 
 skip_calc:
 	/* multiply by 10/8 (1.25) to get size for 10 bit case */
