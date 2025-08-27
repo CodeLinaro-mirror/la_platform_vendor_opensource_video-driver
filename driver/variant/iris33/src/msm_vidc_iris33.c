@@ -1379,6 +1379,7 @@ static int __boot_firmware_iris33(struct msm_vidc_core *core)
 int msm_vidc_decide_work_mode_iris33(struct msm_vidc_inst *inst)
 {
 	u32 work_mode;
+	u32 vbv_delay;
 	struct v4l2_format *inp_f;
 	u32 width, height;
 	bool res_ok = false;
@@ -1406,6 +1407,7 @@ int msm_vidc_decide_work_mode_iris33(struct msm_vidc_inst *inst)
 		height = inst->crop.height;
 		width = inst->crop.width;
 		res_ok = !res_is_greater_than(width, height, 4096, 2160);
+		vbv_delay = inst->capabilities[VBV_DELAY].value;
 		if (res_ok &&
 			(inst->capabilities[LOWLATENCY_MODE].value)) {
 			work_mode = MSM_VIDC_STAGE_1;
@@ -1419,6 +1421,12 @@ int msm_vidc_decide_work_mode_iris33(struct msm_vidc_inst *inst)
 
 		if (!inst->capabilities[GOP_SIZE].value)
 			work_mode = MSM_VIDC_STAGE_2;
+
+		// Check for VBV Range
+		if(vbv_delay >= 34 && vbv_delay <= 100){
+			// Stage should be 1 for this range
+			work_mode = MSM_VIDC_STAGE_1;
+		}
 	} else {
 		i_vpr_e(inst, "%s: invalid session type\n", __func__);
 		return -EINVAL;
@@ -1436,6 +1444,7 @@ exit:
 int msm_vidc_decide_work_route_iris33(struct msm_vidc_inst *inst)
 {
 	u32 work_route;
+	u32 vbv_delay;
 	struct msm_vidc_core *core;
 
 	core = inst->core;
@@ -1452,10 +1461,17 @@ int msm_vidc_decide_work_route_iris33(struct msm_vidc_inst *inst)
 		u32 slice_mode;
 
 		slice_mode = inst->capabilities[SLICE_MODE].value;
+		vbv_delay = inst->capabilities[VBV_DELAY].value;
 
 		/*TODO Pipe=1 for legacy CBR*/
 		if (slice_mode == V4L2_MPEG_VIDEO_MULTI_SLICE_MODE_MAX_BYTES)
 			work_route = MSM_VIDC_PIPE_1;
+
+		// Check for VBV Range
+		if(vbv_delay >= 34 && vbv_delay <= 100){
+			// PIPE should be 1 for this range.
+			work_route = MSM_VIDC_PIPE_1;
+		}
 
 	} else {
 		i_vpr_e(inst, "%s: invalid session type\n", __func__);
