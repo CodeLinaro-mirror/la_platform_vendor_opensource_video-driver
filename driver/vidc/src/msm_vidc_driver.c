@@ -4985,6 +4985,17 @@ int msm_vidc_inst_timeout(struct msm_vidc_inst *inst)
 	msm_vidc_change_core_sub_state(core,
 		0, CORE_SUBSTATE_VIDEO_UNRESPONSIVE, __func__);
 
+	/*
+	 * In case of hw virtualization, call close_gvm
+	 * to perform deinit from pvm
+	 */
+	if (core->is_hw_virt) {
+#ifdef MSM_VIDC_HW_VIRT
+		virtio_video_msm_cmd_close_gvm();
+#endif
+		core->is_gvm_open = false;
+	}
+
 	/* call core deinit for a valid instance timeout case */
 	msm_vidc_core_deinit_locked(core, true);
 
