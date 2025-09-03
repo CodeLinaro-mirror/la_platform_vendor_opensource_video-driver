@@ -4875,6 +4875,7 @@ static int msm_vidc_pvm_event_handler(void *p)
 		if (!virtio_video_queue_event_wait(&evt)) {
 			switch (evt.event_type) {
 			case GVM_SSR:
+				d_vpr_e("%s: Received event GVM_SSR\n", __func__);
 				core->ssr_dev = *(uint32_t *)evt.payload;
 				schedule_work(&core->hw_virt_ssr_work);
 				break;
@@ -5187,6 +5188,7 @@ void msm_vidc_hw_virt_ssr_handler(struct work_struct *work)
 		d_vpr_e("%s: invalid params %pK\n", __func__, core);
 		return;
 	}
+	d_vpr_e("%s: Handling SSR for device 0x%x\n", __func__, core->ssr_dev);
 
 	bug_on = !!(msm_vidc_enable_bugon & MSM_VIDC_BUG_ON_FATAL);
 	MSM_VIDC_FATAL(bug_on);
