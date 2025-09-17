@@ -2806,23 +2806,23 @@ static struct msm_vidc_format_capability format_data_niobe = {
 
 /* name, min_kbps, max_kbps */
 static const struct bw_table niobe_bw_table[] = {
-	{ "venus-cnoc",  1000, 1000     },
-	{ "venus-ddr",   1000, 15000000 },
+	{ "cpu-cfg",     1000, 1000     },
+	{ "video-mem",   1000, 15000000 },
 	{ "venus-llcc",  1000, 15000000 },
 };
 
 /* name, hw_trigger */
 static const struct regulator_table niobe_regulator_table[] = {
-	{ "iris-ctl", 0 },
-	{ "vcodec",   1 },
+	{ "venus",     0 },
+	{ "vcodec0",   1 },
 };
 
 /* name, clock id, scaling */
 static const struct clk_table niobe_clk_table[] = {
-	{ "gcc_video_axi0",        GCC_VIDEO_AXI0_CLK,     0 },
-	{ "core_clk",              VIDEO_CC_MVS0C_CLK,     0 },
-	{ "vcodec_clk",            VIDEO_CC_MVS0_CLK,      0 },
-	{ "video_cc_mvs0_clk_src", VIDEO_CC_MVS0_CLK_SRC,  1,
+	{ "iface",                         GCC_VIDEO_AXI0_CLK,                     0 },
+	{ "core",                          VIDEO_CC_MVS0C_CLK,                     0 },
+	{ "vcodec0_core",                  VIDEO_CC_MVS0_CLK,                      0 },
+	{ "video_cc_mvs0_clk_src",         VIDEO_CC_MVS0_CLK_SRC,                  1,
 	 (u64[]) {533333333, 444000000, 366000000, 338000000, 240000000, 168000000}, 6},
 };
 

@@ -477,36 +477,6 @@ static int msm_vidc_set_ring_buffer_count_canoe(void *instance,
 	return rc;
 }
 
-static int msm_vidc_adjust_bitrate_apv(void *instance,
-			struct v4l2_ctrl *ctrl)
-{
-	int rc = 0;
-	struct msm_vidc_inst *inst = (struct msm_vidc_inst *)instance;
-
-	u32 adjusted_value = 0, resolution = 0;
-	struct v4l2_format *output_fmt;
-
-	adjusted_value =  ctrl ? ctrl->val : inst->capabilities[BIT_RATE].value;
-	output_fmt = &inst->fmts[OUTPUT_PORT];
-	resolution = output_fmt->fmt.pix_mp.width * output_fmt->fmt.pix_mp.height;
-
-	/* Set user input bitrate for 8k session if input bitrate >= 2gpbs */
-	if (resolution >= 7680 * 4320 && msm_vidc_apv_bitrate >= 2000000000) {
-		/* Max bitrate allowed is 3.3gbps */
-		if (msm_vidc_apv_bitrate > 3.3 * 1000 * 1000 * 1000) {
-			i_vpr_h(inst, "%s:  limit APV bitrate to 3.3Gbps\n", __func__);
-			msm_vidc_apv_bitrate = 3.3 * 1000 * 1000 * 1000;
-		}
-		i_vpr_h(inst, "%s: update bitrate to %u for 8k resolution\n",
-			__func__, msm_vidc_apv_bitrate);
-		adjusted_value = msm_vidc_apv_bitrate;
-	}
-
-	msm_vidc_update_cap_value(inst, BIT_RATE, adjusted_value, __func__);
-
-	return rc;
-}
-
 static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 	/* {cap, domain, codec,
 	 *      min, max, step_or_mask, value,
@@ -1007,8 +977,9 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 
 	{BITRATE_MODE, ENC, APV,
 		V4L2_MPEG_VIDEO_BITRATE_MODE_VBR,
-		V4L2_MPEG_VIDEO_BITRATE_MODE_VBR,
-		BIT(V4L2_MPEG_VIDEO_BITRATE_MODE_VBR),
+		V4L2_MPEG_VIDEO_BITRATE_MODE_CQ,
+		BIT(V4L2_MPEG_VIDEO_BITRATE_MODE_VBR) |
+		BIT(V4L2_MPEG_VIDEO_BITRATE_MODE_CQ),
 		V4L2_MPEG_VIDEO_BITRATE_MODE_VBR,
 		V4L2_CID_MPEG_VIDEO_BITRATE_MODE,
 		HFI_PROP_RATE_CONTROL,
@@ -1063,6 +1034,13 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 
 	{CONSTANT_QUALITY, ENC, HEIC,
 		1, MAX_CONSTANT_QUALITY, 1, 100,
+		V4L2_CID_MPEG_VIDEO_CONSTANT_QUALITY,
+		HFI_PROP_CONSTANT_QUALITY,
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
+			CAP_FLAG_DYNAMIC_ALLOWED},
+
+	{CONSTANT_QUALITY, ENC, APV,
+		1, MAX_CONSTANT_QUALITY, 1, 90,
 		V4L2_CID_MPEG_VIDEO_CONSTANT_QUALITY,
 		HFI_PROP_CONSTANT_QUALITY,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
@@ -3228,7 +3206,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 
 	{REQUEST_I_FRAME, ENC, H264 | HEVC,
 		{0},
-		NULL,
+		msm_vidc_adjust_req_sync_frame,
 		msm_vidc_set_req_sync_frame},
 
 	{BIT_RATE, ENC, H264,
@@ -3269,7 +3247,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 
 	{BITRATE_MODE, ENC, APV,
 		{BIT_RATE, PEAK_BITRATE, META_EVA_STATS, TIME_DELTA_BASED_RC,
-			LOG_VIDEO_ENCODE},
+			LOG_VIDEO_ENCODE, CONSTANT_QUALITY},
 		msm_vidc_adjust_bitrate_mode,
 		msm_vidc_set_u32_enum},
 
@@ -3281,6 +3259,11 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 	{CONSTANT_QUALITY, ENC, HEVC | HEIC,
 		{0},
 		NULL,
+		msm_vidc_set_constant_quality},
+
+	{CONSTANT_QUALITY, ENC, APV,
+		{BIT_RATE},
+		msm_vidc_adjust_constant_quality,
 		msm_vidc_set_constant_quality},
 
 	{GOP_SIZE, ENC, H264 | HEVC | HEIC,
@@ -3748,8 +3731,13 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 		NULL,
 		msm_vidc_set_vui_timing_info},
 
-	{SIGNAL_COLOR_INFO, ENC, H264 | HEVC | HEIC | APV,
+	{SIGNAL_COLOR_INFO, ENC, HEIC | APV,
 		{0},
+		NULL,
+		msm_vidc_set_signal_color_info},
+
+	{SIGNAL_COLOR_INFO, ENC, H264 | HEVC,
+		{REQUEST_I_FRAME},
 		NULL,
 		msm_vidc_set_signal_color_info},
 

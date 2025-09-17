@@ -225,6 +225,7 @@ struct msm_vidc_platform_data {
 	unsigned int regulator_tbl_size;
 	struct pd_table *pd_tbl;
 	unsigned int pd_tbl_size;
+	unsigned int gdsc_hw_ctrl_by_default;
 	const char * const *opp_tbl;
 	unsigned int opp_tbl_size;
 	struct dev_pm_domain_list *opp_pmdomain_tbl;
@@ -361,6 +362,8 @@ int msm_vidc_packetize_control(struct msm_vidc_inst *inst,
 			       enum msm_vidc_inst_capability_type cap_id, u32 payload_type,
 			       void *hfi_val, u32 payload_size, const char *func);
 int msm_vidc_adjust_bitrate(void *instance, struct v4l2_ctrl *ctrl);
+int msm_vidc_adjust_bitrate_apv(void *instance, struct v4l2_ctrl *ctrl);
+int msm_vidc_adjust_constant_quality(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_layer_bitrate(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_bitrate_mode(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_entropy_mode(void *instance, struct v4l2_ctrl *ctrl);
@@ -453,5 +456,6 @@ int msm_vidc_adjust_lookahead_encode_size(void *instance, struct v4l2_ctrl *ctrl
 int msm_vidc_set_lookahead_encode_size(void *instance, enum msm_vidc_inst_capability_type cap_id);
 int msm_vidc_adjust_log_mode(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_bitdepth(void *instance, struct v4l2_ctrl *ctrl);
+int msm_vidc_adjust_req_sync_frame(void *instance, struct v4l2_ctrl *ctrl);
 
 #endif // _MSM_VIDC_PLATFORM_H_

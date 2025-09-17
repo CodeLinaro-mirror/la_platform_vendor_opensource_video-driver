@@ -33,8 +33,13 @@
 #include "msm_vidc_pineapple.h"
 #include "msm_vidc_iris33.h"
 #endif
+#if defined(CONFIG_MSM_VIDC_X1E80100)
+#include "msm_vidc_x1e80100.h"
+#include "msm_vidc_iris3.h"
+#endif
 #if defined(CONFIG_MSM_VIDC_LEMANS)
 #include "msm_vidc_lemans.h"
+#include "msm_vidc_iris3.h"
 #endif
 #if defined(CONFIG_MSM_VIDC_NIOBE)
 #include "msm_vidc_niobe.h"
@@ -224,6 +229,83 @@ static struct v4l2_m2m_ops msm_v4l2_m2m_ops = {
 	.job_abort                      = msm_v4l2_m2m_job_abort,
 };
 
+u64 apv_bitrate_tbl[8][6][4] = {
+	{
+		/* qHD 960x540 */
+		/* LQ,        SQ,        HQ,        UQ */
+		{  29000000,  41000000,  58000000,  86000000 },/* 24 fps */
+		{  31000000,  43000000,  60000000,  90000000 },/* 25 fps */
+		{  37000000,  51000000,  72000000, 108000000 },/* 30 fps */
+		{  61000000,  86000000, 120000000, 180000000 },/* 50 fps */
+		{  73000000, 103000000, 144000000, 216000000 },/* 60 fps */
+		{ 147000000, 206000000, 288000000, 432000000 } /* 120 fps */
+	},
+	{
+		/* HD 1280x720 */
+		{  40000000,  56000000,  78000000, 118000000 },
+		{  42000000,  58000000,  82000000, 123000000 },
+		{  50000000,  70000000,  98000000, 147000000 },
+		{  83000000, 117000000, 163000000, 245000000 },
+		{ 100000000, 140000000, 196000000, 294000000 },
+		{ 200000000, 280000000, 392000000, 588000000 }
+	},
+	{
+		/* FHD 1920x1080 */
+		{  81000000, 113000000, 158000000, 238000000 },
+		{  84000000, 118000000, 165000000, 248000000 },
+		{ 101000000, 141000000, 198000000, 297000000 },
+		{ 168000000, 236000000, 330000000, 495000000 },
+		{ 202000000, 283000000, 396000000, 594000000 },
+		{ 404000000, 566000000, 792000000, 1188000000 }
+	},
+	{
+		/* 2K 2048x1080 */
+		{  86000000, 121000000, 169000000, 253000000 },
+		{  90000000, 126000000, 176000000, 264000000 },
+		{ 108000000, 151000000, 211000000, 317000000 },
+		{ 180000000, 251000000, 352000000, 528000000 },
+		{ 216000000, 302000000, 422000000, 634000000 },
+		{ 431000000, 603000000, 845000000, 1267000000 }
+	},
+	{
+		/* UHD 4K 3840x2160 */
+		{  325000000,  455000000,  637000000,  955000000 },
+		{  338000000,  474000000,  663000000,  995000000 },
+		{  406000000,  569000000,  796000000, 1194000000 },
+		{  677000000,  948000000, 1327000000, 1990000000 },
+		{  812000000, 1137000000, 1592000000, 2388000000 },
+		{ 1624000000, 2274000000, 3184000000, 4776000000 }
+	},
+	{
+		/* 4K 4096x2160 */
+		{  347000000,  485000000,  679000000, 1019000000 },
+		{  361000000,  505000000,  708000000, 1061000000 },
+		{  433000000,  606000000,  849000000, 1274000000 },
+		{  722000000, 1011000000, 1415000000, 2123000000 },
+		{  866000000, 1213000000, 1698000000, 2547000000 },
+		{ 1733000000, 2426000000, 3396000000, 5094000000 }
+	},
+	{
+		/* UHD 8K 7680x4320 */
+		{ 1300000000, 1819000000, 2547000000, 3821000000 },
+		{ 1354000000, 1895000000, 2653000000, 3980000000 },
+		{ 1624000000, 2274000000, 3184000000, 4776000000 },
+		{ 2707000000, 3790000000, 5307000000, 7960000000 },
+		{ 3249000000, 4549000000, 6368000000, 9552000000 },
+		{ 6498000000, 9097000000, 12736000000, 19104000000 }
+	},
+	{
+		/* 8K 8192x4320 */
+		{ 1386000000, 1941000000, 2717000000, 4076000000 },
+		{ 1444000000, 2022000000, 2830000000, 4245000000 },
+		{ 1733000000, 2426000000, 3396000000, 5094000000 },
+		{ 2888000000, 4043000000, 5660000000, 8491000000 },
+		{ 3466000000, 4852000000, 6793000000, 10189000000 },
+		{ 6931000000, 9704000000, 13585000000, 20378000000 }
+	}
+
+};
+
 static const struct msm_vidc_compat_handle compat_handle[] = {
 #if defined(CONFIG_MSM_VIDC_PINEAPPLE)
 	{
@@ -253,9 +335,23 @@ static const struct msm_vidc_compat_handle compat_handle[] = {
 		.init_iris                  = msm_vidc_init_iris35,
 	},
 #endif
+#if defined(CONFIG_MSM_VIDC_X1E80100)
+	{
+		.compat                     = "qcom,x1e80100-vidc",
+		.get_platform_data          = msm_vidc_get_platform_data_x1e80100,
+		.init_platform              = msm_vidc_init_platform_x1e80100,
+		.init_iris                  = msm_vidc_init_iris3,
+	},
+#endif
 #if defined(CONFIG_MSM_VIDC_LEMANS)
 	{
 		.compat                     = "qcom,sa8255-vidc",
+		.get_platform_data          = msm_vidc_get_platform_data_lemans,
+		.init_platform              = msm_vidc_init_platform_lemans,
+		.init_iris                  = msm_vidc_init_iris3,
+	},
+	{
+		.compat                     = "qcom,sa8775p-iris",
 		.get_platform_data          = msm_vidc_get_platform_data_lemans,
 		.init_platform              = msm_vidc_init_platform_lemans,
 		.init_iris                  = msm_vidc_init_iris3,
@@ -884,6 +980,118 @@ int msm_vidc_adjust_session_core_id(void *instance, struct v4l2_ctrl *ctrl)
 	return rc;
 }
 
+int msm_vidc_adjust_bitrate_apv(void *instance, struct v4l2_ctrl *ctrl)
+{
+	struct msm_vidc_inst *inst = (struct msm_vidc_inst *)instance;
+	s64 adjusted_value = 0, resolution = 0;
+	struct v4l2_format *output_fmt;
+	u32 frame_rate, quality_level;
+	u32 res_index = 0, fps_index = 0, quality_index = 0, multiplier = 1;
+
+	adjusted_value =  ctrl ? ctrl->val : inst->capabilities[BIT_RATE].value;
+	output_fmt = &inst->fmts[OUTPUT_PORT];
+	resolution = output_fmt->fmt.pix_mp.width * output_fmt->fmt.pix_mp.height;
+	frame_rate = inst->capabilities[FRAME_RATE].value >> 16;
+	quality_level = inst->capabilities[CONSTANT_QUALITY].value;
+
+	/* Set user input bitrate for 8k session if input bitrate >= 2gpbs */
+	if (resolution >= 7680 * 4320 && msm_vidc_apv_bitrate >= 2000000000) {
+		/* Max bitrate allowed is 3.3gbps */
+		if (msm_vidc_apv_bitrate > 3.3 * 1000 * 1000 * 1000) {
+			i_vpr_h(inst, "%s:  limit APV bitrate to 3.3Gbps\n", __func__);
+			msm_vidc_apv_bitrate = 3.3 * 1000 * 1000 * 1000;
+		}
+		i_vpr_h(inst, "%s: update bitrate to %u for 8k resolution\n",
+			__func__, msm_vidc_apv_bitrate);
+		adjusted_value = msm_vidc_apv_bitrate;
+	}
+
+	if (inst->hfi_rc_type != HFI_RC_CQ)
+		goto update_bitrate;
+
+	/* update the bitrate based on constant quality level */
+	if (resolution < ALIGN(960, 16) * ALIGN(540, 16))
+		res_index = 0;
+	else if (resolution <= ALIGN(1280, 16) * ALIGN(720, 16))
+		res_index = 1;
+	else if (resolution <= ALIGN(1920, 16) * ALIGN(1080, 16))
+		res_index = 2;
+	else if (resolution <= ALIGN(2048, 16) * ALIGN(1080, 16))
+		res_index = 3;
+	else if (resolution <= ALIGN(3840, 16) * ALIGN(2160, 16))
+		res_index = 4;
+	else if (resolution <= ALIGN(4096, 16) * ALIGN(2160, 16))
+		res_index = 5;
+	else if (resolution <= ALIGN(7680, 16) * ALIGN(4320, 16))
+		res_index = 6;
+	else /* if (resolution <= ALIGN(8192, 16) * ALIGN(4320, 16)) */
+		res_index = 7;
+
+	if (frame_rate <= 24) {
+		fps_index = 0;
+	} else if (frame_rate <= 25) {
+		fps_index = 1;
+	} else if (frame_rate <= 30) {
+		fps_index = 2;
+	} else if (frame_rate <= 50) {
+		fps_index = 3;
+	} else if (frame_rate <= 60) {
+		fps_index = 4;
+	} else if (frame_rate <= 120) {
+		fps_index = 5;
+	} else {
+		fps_index = 5;
+		multiplier = 1;
+		if (frame_rate <= 240)
+			multiplier = 2;
+		else if (frame_rate <= 480)
+			multiplier = 4;
+		else
+			multiplier = 8;
+	}
+
+	if (quality_level <= 70)
+		quality_index = 0;
+	else if (quality_level <= 80)
+		quality_index = 1;
+	else
+		quality_index = 2;
+
+	adjusted_value =
+		apv_bitrate_tbl[res_index][fps_index][quality_index] * multiplier;
+	/* limit apv bitrate to 3.333gbps (maximum) */
+	if (adjusted_value > 3333000000)
+		adjusted_value = 3333000000;
+
+update_bitrate:
+	msm_vidc_update_cap_value(inst, BIT_RATE, adjusted_value, __func__);
+
+	return 0;
+}
+
+int msm_vidc_adjust_constant_quality(void *instance, struct v4l2_ctrl *ctrl)
+{
+	s32 adjusted_value;
+	struct msm_vidc_inst *inst = (struct msm_vidc_inst *)instance;
+
+	adjusted_value = ctrl ? ctrl->val :
+		inst->capabilities[CONSTANT_QUALITY].value;
+
+	if (inst->codec == MSM_VIDC_APV) {
+		/* recommended quality levels are 70 (LQ), 80 (SQ), 90 (HQ) */
+		if (adjusted_value <= 70)
+			adjusted_value = 70;
+		else if (adjusted_value <= 80)
+			adjusted_value = 80;
+		else
+			adjusted_value = 90;
+	}
+
+	msm_vidc_update_cap_value(inst, CONSTANT_QUALITY, adjusted_value, __func__);
+
+	return 0;
+}
+
 int msm_vidc_adjust_bitrate_mode(void *instance, struct v4l2_ctrl *ctrl)
 {
 	struct msm_vidc_inst *inst = (struct msm_vidc_inst *)instance;
@@ -917,6 +1125,30 @@ int msm_vidc_adjust_bitrate_mode(void *instance, struct v4l2_ctrl *ctrl)
 		hfi_value = HFI_RC_CQ;
 	}
 
+	if (inst->codec == MSM_VIDC_APV) {
+		/*
+		 * for apv, use bitrate only for VBR, client set BITRATE and
+		 *          client did not set CONSTANT_QUALITY, in all other
+		 *          cases, default to CONSTANT_QUALITY.
+		 */
+		bool const_quality_set =
+			!!(inst->capabilities[CONSTANT_QUALITY].flags &
+			   CAP_FLAG_CLIENT_SET);
+		bool bitrate_set =
+			!!(inst->capabilities[BIT_RATE].flags &
+			   CAP_FLAG_CLIENT_SET);
+
+		if (bitrate_mode == V4L2_MPEG_VIDEO_BITRATE_MODE_VBR &&
+		    bitrate_set && !const_quality_set) {
+			hfi_value = HFI_RC_VBR_CFR;
+		} else {
+			hfi_value = HFI_RC_CQ;
+			i_vpr_h(inst,
+				"%s: APV default to CQ (constant quality %s, bitrate %s)\n",
+				__func__, const_quality_set ? "set" : "not set",
+				bitrate_set ? "set" : "not set");
+		}
+	}
 update:
 	inst->hfi_rc_type = hfi_value;
 	i_vpr_h(inst, "%s: hfi rc type: %#x\n",
@@ -1197,62 +1429,62 @@ static s64 msm_vidc_adjust_apv_level(struct msm_vidc_inst *inst,
 {
 	static struct apv_level_table level_table[] = {
 		/* level, Max luma sample rate, Max coded data rate (kbits/sec) */
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_1_0,    3041280,       7000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_1_1,    6082560,      14000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_2_0,    15667200,     36000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_2_1,    31334400,     71000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_3_0,    66846720,    101000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_3_1,   133693440,    201000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_4_0,   265420800,    401000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_4_1,   530841600,    780000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_5_0,  1061683200,   1560000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_5_1,  2123366400,   3324000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_6_0,  4777574400,   6648000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_6_1,  8493465600,  13296000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_7_0, 16986931200,  26592000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_7_1, 33973862400,  53184000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_1_0,    3041280,       8000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_1_1,    6082560,      16000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_2_0,    15667200,     39000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_2_1,    31334400,     78000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_3_0,    66846720,    114000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_3_1,   133693440,    227000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_4_0,   265420800,    455000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_4_1,   530841600,    910000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_5_0,  1061683200,   1820000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_5_1,  2123366400,   3639000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_6_0,  4777574400,   7278000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_6_1,  8493465600,  14556000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_7_0, 16986931200,  29111000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND0_7_1, 33973862400,  58222000, },
 		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_1_0,     3041280,     11000, },
 		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_1_1,     6082560,     21000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_2_0,    15667200,     53000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_2_1,    31334400,    106000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_3_0,    66846720,    151000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_3_1,   133693440,    301000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_4_0,   265420800,    602000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_4_1,   530841600,   1170000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_5_0,  1061683200,   2340000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_5_1,  2123366400,   4986000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_6_0,  4777574400,   9972000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_6_1,  8493465600,  19944000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_7_0, 16986931200,  39888000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_7_1, 33973862400,  79776000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_1_0,     3041280,     14000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_1_1,     6082560,     28000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_2_0,    15667200,     71000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_2_1,    31334400,    141000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_3_0,    66846720,    201000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_3_1,   133693440,    401000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_4_0,   265420800,    780000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_4_1,   530841600,   1560000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_5_0,  1061683200,   3324000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_5_1,  2123366400,   6648000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_6_0,  4777574400,  13296000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_6_1,  8493465600,  26592000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_7_0, 16986931200,  53184000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_7_1, 33973862400, 106368000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_1_0,     3041280,     21000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_1_1,     6082560,     42000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_2_0,    15667200,    106000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_2_1,    31334400,    212000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_3_0,    66846720,    301000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_3_1,   133693440,    602000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_4_0,   265420800,   1170000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_4_1,   530841600,   2340000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_5_0,  1061683200,   4986000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_5_1,  2123366400,   9972000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_6_0,  4777574400,  19944000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_6_1,  8493465600,  39888000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_7_0, 16986931200,  79776000, },
-		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_7_1, 33973862400, 159552000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_2_0,    15667200,     54000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_2_1,    31334400,    108000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_3_0,    66846720,    159000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_3_1,   133693440,    317000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_4_0,   265420800,    637000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_4_1,   530841600,   1274000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_5_0,  1061683200,   2548000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_5_1,  2123366400,   5095000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_6_0,  4777574400,  10189000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_6_1,  8493465600,  20378000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_7_0, 16986931200,  40756000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND1_7_1, 33973862400,  81511000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_1_0,     3041280,     15000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_1_1,     6082560,     30000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_2_0,    15667200,     76000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_2_1,    31334400,    152000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_3_0,    66846720,    222000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_3_1,   133693440,    444000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_4_0,   265420800,    892000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_4_1,   530841600,   1784000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_5_0,  1061683200,   3567000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_5_1,  2123366400,   7133000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_6_0,  4777574400,  14265000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_6_1,  8493465600,  28529000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_7_0, 16986931200,  57058000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND2_7_1, 33973862400, 114115000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_1_0,     3041280,     23000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_1_1,     6082560,     45000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_2_0,    15667200,    114000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_2_1,    31334400,    227000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_3_0,    66846720,    333000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_3_1,   133693440,    666000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_4_0,   265420800,   1338000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_4_1,   530841600,   2675000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_5_0,  1061683200,   5350000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_5_1,  2123366400,  10699000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_6_0,  4777574400,  21397000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_6_1,  8493465600,  42793000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_7_0, 16986931200,  85586000, },
+		{ V4L2_MPEG_VIDC_APV_LEVEL_BAND3_7_1, 33973862400, 171172000, },
 	};
 	s64 level = inst->capabilities[LEVEL].value;
 	int cnt = 0;
@@ -3006,8 +3238,8 @@ int msm_vidc_adjust_eva_stats(void *instance, struct v4l2_ctrl *ctrl)
 				      &rc_type, __func__))
 		return -EINVAL;
 
-	/* disable Eva stats metadata for CQ rate control */
-	if (rc_type == HFI_RC_CQ) {
+	/* disable Eva stats metadata for CQ rate control other than APV*/
+	if (rc_type == HFI_RC_CQ && inst->codec != MSM_VIDC_APV) {
 		i_vpr_h(inst, "%s: unsupported for CQ rate control\n", __func__);
 		adjusted_value = 0;
 	}
@@ -3382,7 +3614,27 @@ int msm_vidc_adjust_bitdepth(void *instance, struct v4l2_ctrl *ctrl)
 		adjusted_value = BIT_DEPTH_10;
 
 	msm_vidc_update_cap_value(inst, BIT_DEPTH, adjusted_value, __func__);
+	return 0;
+}
 
+int msm_vidc_adjust_req_sync_frame(void *instance, struct v4l2_ctrl *ctrl)
+{
+	s32 value;
+	struct msm_vidc_inst *inst = (struct msm_vidc_inst *)instance;
+
+	if (ctrl) {
+		msm_vidc_update_cap_value(inst, REQUEST_I_FRAME, ctrl->val, __func__);
+		return 0;
+	}
+
+	/*
+	 * Switch cap value between 0 and 1
+	 * Ensure cap value is updated each time
+	 * Then set function can be called dynamically
+	 */
+	value = inst->capabilities[REQUEST_I_FRAME].value ? 0 : 1;
+
+	msm_vidc_update_cap_value(inst, REQUEST_I_FRAME, value, __func__);
 	return 0;
 }
 
@@ -3875,6 +4127,13 @@ int msm_vidc_set_bitrate(void *instance,
 	int rc = 0;
 	struct msm_vidc_inst *inst = (struct msm_vidc_inst *)instance;
 	u32 hfi_value = 0;
+
+	/*
+	 * for CQ mode, bitrate is not expected to be set instead
+	 * CONSTANT_QUALITY is expected to be set
+	 */
+	if (inst->codec == MSM_VIDC_APV && inst->hfi_rc_type == HFI_RC_CQ)
+		return 0;
 
 	/* set Total Bitrate */
 	if (inst->capabilities[BIT_RATE].flags & CAP_FLAG_CLIENT_SET)
