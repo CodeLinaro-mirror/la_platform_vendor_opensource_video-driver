@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2022,2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+ * All rights reserved.
  */
 
 #include <linux/of.h>
@@ -996,7 +997,7 @@ static struct msm_platform_inst_capability instance_data_scuba[] = {
 
 	{LEVEL, DEC, H264,
 		V4L2_MPEG_VIDEO_H264_LEVEL_1_0,
-		V4L2_MPEG_VIDEO_H264_LEVEL_4_0,
+		V4L2_MPEG_VIDEO_H264_LEVEL_5_0,
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_0)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1B)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_1)|
@@ -1008,8 +1009,9 @@ static struct msm_platform_inst_capability instance_data_scuba[] = {
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_0)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_1)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_2)|
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_0),
-		V4L2_MPEG_VIDEO_H264_LEVEL_4_0,
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_0)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_0),
+		V4L2_MPEG_VIDEO_H264_LEVEL_5_0,
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
@@ -1019,7 +1021,7 @@ static struct msm_platform_inst_capability instance_data_scuba[] = {
 
 	{LEVEL, ENC, H264,
 		V4L2_MPEG_VIDEO_H264_LEVEL_1_0,
-		V4L2_MPEG_VIDEO_H264_LEVEL_4_0,
+		V4L2_MPEG_VIDEO_H264_LEVEL_5_0,
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_0)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1B)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_1)|
@@ -1031,8 +1033,9 @@ static struct msm_platform_inst_capability instance_data_scuba[] = {
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_0)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_1)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_2)|
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_0),
-		V4L2_MPEG_VIDEO_H264_LEVEL_4_0,
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_0)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_0),
+		V4L2_MPEG_VIDEO_H264_LEVEL_5_0,
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
