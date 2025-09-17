@@ -556,6 +556,7 @@ enum sku_version {
 	SKU_VERSION_0 = 0,
 	SKU_VERSION_1,
 	SKU_VERSION_2,
+	SKU_VERSION_3 = 4,
 };
 
 enum msm_vidc_ssr_trigger_type {
