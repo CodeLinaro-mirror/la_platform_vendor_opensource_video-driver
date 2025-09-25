@@ -30,6 +30,20 @@ def define_monaco(t,v):
         ],
     )
 
+def define_bengal(t,v):
+    define_target_variant_modules(
+        target = t,
+        variant = v,
+        registry = video_driver_modules,
+        modules = [
+            "msm_video",
+        ],
+        config_options = [
+            "CONFIG_MSM_VIDC_KHAJE",
+            "CONFIG_MSM_VIDC_AR50LT",
+        ],
+    )
+
 def define_pitti(t,v):
     define_target_variant_modules(
         target = t,
@@ -64,6 +78,8 @@ def define_target_modules():
             define_blair(t, v)
         elif t == "monaco":
             define_monaco(t, v)
+        elif t == "bengal":
+            define_bengal(t, v)
         elif t == "pitti":
             define_pitti(t, v)
         elif t == "vienna":
