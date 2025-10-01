@@ -2331,7 +2331,7 @@ static const u32 yupik_msm_vidc_ssr_type[] = {
 
 /* Default UBWC config for LPDDR5 */
 static struct msm_vidc_ubwc_config_data ubwc_config_yupik[] = {
-	UBWC_CONFIG(8, 32, 16, 0, 1, 1, 1),
+	UBWC_CONFIG(8, 32, 15, 0, 1, 1, 1),
 };
 
 static struct msm_vidc_efuse_data efuse_data_yupik[] = {

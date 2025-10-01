@@ -603,7 +603,6 @@ u32 msm_vidc_buffer_region(struct msm_vidc_inst *inst,
 	}
 
 	return region;
-
 }
 
 static int msm_vidc_iommu_map(struct msm_vidc_core *core, struct msm_vidc_mem *mem)
