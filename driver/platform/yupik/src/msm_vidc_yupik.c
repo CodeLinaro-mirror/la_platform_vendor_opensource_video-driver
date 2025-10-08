@@ -1204,7 +1204,7 @@ static struct msm_platform_inst_capability instance_cap_data_yupik_v0[] = {
 		V4L2_MPEG_VIDEO_H264_LEVEL_5_1,
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
-		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{LEVEL, ENC, HEVC | HEIC,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
@@ -1220,7 +1220,7 @@ static struct msm_platform_inst_capability instance_cap_data_yupik_v0[] = {
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_5,
 		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
 		HFI_PROP_LEVEL,
-		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{LEVEL, DEC, H264,
 		V4L2_MPEG_VIDEO_H264_LEVEL_1_0,
@@ -1802,7 +1802,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_yupi
 		{PROFILE}},
 
 	{FRAME_RATE, ENC, CODECS_ALL,
-		{LEVEL},
+		{0},
 		NULL,
 		msm_vidc_set_q16},
 
@@ -1870,12 +1870,12 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_yupi
 		msm_vidc_set_req_sync_frame},
 
 	{BIT_RATE, ENC, H264,
-		{PEAK_BITRATE, BITRATE_BOOST, L0_BR, LEVEL},
+		{PEAK_BITRATE, BITRATE_BOOST, L0_BR},
 		msm_vidc_adjust_bitrate,
 		msm_vidc_set_bitrate},
 
 	{BIT_RATE, ENC, HEVC,
-		{PEAK_BITRATE, BITRATE_BOOST, L0_BR, LEVEL},
+		{PEAK_BITRATE, BITRATE_BOOST, L0_BR},
 		msm_vidc_adjust_bitrate,
 		msm_vidc_set_bitrate},
 
@@ -2003,7 +2003,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_yupi
 		msm_vidc_set_preprocess},
 
 	{BITRATE_BOOST, ENC, H264 | HEVC,
-		{LEVEL},
+		{0},
 		msm_vidc_adjust_bitrate_boost,
 		msm_vidc_set_vbr_related_properties},
 
@@ -2073,13 +2073,13 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_yupi
 		msm_vidc_set_frame_qp},
 
 	{LAYER_TYPE, ENC, H264 | HEVC,
-		{CONTENT_ADAPTIVE_CODING, LTR_COUNT, LEVEL}},
+		{CONTENT_ADAPTIVE_CODING, LTR_COUNT}},
 
 	{LAYER_ENABLE, ENC, H264 | HEVC,
-		{CONTENT_ADAPTIVE_CODING, LEVEL}},
+		{CONTENT_ADAPTIVE_CODING}},
 
 	{ENH_LAYER_COUNT, ENC, H264 | HEVC,
-		{GOP_SIZE, B_FRAME, BIT_RATE, MIN_QUALITY, SLICE_MODE, LTR_COUNT, LEVEL},
+		{GOP_SIZE, B_FRAME, BIT_RATE, MIN_QUALITY, SLICE_MODE, LTR_COUNT},
 		msm_vidc_adjust_layer_count,
 		msm_vidc_set_layer_count_and_type},
 
@@ -2148,12 +2148,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_yupi
 		NULL,
 		msm_vidc_set_u32_enum},
 
-	{LEVEL, ENC, H264 | HEVC,
-		{0},
-		msm_vidc_adjust_level_tier,
-		msm_vidc_set_level},
-
-	{LEVEL, ENC, HEIC,
+	{LEVEL, ENC, CODECS_ALL,
 		{0},
 		NULL,
 		msm_vidc_set_level},
