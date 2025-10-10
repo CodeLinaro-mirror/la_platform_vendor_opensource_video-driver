@@ -976,7 +976,7 @@ static struct msm_platform_inst_capability instance_cap_data_kera_v0[] = {
 		CAP_FLAG_OUTPUT_PORT},
 
 	{VBV_DELAY, ENC, H264 | HEVC,
-		200, 300, 100, 300,
+		34, 300, 1, 300,
 		V4L2_CID_MPEG_VIDEO_VBV_DELAY,
 		HFI_PROP_VBV_DELAY,
 		CAP_FLAG_OUTPUT_PORT},
@@ -2277,8 +2277,8 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_kera
 		msm_vidc_set_u32},
 
 	{VBV_DELAY, ENC, H264 | HEVC,
-		{0},
-		NULL,
+		{GOP_SIZE, ENH_LAYER_COUNT},
+		msm_vidc_adjust_vbv_delay,
 		msm_vidc_set_cbr_related_properties},
 
 	{PEAK_BITRATE, ENC, H264 | HEVC,
@@ -3239,7 +3239,7 @@ static struct msm_platform_inst_capability instance_cap_data_kera_v1[] = {
 		CAP_FLAG_OUTPUT_PORT},
 
 	{VBV_DELAY, ENC, H264 | HEVC,
-		200, 300, 100, 300,
+		34, 300, 1, 300,
 		V4L2_CID_MPEG_VIDEO_VBV_DELAY,
 		HFI_PROP_VBV_DELAY,
 		CAP_FLAG_OUTPUT_PORT},

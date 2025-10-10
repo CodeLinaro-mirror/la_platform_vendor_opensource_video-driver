@@ -1517,6 +1517,7 @@ int msm_vidc_adjust_layer_count(void *instance, struct v4l2_ctrl *ctrl)
 	int rc = 0;
 
 	s32 client_layer_count;
+	s64 vbv_delay_value = 0;
 	struct msm_vidc_inst *inst = (struct msm_vidc_inst *)instance;
 
 	client_layer_count = ctrl ? ctrl->val :
@@ -1526,8 +1527,17 @@ int msm_vidc_adjust_layer_count(void *instance, struct v4l2_ctrl *ctrl)
 				 BITRATE_MODE, __func__))
 		return -EINVAL;
 
+	// Get VBV delay
+	msm_vidc_get_parent_value(inst, ENH_LAYER_COUNT,
+		VBV_DELAY, &vbv_delay_value, __func__);
+
 	if (!inst->bufq[OUTPUT_PORT].vb2q->streaming) {
-		rc = msm_vidc_adjust_static_layer_count_and_type(inst, client_layer_count);
+		if (vbv_delay_value > 34 && vbv_delay_value <= 100) {
+			// Keep the layer count to Minimum
+			rc = msm_vidc_adjust_static_layer_count_and_type(inst, inst->capabilities[ENH_LAYER_COUNT].min);
+		} else {
+			rc = msm_vidc_adjust_static_layer_count_and_type(inst, client_layer_count);
+		}
 		if (rc)
 			goto exit;
 	} else {
@@ -1547,6 +1557,11 @@ int msm_vidc_adjust_layer_count(void *instance, struct v4l2_ctrl *ctrl)
 				client_layer_count =
 					inst->capabilities[ENH_LAYER_COUNT].max;
 
+			// Keep the layer count to Minimum
+			if (vbv_delay_value > 34 && vbv_delay_value <= 100) {
+				client_layer_count =
+					inst->capabilities[ENH_LAYER_COUNT].min;
+			}
 			msm_vidc_update_cap_value(inst, ENH_LAYER_COUNT,
 						  client_layer_count, __func__);
 		}
@@ -1562,9 +1577,22 @@ int msm_vidc_adjust_gop_size(void *instance, struct v4l2_ctrl *ctrl)
 	s32 adjusted_value;
 	s64 enh_layer_count = -1, enable_opengop = 0;
 	u32 min_gop_size, num_subgops;
+	s64 vbv_delay_value = 0;
 
 	adjusted_value = ctrl ? ctrl->val : inst->capabilities[GOP_SIZE].value;
 	enable_opengop = inst->capabilities[OPEN_GOP].value;
+
+	if (!msm_vidc_get_parent_value(inst, GOP_SIZE, VBV_DELAY, &vbv_delay_value, __func__)) {
+		/*
+		Check for VBV Delay value
+		For VBV Delay [34 to 100] Infinite GoP must be set
+		*/
+		if(vbv_delay_value >= 34 && vbv_delay_value <= 100){
+			// Set GoP to infinite
+			adjusted_value = inst->capabilities[GOP_SIZE].max;
+			goto exit;
+		}
+	}
 
 	if (msm_vidc_get_parent_value(inst, GOP_SIZE,
 				      ENH_LAYER_COUNT, &enh_layer_count, __func__))
@@ -1593,6 +1621,23 @@ int msm_vidc_adjust_gop_size(void *instance, struct v4l2_ctrl *ctrl)
 	}
 exit:
 	msm_vidc_update_cap_value(inst, GOP_SIZE, adjusted_value, __func__);
+	return 0;
+}
+
+int msm_vidc_adjust_vbv_delay(void *instance, struct v4l2_ctrl *ctrl)
+{
+	struct msm_vidc_inst *inst = (struct msm_vidc_inst *) instance;
+	u32 adjusted_value = ctrl ? ctrl->val : inst->capabilities[VBV_DELAY].value;
+	// Check for invalid values & adjust accordingly
+	if(adjusted_value < 34 || adjusted_value > 300) {
+		// Set the default value
+		adjusted_value = inst->capabilities[VBV_DELAY].value;
+	}else if(adjusted_value > 100 && adjusted_value < 200){
+		adjusted_value = 200;
+	}else if(adjusted_value > 200 && adjusted_value < 300){
+		adjusted_value = 300;
+	}
+	msm_vidc_update_cap_value(inst, VBV_DELAY, adjusted_value, __func__);
 	return 0;
 }
 
