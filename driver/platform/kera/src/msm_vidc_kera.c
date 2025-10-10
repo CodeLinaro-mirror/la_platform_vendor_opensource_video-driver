@@ -4699,6 +4699,33 @@ static int msm_vidc_init_data(struct msm_vidc_core *core)
 
 	if (core->platform->data.sku_version == SKU_VERSION_1)
 		core->platform->data = kera_data_v1;
+	else {
+		int i = 0;
+		const u32 num_platform_cap_data = core->platform->data.inst_cap_data_size;
+		const u32 num_core_cap_data = core->platform->data.core_data_size;
+		struct msm_platform_inst_capability *platform_cap_data = NULL;
+		struct msm_platform_core_capability *core_cap_data = NULL;
+
+		platform_cap_data = core->platform->data.inst_cap_data;
+		for (i = 0; i < num_platform_cap_data; i++) {
+			if (platform_cap_data[i].cap_id == MBPF &&
+				platform_cap_data[i].domain == ENC &&
+				platform_cap_data[i].codec & (HEVC | H264)) {
+				/* (4096 * 3072) / 256 */
+				platform_cap_data[i].max = 49152;
+				platform_cap_data[i].value = 49152;
+			}
+		}
+
+		core_cap_data = (struct msm_platform_core_capability *) core->platform->data.core_data;
+		for (i = 0; i < num_core_cap_data; i++) {
+			if (core_cap_data[i].type == MAX_MBPS) {
+				/* max_load 4096x3072@60fps */
+				core_cap_data[i].value = 2949120;
+				break;
+			}
+		}
+	}
 
 	core->mem_ops = get_mem_ops_ext();
 	if (!core->mem_ops) {
