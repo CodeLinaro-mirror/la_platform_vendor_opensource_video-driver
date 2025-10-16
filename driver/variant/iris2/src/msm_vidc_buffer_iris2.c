@@ -469,7 +469,7 @@ int msm_buffer_size_iris2(struct msm_vidc_inst *inst,
 
 	/* handle unknown buffer type */
 	if (i == buf_type_handle_size) {
-		i_vpr_e(inst, "%s: unknown buffer type %#x\n", __func__, buffer_type);
+		i_vpr_l(inst, "%s: unknown buffer type %#x\n", __func__, buffer_type);
 		goto exit;
 	}
 

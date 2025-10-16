@@ -1929,7 +1929,7 @@ struct device_region_info *venus_hfi_get_device_region_info(
 		}
 	}
 	if (!match)
-		d_vpr_e("%s: device region %d not found\n", __func__, region);
+		d_vpr_l("%s: device region %d not found\n", __func__, region);
 
 	return match;
 }
