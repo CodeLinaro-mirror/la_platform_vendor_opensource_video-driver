@@ -451,7 +451,7 @@ static struct msm_platform_inst_capability instance_cap_data_nordau[] = {
 	/* (4096 * 2304) / 256 */
 	{BATCH_FPS, DEC, H264|HEVC|VP9|AV1, 1, 120, 1, 120},
 
-	{SECURE_MBPF, ENC|DEC, H264|HEVC|VP9|AV1, 64, 36864, 1, 36864},
+	{SECURE_MBPF, ENC|DEC, H264|HEVC|VP9|AV1|MPEG2, 64, 36864, 1, 36864},
 
 	{SECURE_MBPF, ENC, HEVC, 36, 36864, 1, 36864},
 
