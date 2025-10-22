@@ -1370,8 +1370,8 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_volc
 		msm_vidc_set_u32},
 
 	{VBV_DELAY, ENC, H264 | HEVC,
-		{0},
-		NULL,
+		{GOP_SIZE, ENH_LAYER_COUNT},
+		msm_vidc_adjust_vbv_delay,
 		msm_vidc_set_cbr_related_properties},
 
 	{PEAK_BITRATE, ENC, H264 | HEVC,

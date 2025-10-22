@@ -1007,7 +1007,7 @@ static struct msm_platform_inst_capability instance_cap_data_pineapple[] = {
 		CAP_FLAG_OUTPUT_PORT},
 
 	{VBV_DELAY, ENC, H264 | HEVC,
-		200, 300, 100, 300,
+		34, 300, 1, 300,
 		V4L2_CID_MPEG_VIDEO_VBV_DELAY,
 		HFI_PROP_VBV_DELAY,
 		CAP_FLAG_OUTPUT_PORT},
@@ -2331,8 +2331,8 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_pine
 		msm_vidc_set_u32},
 
 	{VBV_DELAY, ENC, H264 | HEVC,
-		{0},
-		NULL,
+		{GOP_SIZE, ENH_LAYER_COUNT},
+		msm_vidc_adjust_vbv_delay,
 		msm_vidc_set_cbr_related_properties},
 
 	{PEAK_BITRATE, ENC, H264 | HEVC,
@@ -2986,9 +2986,36 @@ static int msm_vidc_init_data(struct msm_vidc_core *core)
 
 	core->platform->data = pineapple_data;
 	if (of_device_is_compatible(dev->of_node, "qcom,sm8650-vidc-v2")) {
+		int i = 0;
+		const u32 num_platform_cap_data = core->platform->data.inst_cap_data_size;
+		const u32 num_core_cap_data = core->platform->data.core_data_size;
+		struct msm_platform_inst_capability *platform_cap_data = NULL;
+		struct msm_platform_core_capability *core_cap_data = NULL;
+
 		d_vpr_h("%s: update frequency table for pineapple v2\n", __func__);
 		core->platform->data.freq_tbl = pineapple_freq_table_v2;
 		core->platform->data.freq_tbl_size = ARRAY_SIZE(pineapple_freq_table_v2);
+
+		platform_cap_data = core->platform->data.inst_cap_data;
+		for (i = 0; i < num_platform_cap_data; i++) {
+			if (platform_cap_data[i].cap_id == MBPF &&
+				platform_cap_data[i].domain == ENC &&
+				platform_cap_data[i].codec == HEVC) {
+				/* (8192 * 8192) / 256 */
+				platform_cap_data[i].max = 262144;
+				platform_cap_data[i].value = 262144;
+				break;
+			}
+		}
+
+		core_cap_data = core->platform->data.core_data;
+		for (i = 0; i < num_core_cap_data; i++) {
+			if (core_cap_data[i].type == MAX_MBPF) {
+				/* 2 * (8192 * 8192) / 256 - 2x simultaneous encode operations */
+				core_cap_data[i].value = 524288;
+				break;
+			}
+		}
 	}
 
 	core->mem_ops = get_mem_ops_ext();
