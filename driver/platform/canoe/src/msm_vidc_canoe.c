@@ -4345,6 +4345,7 @@ int msm_vidc_get_platform_data_canoe(struct msm_vidc_core *core)
 		core->platform->data.clk_tbl_size = ARRAY_SIZE(canoe_clk_table_v2);
 		core->platform->data.clk_corner_idx_tbl = canoe_corner_idx_tbl_v2;
 		core->platform->data.fwname = "vpu40_2v";
+		core->hw_version = MSM_VIDC_HW_VERSION_V2;
 
 		platform_cap_data = core->platform->data.inst_cap_data;
 		for (i = 0; i < core->platform->data.inst_cap_data_size; i++) {
