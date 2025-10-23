@@ -2975,6 +2975,10 @@ static const u32 sun_msm_vidc_ssr_type[] = {
 	HFI_SSR_TYPE_SW_ERR_FATAL,
 };
 
+/* Mutable copies for sun v2 - will be initialized at runtime if needed */
+static struct msm_platform_inst_capability instance_cap_data_sun_v2[ARRAY_SIZE(instance_cap_data_sun)];
+static struct msm_platform_core_capability core_data_sun_v2[ARRAY_SIZE(core_data_sun)];
+
 static const struct msm_vidc_platform_data sun_data = {
 	/* resources dependent on other module */
 	.bw_tbl = sun_bw_table,
@@ -3072,9 +3076,39 @@ static int msm_vidc_init_data(struct msm_vidc_core *core)
 
 	core->platform->data = sun_data;
 	if (of_device_is_compatible(dev->of_node, "qcom,sm8750-vidc-v2")) {
+		int i = 0;
+
 		d_vpr_h("%s: update frequency table for sun v2\n", __func__);
 		core->platform->data.freq_tbl = sun_freq_table_v2;
 		core->platform->data.freq_tbl_size = ARRAY_SIZE(sun_freq_table_v2);
+
+		memcpy(instance_cap_data_sun_v2, instance_cap_data_sun,
+				sizeof(instance_cap_data_sun));
+		memcpy(core_data_sun_v2, core_data_sun,
+				sizeof(core_data_sun));
+
+		/* Update the capability values in the static copies */
+		for (i = 0; i < ARRAY_SIZE(instance_cap_data_sun_v2); i++) {
+			if (instance_cap_data_sun_v2[i].cap_id == MBPF &&
+				instance_cap_data_sun_v2[i].domain == ENC &&
+				instance_cap_data_sun_v2[i].codec & (HEVC | H264)) {
+				/* (8192 * 8192) / 256 */
+				instance_cap_data_sun_v2[i].max = 262144;
+				instance_cap_data_sun_v2[i].value = 262144;
+			}
+		}
+
+		for (i = 0; i < ARRAY_SIZE(core_data_sun_v2); i++) {
+			if (core_data_sun_v2[i].type == MAX_MBPF) {
+				/* 3 * (8192 * 8192) / 256 - 3x simultaneous encode operations */
+				core_data_sun_v2[i].value = 786432;
+				break;
+			}
+		}
+
+		/* Use the static mutable copies for sun v2 */
+		core->platform->data.inst_cap_data = instance_cap_data_sun_v2;
+		core->platform->data.core_data = core_data_sun_v2;
 	}
 
 	core->mem_ops = get_mem_ops_ext();
