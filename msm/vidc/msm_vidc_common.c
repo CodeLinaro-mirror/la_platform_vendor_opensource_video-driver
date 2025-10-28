@@ -6569,7 +6569,7 @@ void msm_comm_print_inst_info(struct msm_vidc_inst *inst)
 	port = is_decode ? INPUT_PORT : OUTPUT_PORT;
 	is_secure = inst->flags & VIDC_SECURE;
 	f = &inst->fmts[port].v4l2_fmt;
-	s_vpr_e(inst->sid,
+	s_vpr_h(inst->sid,
 			"%s session, %s, Codec type: %s HxW: %d x %d fps: %d bitrate: %d bit-depth: %s\n",
 			is_decode ? "Decode" : "Encode",
 			is_secure ? "Secure" : "Non-Secure",
@@ -6577,19 +6577,19 @@ void msm_comm_print_inst_info(struct msm_vidc_inst *inst)
 			f->fmt.pix_mp.height, f->fmt.pix_mp.width,
 			inst->clk_data.frame_rate >> 16, inst->prop.bitrate,
 			!inst->bit_depth ? "8" : "10");
-	s_vpr_e(inst->sid, "---Buffer details for inst: %pK of type: %d---\n",
+	s_vpr_h(inst->sid, "---Buffer details for inst: %pK of type: %d---\n",
 			inst, inst->session_type);
 	mutex_lock(&inst->registeredbufs.lock);
-	s_vpr_e(inst->sid, "registered buffer list:\n");
+	s_vpr_h(inst->sid, "registered buffer list:\n");
 	list_for_each_entry(mbuf, &inst->registeredbufs.list, list)
 		print_vidc_buffer(VIDC_ERR, "buf", inst, mbuf);
 	mutex_unlock(&inst->registeredbufs.lock);
 
 	mutex_lock(&inst->scratchbufs.lock);
-	s_vpr_e(inst->sid, "scratch buffer list:\n");
+	s_vpr_h(inst->sid, "scratch buffer list:\n");
 	list_for_each_entry(buf, &inst->scratchbufs.list, list) {
 		dbuf = (struct dma_buf *)buf->smem.dma_buf;
-		s_vpr_e(inst->sid, "type: %d addr: %x size: %u inode: %lu ref: %ld\n",
+		s_vpr_h(inst->sid, "type: %d addr: %x size: %u inode: %lu ref: %ld\n",
 				buf->buffer_type, buf->smem.device_addr, buf->smem.size,
 				(dbuf ? file_inode(dbuf->file)->i_ino : -1),
 				(dbuf ? file_count(dbuf->file) : -1));
@@ -6597,10 +6597,10 @@ void msm_comm_print_inst_info(struct msm_vidc_inst *inst)
 	mutex_unlock(&inst->scratchbufs.lock);
 
 	mutex_lock(&inst->persistbufs.lock);
-	s_vpr_e(inst->sid, "persist buffer list:\n");
+	s_vpr_h(inst->sid, "persist buffer list:\n");
 	list_for_each_entry(buf, &inst->persistbufs.list, list) {
 		dbuf = (struct dma_buf *)buf->smem.dma_buf;
-		s_vpr_e(inst->sid, "type: %d addr: %x size: %u inode: %lu ref: %ld\n",
+		s_vpr_h(inst->sid, "type: %d addr: %x size: %u inode: %lu ref: %ld\n",
 				buf->buffer_type, buf->smem.device_addr, buf->smem.size,
 				(dbuf ? file_inode(dbuf->file)->i_ino : -1),
 				(dbuf ? file_count(dbuf->file) : -1));
@@ -6608,10 +6608,10 @@ void msm_comm_print_inst_info(struct msm_vidc_inst *inst)
 	mutex_unlock(&inst->persistbufs.lock);
 
 	mutex_lock(&inst->outputbufs.lock);
-	s_vpr_e(inst->sid, "dpb buffer list:\n");
+	s_vpr_h(inst->sid, "dpb buffer list:\n");
 	list_for_each_entry(buf, &inst->outputbufs.list, list) {
 		dbuf = (struct dma_buf *)buf->smem.dma_buf;
-		s_vpr_e(inst->sid, "type: %d addr: %x size: %u inode: %lu ref: %ld\n",
+		s_vpr_h(inst->sid, "type: %d addr: %x size: %u inode: %lu ref: %ld\n",
 				buf->buffer_type, buf->smem.device_addr, buf->smem.size,
 				(dbuf ? file_inode(dbuf->file)->i_ino : -1),
 				(dbuf ? file_count(dbuf->file) : -1));
@@ -6619,9 +6619,9 @@ void msm_comm_print_inst_info(struct msm_vidc_inst *inst)
 	mutex_unlock(&inst->outputbufs.lock);
 
 	mutex_lock(&inst->cvpbufs.lock);
-	s_vpr_e(inst->sid, "cvp buffer list:\n");
+	s_vpr_h(inst->sid, "cvp buffer list:\n");
 	list_for_each_entry(cbuf, &inst->cvpbufs.list, list)
-		s_vpr_e(inst->sid,
+		s_vpr_h(inst->sid,
 				"index: %u fd: %u offset: %u size: %u addr: %x\n",
 				cbuf->buf.index, cbuf->buf.fd, cbuf->buf.offset,
 				cbuf->buf.size, cbuf->smem.device_addr);
