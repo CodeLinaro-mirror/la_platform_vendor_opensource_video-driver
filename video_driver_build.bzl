@@ -53,7 +53,7 @@ def video_module_entry(hdrs = []):
         module_map = module_map
     )
 
-def define_target_variant_modules(target, variant, registry, modules, config_options = []):
+def define_target_variant_modules(target, variant, registry, modules, config_options = [], extra_config_options = []):
     kernel_build = "{}_{}".format(target, variant)
     kernel_build_label = select({
             "//build/kernel/kleaf:microxr_kernel_build_true": "//:target_kernel_build",
@@ -78,7 +78,7 @@ def define_target_variant_modules(target, variant, registry, modules, config_opt
             srcs = module_srcs,
             out = "{}.ko".format(module.name),
             deps = headers + _get_kernel_build_module_deps(module, options, formatter),
-            local_defines = options.keys(),
+            local_defines = options.keys() + extra_config_options,
         )
         all_module_rules.append(rule_name)
 
@@ -98,7 +98,7 @@ def define_target_variant_modules(target, variant, registry, modules, config_opt
         log = "info",
     )
 
-def define_consolidate_gki_perf_modules(target, registry, modules, config_options = []):
-    define_target_variant_modules(target, "consolidate", registry, modules, config_options)
-    define_target_variant_modules(target, "gki", registry, modules, config_options)
-    define_target_variant_modules(target, "perf", registry, modules, config_options)
+def define_consolidate_gki_perf_modules(target, registry, modules, config_options = [], extra_config_options = []):
+    define_target_variant_modules(target, "consolidate", registry, modules, config_options, extra_config_options)
+    define_target_variant_modules(target, "gki", registry, modules, config_options, extra_config_options)
+    define_target_variant_modules(target, "perf", registry, modules, config_options, extra_config_options)

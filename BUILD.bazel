@@ -90,5 +90,20 @@ define_blair()
 load(":target.bzl", "define_pitti")
 define_pitti()
 
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+bool_flag(
+    name = "neo_la_enable_12m_hevc_enc",
+    build_setting_default = False,
+)
+config_setting(
+    name = "neo_la_enable_12m_hevc_enc_enabled",
+    flag_values = {
+        ":neo_la_enable_12m_hevc_enc": "True",
+    },
+)
+neo_la_extra_config_options = []
+neo_la_extra_config_options += select({
+    ":neo_la_enable_12m_hevc_enc_enabled": ["CONFIG_MSM_VIDC_NEO_12M_HEVC_ENC"],
+    "//conditions:default": []})
 load(":target.bzl", "define_neo_la")
-define_neo_la()
+define_neo_la(neo_la_extra_config_options)
