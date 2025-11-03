@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023, 2025 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 #include "msm_venc.h"
 #include "msm_vidc_internal.h"
@@ -499,16 +499,6 @@ static struct msm_vidc_ctrl msm_venc_ctrls[] = {
 		.maximum = V4L2_MPEG_VIDEO_VIDC_INTRA_REFRESH_CYCLIC,
 		.step = 1,
 		.menu_skip_mask = 0,
-		.qmenu = NULL,
-	},
-	{
-		.id = V4L2_CID_MPEG_VIDEO_CYCLIC_INTRA_REFRESH_MB,
-		.name = "Cyclic Intra Refresh MBs",
-		.type = V4L2_CTRL_TYPE_INTEGER,
-		.minimum = 0,
-		.maximum = MAX_INTRA_REFRESH_MBS,
-		.default_value = 0,
-		.step = 1,
 		.qmenu = NULL,
 	},
 	{
@@ -1661,9 +1651,6 @@ static int msm_venc_update_bitrate(struct msm_vidc_inst *inst)
 int msm_venc_s_ctrl(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 {
 	int rc = 0;
-#if (KERNEL_VERSION(6, 1, 0) <= LINUX_VERSION_CODE)
-	int hevc_tier_value = 0;
-#endif
 	struct msm_vidc_mastering_display_colour_sei_payload *mdisp_sei = NULL;
 	struct msm_vidc_content_light_level_sei_payload *cll_sei = NULL;
 	u32 i_qp_min, i_qp_max, p_qp_min, p_qp_max, b_qp_min, b_qp_max;
@@ -1894,17 +1881,11 @@ int msm_venc_s_ctrl(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 	case V4L2_CID_MPEG_VIDEO_H264_LEVEL:
 	case V4L2_CID_MPEG_VIDEO_HEVC_LEVEL:
 	case V4L2_CID_MPEG_VIDC_VIDEO_VP8_PROFILE_LEVEL:
-#if (KERNEL_VERSION(6, 1, 0) <= LINUX_VERSION_CODE)
-		if ((inst->level & 0xf0000000) && get_v4l2_codec(inst) == V4L2_PIX_FMT_HEVC)
-			hevc_tier_value = (inst->level & 0xf0000000);
-		inst->level = msm_comm_v4l2_to_hfi(ctrl->id, ctrl->val, sid) | hevc_tier_value;
-#else
-		inst->level = msm_comm_v4l2_to_hfi(ctrl->id, ctrl->val, sid);
-#endif
+		inst->level =  ctrl->val;
 		break;
 	case V4L2_CID_MPEG_VIDEO_HEVC_TIER:
-		inst->level |=
-			(msm_comm_v4l2_to_hfi(ctrl->id, ctrl->val, sid) << 28);
+		inst->tier = ctrl->val;
+		inst->tier_client_set = true;
 		break;
 	case V4L2_CID_MPEG_VIDEO_HEVC_MIN_QP:
 	case V4L2_CID_MPEG_VIDEO_HEVC_MAX_QP:
@@ -2110,8 +2091,6 @@ int msm_venc_s_ctrl(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 	case V4L2_CID_MPEG_VIDEO_H264_VUI_EXT_SAR_WIDTH:
 	case V4L2_CID_MPEG_VIDEO_H264_VUI_EXT_SAR_HEIGHT:
 	case V4L2_CID_MPEG_VIDC_VIDEO_PRIORITY:
-	case V4L2_CID_MPEG_VIDC_VIDEO_INTRA_REFRESH_RANDOM:
-	case V4L2_CID_MPEG_VIDEO_CYCLIC_INTRA_REFRESH_MB:
 	case V4L2_CID_MPEG_VIDEO_VIDC_INTRA_REFRESH_TYPE:
 	case V4L2_CID_MPEG_VIDC_INTRA_REFRESH_PERIOD:
 	case V4L2_CID_MPEG_VIDC_VENC_CVP_DISABLE:
@@ -2473,6 +2452,9 @@ static int msm_venc_set_profile_level(struct msm_vidc_inst *inst)
 	int rc = 0;
 	struct hfi_device *hdev;
 	struct hfi_profile_level profile_level;
+#if (KERNEL_VERSION(6, 1, 0) <= LINUX_VERSION_CODE)
+	u32 hevc_tier_value = 0;
+#endif
 
 	if (!inst || !inst->core) {
 		d_vpr_e("%s: invalid params %pK\n", __func__, inst);
@@ -2485,6 +2467,37 @@ static int msm_venc_set_profile_level(struct msm_vidc_inst *inst)
 			__func__);
 		return -EINVAL;
 	}
+
+	rc = msm_vidc_adjust_level_tier(inst);
+	if (rc)
+		s_vpr_e(inst->sid, "%s: adjust failed\n", __func__);
+
+	if (get_v4l2_codec(inst) == V4L2_PIX_FMT_HEVC) {
+#if (KERNEL_VERSION(6, 1, 0) <= LINUX_VERSION_CODE)
+		hevc_tier_value = msm_comm_v4l2_to_hfi(V4L2_CID_MPEG_VIDEO_HEVC_TIER,
+							inst->tier,
+							inst->sid);
+		hevc_tier_value = hevc_tier_value << 28;
+		inst->level = msm_comm_v4l2_to_hfi(V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
+						inst->level,
+						inst->sid);
+		inst->level = inst->level | hevc_tier_value;
+#else
+		inst->level = msm_comm_v4l2_to_hfi(V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
+						inst->level,
+						inst->sid);
+#endif
+	} else if (get_v4l2_codec(inst) == V4L2_PIX_FMT_H264) {
+		inst->level = msm_comm_v4l2_to_hfi(V4L2_CID_MPEG_VIDEO_H264_LEVEL,
+						inst->level,
+						inst->sid);
+	} else if (get_v4l2_codec(inst) == V4L2_PIX_FMT_VP8) {
+		inst->level = msm_comm_v4l2_to_hfi(V4L2_CID_MPEG_VIDC_VIDEO_VP8_PROFILE_LEVEL,
+						inst->level,
+						inst->sid);
+	} else
+		s_vpr_h(inst->sid, "%s: codec doesn't support level\n", __func__);
+
 	profile_level.profile = inst->profile;
 	profile_level.level = inst->level;
 
@@ -3184,8 +3197,8 @@ static void set_all_intra_preconditions(struct msm_vidc_inst *inst)
 	}
 
 	/* Disable IR */
-	ctrl = get_ctrl(inst, V4L2_CID_MPEG_VIDC_VIDEO_INTRA_REFRESH_RANDOM);
-	ctrl_t = get_ctrl(inst, V4L2_CID_MPEG_VIDEO_CYCLIC_INTRA_REFRESH_MB);
+	ctrl = get_ctrl(inst, V4L2_CID_MPEG_VIDC_INTRA_REFRESH_PERIOD);
+	ctrl_t = get_ctrl(inst, V4L2_CID_MPEG_VIDEO_VIDC_INTRA_REFRESH_TYPE);
 	if (ctrl->val || ctrl_t->val) {
 		s_vpr_h(inst->sid, "Disable IR for all intra\n");
 		update_ctrl(ctrl, 0, inst->sid);
