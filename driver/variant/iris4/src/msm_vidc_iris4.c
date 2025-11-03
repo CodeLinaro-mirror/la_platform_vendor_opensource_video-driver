@@ -586,7 +586,7 @@ fail_read_efuse:
 static int __power_off_iris4_hardware(struct msm_vidc_core *core)
 {
 	int rc = 0, i = 0;
-	u32 value = 0;
+	u32 value = 0, mvp_noc_reset_value = 0;
 	bool pwr_collapsed = false;
 	u32 count = 0;
 
@@ -679,17 +679,26 @@ static int __power_off_iris4_hardware(struct msm_vidc_core *core)
 					0x0, BIT(0));
 	if (rc)
 		return rc;
+	/*
+	 * In case of alor since APV
+	 * ports is not present MVP_NOC_RESET request
+	 * should be programmed with a different value
+	 */
+	if (is_vpu_iris4_1p(core))
+		mvp_noc_reset_value = 0x50003;
+	else
+		mvp_noc_reset_value = 0x070103;
 
-	rc = __write_register(core, AON_WRAPPER_MVP_NOC_RESET_REQ_IRIS4, 0x070103);
+	rc = __write_register(core, AON_WRAPPER_MVP_NOC_RESET_REQ_IRIS4, mvp_noc_reset_value);
 	if (rc)
 		return rc;
 
 	rc = __read_register_with_poll_timeout(core, AON_WRAPPER_MVP_NOC_RESET_ACK_IRIS4,
-					       0xffffffff, 0x070103, 200, 2000);
+					       0xffffffff, mvp_noc_reset_value, 200, 2000);
 	if (rc)
 		d_vpr_e("%s: AON_WRAPPER_MVP_NOC_RESET_ACK_IRIS4 failed1\n", __func__);
 
-	rc = __write_register(core, AON_WRAPPER_MVP_NOC_RESET_SYNCRST_IRIS4 , 0x070103);
+	rc = __write_register(core, AON_WRAPPER_MVP_NOC_RESET_SYNCRST_IRIS4, mvp_noc_reset_value);
 	if (rc)
 		return rc;
 
