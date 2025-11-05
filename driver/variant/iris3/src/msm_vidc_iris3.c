@@ -128,6 +128,7 @@ typedef enum {
 #define WRAPPER_IRIS_CPU_NOC_LPI_CONTROL	(WRAPPER_BASE_OFFS_IRIS3 + 0x5C)
 #define WRAPPER_IRIS_CPU_NOC_LPI_STATUS		(WRAPPER_BASE_OFFS_IRIS3 + 0x60)
 #define WRAPPER_CORE_POWER_STATUS		(WRAPPER_BASE_OFFS_IRIS3 + 0x80)
+#define WRAPPER_CORE_POWER_CONTROL		(WRAPPER_BASE_OFFS_IRIS3 + 0x84)
 #define WRAPPER_CORE_CLOCK_CONFIG_IRIS3		(WRAPPER_BASE_OFFS_IRIS3 + 0x88)
 
 /*
@@ -674,11 +675,6 @@ static int __power_on_iris3_hardware(struct msm_vidc_core *core)
 	if (rc)
 		goto fail_regulator;
 
-	/* video controller and hardware powered on successfully */
-	rc = msm_vidc_change_core_sub_state(core, 0, CORE_SUBSTATE_POWER_ENABLE, __func__);
-	if (rc)
-		goto fail_power_on_substate;
-
 	rc = __sw_ctrl_gdsc_iris3(core);
 	if (rc)
 		goto fail_sw_ctrl;
@@ -692,7 +688,6 @@ static int __power_on_iris3_hardware(struct msm_vidc_core *core)
 fail_clk_controller:
 	call_res_op(core, gdsc_hw_ctrl, core);
 fail_sw_ctrl:
-fail_power_on_substate:
 	call_res_op(core, gdsc_off, core, "vcodec0");
 fail_regulator:
 	return rc;
@@ -1204,6 +1199,7 @@ static struct msm_vidc_venus_ops iris3_ops = {
 	.prepare_pc = __prepare_pc_iris3,
 	.watchdog = __watchdog_iris3,
 	.noc_error_info = __noc_error_info_iris3,
+	.switch_gdsc_mode = __switch_gdsc_mode_iris3,
 	.hw_ctrl_gdsc = __hw_ctrl_gdsc_iris3,
 	.sw_ctrl_gdsc = __sw_ctrl_gdsc_iris3,
 	.scm_mem_protect = msm_vidc_mem_protect_video_regions_v1,

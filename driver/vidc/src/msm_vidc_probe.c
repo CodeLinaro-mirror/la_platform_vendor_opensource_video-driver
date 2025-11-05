@@ -53,6 +53,7 @@ static inline bool is_video_device(struct device *dev)
 		of_device_is_compatible(dev->of_node, "qcom,sm8750-vidc-v2") ||
 		of_device_is_compatible(dev->of_node, "qcom,canoe-vidc") ||
 		of_device_is_compatible(dev->of_node, "qcom,canoe-vidc-v2") ||
+		of_device_is_compatible(dev->of_node, "qcom,canoe-vidc-v3") ||
 		of_device_is_compatible(dev->of_node, "qcom,seraph-vidc") ||
 		of_device_is_compatible(dev->of_node, "qcom,sa8797-vidc") ||
 		of_device_is_compatible(dev->of_node, "qcom,niobe-vidc") ||
@@ -147,6 +148,7 @@ static const struct of_device_id msm_vidc_dt_match[] = {
 	{.compatible = "qcom,sm8750-vidc-v2"},
 	{.compatible = "qcom,canoe-vidc"},
 	{.compatible = "qcom,canoe-vidc-v2"},
+	{.compatible = "qcom,canoe-vidc-v3"},
 	{.compatible = "qcom,seraph-vidc"},
 	{.compatible = "qcom,alor-vidc"},
 	{.compatible = "qcom,sa8797-vidc"},
@@ -418,7 +420,7 @@ static int msm_vidc_initialize_core(struct msm_vidc_core *core)
 	}
 
 	core->response_packet = devm_kzalloc(&core->pdev->dev, core->packet_size, GFP_KERNEL);
-	if (!core->packet) {
+	if (!core->response_packet) {
 		d_vpr_e("%s: failed to alloc core response packet\n", __func__);
 		rc = -ENOMEM;
 		goto exit;
@@ -830,6 +832,8 @@ static int msm_vidc_probe_video_device(struct platform_device *pdev)
 		return -ENOMEM;
 	}
 	g_core = core;
+
+	core->hw_version = MSM_VIDC_HW_VERSION_V1;
 
 	core->pdev = pdev;
 	dev_set_drvdata(&pdev->dev, core);

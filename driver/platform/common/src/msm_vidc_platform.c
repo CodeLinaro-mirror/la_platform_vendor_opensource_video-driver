@@ -81,6 +81,8 @@
 		num_ref = num_ref + ltr_count;                                 \
 }
 
+extern struct msm_vidc_core *g_core;
+
 /*
  * Custom conversion coefficients for resolution: 176x144 negative
  * coeffs are converted to s4.9 format
@@ -379,6 +381,12 @@ static const struct msm_vidc_compat_handle compat_handle[] = {
 		.init_iris                  = msm_vidc_init_iris4,
 	},
 	{
+		.compat                     = "qcom,canoe-vidc-v3",
+		.get_platform_data          = msm_vidc_get_platform_data_canoe,
+		.init_platform              = msm_vidc_init_platform_canoe,
+		.init_iris                  = msm_vidc_init_iris4,
+	},
+	{
 		.compat                     = "qcom,alor-vidc",
 		.get_platform_data          = msm_vidc_get_platform_data_alor,
 		.init_platform              = msm_vidc_init_platform_alor,
@@ -560,6 +568,11 @@ int msm_vidc_init_platform_capabilities(struct msm_vidc_core *core)
 	rc = msm_vidc_init_vpu(core);
 
 	return rc;
+}
+
+enum msm_vidc_hw_version msm_vidc_get_hw_version(void)
+{
+	return g_core->hw_version;
 }
 
 int msm_vidc_read_efuse(struct msm_vidc_core *core)
