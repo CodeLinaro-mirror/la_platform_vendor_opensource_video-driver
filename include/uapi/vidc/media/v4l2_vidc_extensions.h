@@ -29,10 +29,12 @@
 #define V4L2_PIX_FMT_HEIC                       v4l2_fourcc('H', 'E', 'I', 'C')
 
 /* start of vidc specific colorspace definitions */
+#define V4L2_COLORSPACE_VIDC_START           100
 #define V4L2_COLORSPACE_VIDC_GENERIC_FILM    101
 #define V4L2_COLORSPACE_VIDC_EG431           102
 #define V4L2_COLORSPACE_VIDC_EBU_TECH        103
 
+#define V4L2_XFER_FUNC_VIDC_START            200
 #define V4L2_XFER_FUNC_VIDC_BT470_SYSTEM_M   201
 #define V4L2_XFER_FUNC_VIDC_BT470_SYSTEM_BG  202
 #define V4L2_XFER_FUNC_VIDC_BT601_525_OR_625 203
@@ -44,6 +46,7 @@
 #define V4L2_XFER_FUNC_VIDC_HLG              209
 
 /* should be 255 or below due to u8 limitation */
+#define V4L2_YCBCR_VIDC_START                240
 #define V4L2_YCBCR_VIDC_SRGB_OR_SMPTE_ST428  241
 #define V4L2_YCBCR_VIDC_FCC47_73_682         242
 
