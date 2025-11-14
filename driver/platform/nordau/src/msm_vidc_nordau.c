@@ -792,8 +792,9 @@ static struct msm_platform_inst_capability instance_cap_data_nordau[] = {
 
 	{CSC, ENC, CODECS_ALL,
 		0, 1, 1, 0,
-		0,
-		HFI_PROP_CSC},
+		V4L2_CID_MPEG_VIDC_CSC,
+		HFI_PROP_CSC,
+		CAP_FLAG_OUTPUT_PORT},
 
 	{CSC_CUSTOM_MATRIX, ENC, CODECS_ALL,
 		0, 1, 1, 0,
@@ -1984,16 +1985,16 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_nord
 
 	{PIX_FMTS, ENC, H264,
 		{0},
-		{META_ROI_INFO, IR_PERIOD}},
+		{META_ROI_INFO, IR_PERIOD, CSC}},
 
 	{PIX_FMTS, ENC, HEVC,
 		{0},
 		{PROFILE, MIN_FRAME_QP, MAX_FRAME_QP, I_FRAME_QP, P_FRAME_QP,
-			B_FRAME_QP, META_ROI_INFO, MIN_QUALITY, BLUR_TYPES, IR_PERIOD}},
+			B_FRAME_QP, META_ROI_INFO, MIN_QUALITY, BLUR_TYPES, IR_PERIOD, CSC}},
 
 	{PIX_FMTS, ENC, HEIC,
 		{0},
-		{PROFILE}},
+		{PROFILE, CSC}},
 
 	{PIX_FMTS, DEC, HEVC|HEIC,
 		{0},
@@ -2155,6 +2156,12 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_nord
 		{0},
 		msm_vidc_adjust_blur_resolution,
 		msm_vidc_set_blur_resolution},
+
+	{CSC, ENC, CODECS_ALL,
+		{CSC_CUSTOM_MATRIX, PIX_FMTS},
+		{0},
+		msm_vidc_adjust_csc,
+		msm_vidc_set_u32},
 
 	{CSC_CUSTOM_MATRIX, ENC, CODECS_ALL,
 		{0},
