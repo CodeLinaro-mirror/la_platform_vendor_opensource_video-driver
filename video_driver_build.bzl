@@ -19,6 +19,7 @@ def _register_module_to_map(module_map, name, path, config_option, srcs, config_
         config_srcs = processed_config_srcs,
         config_option = config_option,
         deps = deps,
+        config_deps = config_deps
     )
     module_map[name] = module
 
@@ -40,7 +41,13 @@ def _get_kernel_build_module_srcs(module, options, formatter):
     return globbed_srcs
 
 def _get_kernel_build_module_deps(module, options, formatter):
-    return [formatter(dep) for dep in module.deps]
+    config_deps = []
+    for key in options:
+        if key in module.config_deps:
+            for dep in module.config_deps[key]:
+                config_deps.append(formatter(dep))
+    deps = [formatter(dep) for dep in module.deps]
+    return config_deps + deps
 
 def video_module_entry(hdrs = []):
     module_map = {}
@@ -160,7 +167,17 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
             "CONFIG_MSM_VIDC_ANDROID",
             "CONFIG_MSM_VIDC_MINIDUMP",
             "CONFIG_MSM_VIDC_{}".format(lunch_target.upper()),
+            "CONFIG_MSM_VIDC_SYNX",
         ]
+    elif target in [ "hamoa" ]:
+        dist_target_name = "{}_video_driver_modules_dist".format(kernel_build)
+        print("dist_target_name: " + dist_target_name)
+        config_options = [
+            "CONFIG_MSM_VIDC_LLCC",
+            "CONFIG_MSM_VIDC_ANDROID",
+            "CONFIG_MSM_VIDC_MINIDUMP",
+            "CONFIG_MSM_VIDC_{}".format(target.upper()),
+            ]
     else:
         dist_target_name = "{}_video_driver_modules_dist".format(kernel_build)
         print("dist_target_name: " + dist_target_name)
@@ -170,7 +187,8 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
             "CONFIG_MSM_VIDC_ANDROID",
             "CONFIG_MSM_VIDC_MINIDUMP",
             "CONFIG_MSM_VIDC_{}".format(target.upper()),
-        ]
+            "CONFIG_MSM_VIDC_SYNX",
+            ]
 
     modules = [registry.get(module_name) for module_name in modules]
 
