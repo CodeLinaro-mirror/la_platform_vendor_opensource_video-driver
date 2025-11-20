@@ -5212,10 +5212,6 @@ void msm_vidc_hw_virt_ssr_handler(struct work_struct *work)
 	list_for_each_entry_safe(i, temp, &core->dangling_instances, list)
 		list_del_init(&i->list);
 
-	/* clear dangling session list */
-	list_for_each_entry_safe(i, temp, &core->dangling_instances, list)
-		list_del_init(&i->list);
-
 	if (core->ssr_dev == GVM_SSR_DEVICE_DRIVER) {
 		virtio_video_msm_cmd_close_gvm();
 		core->is_gvm_open = false;
