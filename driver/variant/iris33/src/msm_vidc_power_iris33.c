@@ -96,6 +96,7 @@ static int msm_vidc_init_codec_input_freq(struct msm_vidc_inst *inst, u32 data_s
 	port = is_decode_session(inst) ? INPUT_PORT : OUTPUT_PORT;
 	codec_input->frame_width = inst->fmts[port].fmt.pix_mp.width;
 	codec_input->frame_height = inst->fmts[port].fmt.pix_mp.height;
+	codec_input->vbv_delay = inst->capabilities[VBV_DELAY].value;
 
 	if (inst->capabilities[STAGE].value == MSM_VIDC_STAGE_1) {
 		codec_input->vsp_vpp_mode = CODEC_VSPVPP_MODE_1S;
