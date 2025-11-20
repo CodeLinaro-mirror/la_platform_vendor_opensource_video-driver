@@ -58,20 +58,6 @@ def define_vienna(t,v):
         ],
     )
 
-def define_vienna_le(t,v):
-    define_target_variant_modules(
-        target = t,
-        variant = v,
-        registry = video_driver_modules,
-        modules = [
-            "msm_video",
-        ],
-        config_options = [
-            "CONFIG_MSM_VIDC_VIENNA",
-            "CONFIG_MSM_VIDC_AR50LT",
-        ],
-    )
-
 def define_target_modules():
     for (t, v) in get_all_la_variants() + get_all_le_variants():
         if t == "blair":
@@ -82,5 +68,3 @@ def define_target_modules():
             define_pitti(t, v)
         elif t == "vienna":
             define_vienna(t, v)
-        elif t == "vienna-le":
-            define_vienna_le(t, v)
