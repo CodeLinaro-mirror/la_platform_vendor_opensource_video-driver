@@ -367,6 +367,7 @@ int msm_vidc_adjust_hdr10plus(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_transcoding_stats(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_open_gop(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_level_tier(void *instance, struct v4l2_ctrl *ctrl);
+int msm_vidc_adjust_vbv_delay(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_set_header_mode(void *instance, enum msm_vidc_inst_capability_type cap_id);
 int msm_vidc_set_deblock_mode(void *instance, enum msm_vidc_inst_capability_type cap_id);
 int msm_vidc_set_min_qp(void *instance, enum msm_vidc_inst_capability_type cap_id);
