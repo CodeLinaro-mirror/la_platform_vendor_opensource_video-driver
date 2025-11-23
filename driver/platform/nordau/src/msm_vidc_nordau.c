@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2024,2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #ifndef MSM_VIDC_HW_VIRT
@@ -451,7 +451,7 @@ static struct msm_platform_inst_capability instance_cap_data_nordau[] = {
 	/* (4096 * 2304) / 256 */
 	{BATCH_FPS, DEC, H264|HEVC|VP9|AV1, 1, 120, 1, 120},
 
-	{SECURE_MBPF, ENC|DEC, H264|HEVC|VP9|AV1, 64, 36864, 1, 36864},
+	{SECURE_MBPF, ENC|DEC, H264|HEVC|VP9|AV1|MPEG2, 64, 36864, 1, 36864},
 
 	{SECURE_MBPF, ENC, HEVC, 36, 36864, 1, 36864},
 
@@ -539,7 +539,7 @@ static struct msm_platform_inst_capability instance_cap_data_nordau[] = {
 		INVALID_CLIENT_ID, INT_MAX, 1, INVALID_CLIENT_ID,
 		V4L2_CID_MPEG_VIDC_CLIENT_ID},
 
-	{SECURE_MODE, ENC|DEC, H264|HEVC|VP9|AV1,
+	{SECURE_MODE, ENC|DEC, H264|HEVC|VP9|AV1|MPEG2,
 		0, 1, 1, 0,
 		V4L2_CID_MPEG_VIDC_SECURE,
 		HFI_PROP_SECURE,
@@ -807,7 +807,7 @@ static struct msm_platform_inst_capability instance_cap_data_nordau[] = {
 		0,
 		CAP_FLAG_NONE},
 
-	{LOWLATENCY_MODE, DEC, H264|HEVC|VP9|AV1,
+	{LOWLATENCY_MODE, DEC, H264|HEVC|VP9|AV1|MPEG2,
 		0, 1, 1, 0,
 		V4L2_CID_MPEG_VIDC_LOWLATENCY_REQUEST,
 		HFI_PROP_SEQ_CHANGE_AT_SYNC_FRAME,
@@ -1966,6 +1966,13 @@ static struct msm_platform_inst_capability instance_cap_data_nordau[] = {
 		V4L2_CID_MPEG_VIDC_H264_ENCODE_DELIVERY_MODE,
 		HFI_PROP_ENABLE_SLICE_DELIVERY,
 		CAP_FLAG_OUTPUT_PORT},
+
+	{SIGNAL_COLOR_INFO, ENC, CODECS_ALL,
+		0, INT_MAX, 1, 0,
+		V4L2_CID_MPEG_VIDC_SIGNAL_COLOR_INFO,
+		HFI_PROP_SIGNAL_COLOR_INFO,
+		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
+
 };
 
 static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_nordau[] = {
@@ -2604,6 +2611,12 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_nord
 		{0},
 		NULL,
 		msm_vidc_set_vui_timing_info},
+
+	{SIGNAL_COLOR_INFO, ENC, CODECS_ALL,
+		{0},
+		{0},
+		NULL,
+		msm_vidc_set_signal_color_info},
 };
 
 /* Default UBWC config for LPDDR5 */
