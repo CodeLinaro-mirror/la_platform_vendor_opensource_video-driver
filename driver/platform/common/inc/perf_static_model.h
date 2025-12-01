@@ -118,6 +118,7 @@ struct api_calculation_input {
 	u32 codec;
 	u32 lcu_size;
 	u32 pipe_num;
+	u32 enc_hqmode;
 	u32 frame_rate;
 	u32 frame_width;
 	u32 frame_height;
