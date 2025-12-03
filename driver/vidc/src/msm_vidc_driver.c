@@ -4171,6 +4171,12 @@ static int update_inst_cap_dependency(
 	return 0;
 }
 
+static void msm_vidc_devm_free_inst_caps(void *inst_caps)
+{
+	if (inst_caps)
+		kvfree(inst_caps);
+}
+
 int msm_vidc_init_instance_caps(struct msm_vidc_core *core)
 {
 	int rc = 0;
@@ -4212,10 +4218,20 @@ int msm_vidc_init_instance_caps(struct msm_vidc_core *core)
 	core->dec_codecs_count = dec_codecs_count;
 
 	codecs_count = enc_codecs_count + dec_codecs_count;
-	core->inst_caps = devm_kzalloc(&core->pdev->dev,
-		codecs_count * sizeof(struct msm_vidc_inst_capability), GFP_KERNEL);
+	core->inst_caps = kvcalloc(codecs_count,
+			sizeof(struct msm_vidc_inst_capability), GFP_KERNEL);
 	if (!core->inst_caps) {
 		d_vpr_e("%s: failed to alloc memory for instance caps\n", __func__);
+		rc = -ENOMEM;
+		goto error;
+	}
+
+	if (devm_add_action_or_reset(&core->pdev->dev,
+			msm_vidc_devm_free_inst_caps,
+			core->inst_caps)) {
+		d_vpr_e("%s: add action or reset failed for instance caps\n", __func__);
+		kvfree(core->inst_caps);
+		core->inst_caps = NULL;
 		rc = -ENOMEM;
 		goto error;
 	}
@@ -6052,8 +6068,8 @@ static int msm_vidc_check_max_sessions(struct msm_vidc_inst *inst)
 					       1088 + (1088 >> 1))) {
 			num_4k_sessions += 1;
 			num_1080p_sessions += 2;
-		} else if (res_is_greater_than(width, height, 1280 + (1280 >> 1),
-					       736 + (736 >> 1))) {
+		} else if (res_is_greater_than(width, height, 1280 + (1280 >> 2),
+					       736 + (736 >> 2))) {
 			num_1080p_sessions += 1;
 		}
 	}
