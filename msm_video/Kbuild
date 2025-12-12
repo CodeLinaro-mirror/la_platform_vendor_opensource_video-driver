@@ -61,6 +61,11 @@ include $(VIDEO_ROOT)/config/seraph_video.conf
 LINUXINCLUDE   += -include $(VIDEO_ROOT)/config/seraph_video.h
 endif
 
+ifeq ($(CONFIG_ARCH_MALABAR), y)
+include $(VIDEO_ROOT)/config/malabar_video.conf
+LINUXINCLUDE   += -include $(VIDEO_ROOT)/config/malabar_video.h
+endif
+
 ifeq ($(CONFIG_ARCH_LEMANS), y)
 ifeq ($(TARGET_BOARD_PLATFORM), gen5)
 KBUILD_CPPFLAGS += -DMSM_VIDC_HW_VIRT
@@ -97,6 +102,11 @@ endif
 
 ifeq ($(CONFIG_MSM_VIDC_RAVELIN), y)
 LINUXINCLUDE   += -I$(VIDEO_DRIVER_ABS_PATH)/platform/ravelin/inc \
+                  -I$(VIDEO_DRIVER_ABS_PATH)/variant/ar50lt/inc
+endif
+
+ifeq ($(CONFIG_MSM_VIDC_MALABAR), y)
+LINUXINCLUDE   += -I$(VIDEO_DRIVER_ABS_PATH)/platform/malabar/inc \
                   -I$(VIDEO_DRIVER_ABS_PATH)/variant/ar50lt/inc
 endif
 
@@ -191,6 +201,13 @@ endif
 
 ifeq ($(CONFIG_MSM_VIDC_RAVELIN), y)
 msm_video-objs += $(VIDEO_DRIVER_REL_PATH)/platform/ravelin/src/msm_vidc_ravelin.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/ar50lt/src/msm_vidc_buffer_ar50lt.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/ar50lt/src/msm_vidc_power_ar50lt.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/ar50lt/src/msm_vidc_ar50lt.o
+endif
+
+ifeq ($(CONFIG_MSM_VIDC_MALABAR), y)
+msm_video-objs += $(VIDEO_DRIVER_REL_PATH)/platform/malabar/src/msm_vidc_malabar.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/ar50lt/src/msm_vidc_buffer_ar50lt.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/ar50lt/src/msm_vidc_power_ar50lt.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/ar50lt/src/msm_vidc_ar50lt.o

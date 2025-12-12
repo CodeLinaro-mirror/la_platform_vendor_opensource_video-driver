@@ -178,6 +178,15 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
             "CONFIG_MSM_VIDC_MINIDUMP",
             "CONFIG_MSM_VIDC_{}".format(target.upper()),
             ]
+    elif target == "malabar":
+        dist_target_name = "{}_video_driver_modules_dist".format(kernel_build)
+        print("dist_target_name: " + dist_target_name)
+        config_options = [
+            "CONFIG_MSM_VIDC_LLCC",
+            "CONFIG_MSM_VIDC_ANDROID",
+            "CONFIG_MSM_VIDC_MINIDUMP",
+            "CONFIG_MSM_VIDC_{}".format(target.upper()),
+        ]
     else:
         dist_target_name = "{}_video_driver_modules_dist".format(kernel_build)
         print("dist_target_name: " + dist_target_name)
