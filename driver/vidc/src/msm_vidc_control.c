@@ -989,7 +989,7 @@ int msm_vidc_adjust_bitrate_mode(void *instance, struct v4l2_ctrl *ctrl)
 		goto update;
 	}
 
-	if (!frame_rc && !is_image_session(inst)) {
+	if (!frame_rc) {
 		hfi_value = HFI_RC_OFF;
 		goto update;
 	}
