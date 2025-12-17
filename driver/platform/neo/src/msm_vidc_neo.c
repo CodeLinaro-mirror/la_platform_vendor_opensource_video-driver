@@ -106,7 +106,7 @@ static struct msm_platform_inst_capability instance_data_neo[] = {
 
 	{FRAME_WIDTH, DEC, CODECS_ALL, 96, 3840, 1, 1920},
 	{FRAME_WIDTH, ENC, CODECS_ALL, 128, 3840, 1, 1920},
-	{LOSSLESS_FRAME_WIDTH, ENC, H264|HEVC, 128, 3840, 1, 1920},
+	{LOSSLESS_FRAME_WIDTH, ENC, H264|HEVC, 128, 4000, 1, 1920},
 	{SECURE_FRAME_WIDTH, DEC, H264|HEVC|VP9, 96, 3840, 1, 1920},
 	{SECURE_FRAME_WIDTH, ENC, H264|HEVC, 128, 3840, 1, 1920},
 	{FRAME_HEIGHT, DEC, CODECS_ALL, 96, 3840, 1, 1080},
@@ -184,8 +184,8 @@ static struct msm_platform_inst_capability instance_data_neo[] = {
 	/* (3840 * 2176) / 256 */
 	{MBPF, ENC, CODECS_ALL, 64, 32640, 1, 32640},
 	{MBPF, DEC, CODECS_ALL, 36, 32640, 1, 32640},
-	/* (3840 * 2176) / 256 */
-	{LOSSLESS_MBPF, ENC, H264|HEVC, 64, 32640, 1, 32640},
+	/* (4000 * 3840) / 256 */
+	{LOSSLESS_MBPF, ENC, H264|HEVC, 64, 60000, 1, 60000},
 	/* Batch Mode Decode */
 	/* TODO: update with new values based on updated voltage corner */
 	{BATCH_MBPF, DEC, H264|HEVC|VP9, 64, 32640, 1, 32640},
@@ -1686,6 +1686,16 @@ static struct msm_platform_inst_capability instance_data_neo[] = {
 		NULL,
 		msm_vidc_set_signal_color_info
 	}
+
+#ifdef CONFIG_MSM_VIDC_NEO_12M_HEVC_ENC
+	/* Google b/441264140: Support 4096x3040 HEVC encode while still
+	 * staying under the global limits for MAX_MBPF & MAX_MBPS.
+	 */
+	,
+	{FRAME_WIDTH, ENC, HEVC, 128, 4096, 1, 4096},
+	{FRAME_HEIGHT, ENC, HEVC, 128, 3040, 1, 3040},
+	{MBPF, ENC, HEVC, 36, 48640, 1, 48640} /* ((4096x3040)/256) */
+#endif
 };
 
 /* Default UBWC config for LPDDR5 */
