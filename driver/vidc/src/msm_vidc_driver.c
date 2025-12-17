@@ -5551,6 +5551,11 @@ void msm_vidc_destroy_buffers(struct msm_vidc_inst *inst)
 			call_mem_op(core, dma_buf_detach, core, buf->dmabuf, buf->attach);
 		if (buf->dbuf_get)
 			call_mem_op(core, dma_buf_put, inst, buf->dmabuf);
+		buf->attach = NULL;
+		buf->sg_table = NULL;
+		buf->dmabuf = NULL;
+		buf->dbuf_get = 0;
+		buf->device_addr = 0x0;
 		list_del_init(&buf->list);
 		msm_vidc_pool_free(inst, buf);
 	}
@@ -5570,6 +5575,11 @@ void msm_vidc_destroy_buffers(struct msm_vidc_inst *inst)
 				print_vidc_buffer(VIDC_ERR, "err ", "destroying: put dmabuf", inst, buf);
 				call_mem_op(core, dma_buf_put, inst, buf->dmabuf);
 			}
+			buf->attach = NULL;
+			buf->sg_table = NULL;
+			buf->dmabuf = NULL;
+			buf->dbuf_get = 0;
+			buf->device_addr = 0x0;
 			list_del_init(&buf->list);
 			msm_vidc_pool_free(inst, buf);
 		}
@@ -5661,6 +5671,7 @@ static void msm_vidc_close_helper(struct kref *kref)
 	if (inst->workq)
 		destroy_workqueue(inst->workq);
 	msm_vidc_destroy_buffers(inst);
+	msm_vidc_vb2_queue_deinit(inst);
 	msm_vidc_remove_dangling_session(inst);
 	msm_vidc_try_suspend(inst);
 	mutex_destroy(&inst->client_lock);
