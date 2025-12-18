@@ -474,6 +474,15 @@ static inline bool is_enc_slice_delivery_mode(struct msm_vidc_inst *inst)
 			inst->capabilities[DELIVERY_MODE].value);
 }
 
+static inline bool is_multi_view_session(struct msm_vidc_inst *inst)
+{
+	return (inst->codec == MSM_VIDC_HEVC &&
+		(inst->capabilities[PROFILE].value ==
+		V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_MULTIVIEW ||
+		inst->capabilities[PROFILE].value ==
+		V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_10_MULTIVIEW));
+}
+
 const char *cap_name(enum msm_vidc_inst_capability_type cap_id);
 const char *v4l2_pixelfmt_name(struct msm_vidc_inst *inst, u32 pixelfmt);
 const char *v4l2_type_name(u32 port);
