@@ -165,12 +165,15 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
         dist_target_name = "{}_video_driver_modules_dist".format(kernel_build)
         print("dist_target_name: " + dist_target_name)
         config_options = [
-            "CONFIG_MSM_MMRM",
             "CONFIG_MSM_VIDC_LLCC",
             "CONFIG_MSM_VIDC_ANDROID",
             "CONFIG_MSM_VIDC_MINIDUMP",
             "CONFIG_MSM_VIDC_{}".format(target.upper()),
         ]
+
+        # Append only when target is not "malabar"
+        if target != "malabar":
+            config_options.append("CONFIG_MSM_MMRM")
 
     modules = [registry.get(module_name) for module_name in modules]
 
@@ -193,11 +196,16 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
         if not module_srcs:
             continue
 
+        deps = headers + all_module_deps
+
+        if target != "malabar":
+            deps += _get_kernel_build_module_deps(module, options, formatter)
+
         ddk_module(
             name = rule_name,
             srcs = module_srcs,
             out = "{}.ko".format(module.name),
-            deps = headers + all_module_deps + _get_kernel_build_module_deps(module, options, formatter),
+            deps = deps,
             kernel_build = kernel_build_label,
             local_defines = options.keys(),
         )
