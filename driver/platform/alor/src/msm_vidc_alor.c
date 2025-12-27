@@ -2938,6 +2938,8 @@ static const struct clk_table alor_clk_table[] = {
 
 /* name, exclusive_release */
 static const struct clk_rst_table alor_clk_reset_table[] = {
+	{ "gcc_video_xo_ares_reset",            0  },
+	{ "video_cc_xo_ares_reset",             0  },
 	{ "video_axi1_reset",                   0  },
 	{ "video_axi0_reset",                   0  },
 	{ "video_mvs0c_freerun_reset",          0  },
