@@ -294,8 +294,8 @@ static struct msm_platform_core_capability core_data_kera_v0[] = {
 	 /* Concurrency: UHD@30 decode + 1080p@30 encode */
 	{MAX_MBPS, 2088960}, /* max_load 4096x2176@60fps*/
 	{MAX_IMAGE_MBPF, 1048576}, /* (16384x16384)/256 */
-	{MAX_MBPF_HQ, 8160}, /* ((1920x1088)/256) */
-	{MAX_MBPS_HQ, 244800}, /* ((1920x1088)/256)@30fps */
+	{MAX_MBPF_HQ, 1200}, /* ((640x480)/256) */
+	{MAX_MBPS_HQ, 36000}, /* ((640x480)/256)@30fps */
 	{MAX_MBPF_B_FRAME, 32640}, /* 3840x2176/256 */
 	{MAX_MBPS_B_FRAME, 979200}, /* 3840x2176/256 MBs@30fps */
 	{MAX_MBPS_ALL_INTRA, 489600}, /* ((1920x1088)/256)@60fps */

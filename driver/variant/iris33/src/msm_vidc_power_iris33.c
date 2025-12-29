@@ -90,6 +90,8 @@ static int msm_vidc_init_codec_input_freq(struct msm_vidc_inst *inst, u32 data_s
 	}
 
 	codec_input->pipe_num = inst->capabilities[PIPE].value;
+	codec_input->enc_hqmode = inst->capabilities[QUALITY_MODE].value == MSM_VIDC_MAX_QUALITY_MODE ?
+		1 : 0;
 	codec_input->frame_rate = inst->max_rate;
 
 	port = is_decode_session(inst) ? INPUT_PORT : OUTPUT_PORT;
