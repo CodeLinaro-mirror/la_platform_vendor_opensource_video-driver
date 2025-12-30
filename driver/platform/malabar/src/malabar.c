@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
@@ -9,10 +8,10 @@
 #include "msm_vidc_internal.h"
 #include "msm_vidc_inst.h"
 #include "msm_vidc_control.h"
-#include "msm_vidc_canoe.h"
+#include "msm_vidc_malabar.h"
 #include "msm_vidc_platform.h"
 #include "msm_vidc_debug.h"
-#include "msm_vidc_iris4.h"
+#include "msm_vidc_ar50lt.h"
 #include "hfi_property.h"
 #include "hfi_command.h"
 #include "venus_hfi.h"
@@ -31,15 +30,16 @@
 #define MAX_SLICE_BYTE_SIZE       \
 	((MAX_BITRATE) >> 3)
 #define MAX_SLICE_MB_SIZE         \
-	(((4096 + 15) >> 4) * ((2304 + 15) >> 4))
+	(((1920 + 15) >> 4) * ((1080 + 15) >> 4))
 
 #define ENC     MSM_VIDC_ENCODER
 #define DEC     MSM_VIDC_DECODER
 #define H264    MSM_VIDC_H264
 #define HEVC    MSM_VIDC_HEVC
 #define VP9     MSM_VIDC_VP9
-#define CODECS_ALL     (H264 | HEVC | VP9)
-#define MAXIMUM_OVERRIDE_VP9_FPS 180
+#define CODECS_ALL     (H264 | HEVC | VP9 | HEIC)
+#define MAXIMUM_OVERRIDE_VP9_FPS 200
+
 
 #ifndef V4L2_PIX_FMT_QC08C
 #define V4L2_PIX_FMT_QC08C    v4l2_fourcc('Q', '0', '8', 'C')
@@ -49,7 +49,7 @@
 #define V4L2_PIX_FMT_QC10C    v4l2_fourcc('Q', '1', '0', 'C')
 #endif
 
-static struct codec_info codec_data_canoe[] = {
+static struct codec_info codec_data_malabar[] = {
 	{
 		.v4l2_codec  = V4L2_PIX_FMT_H264,
 		.vidc_codec  = MSM_VIDC_H264,
@@ -67,7 +67,7 @@ static struct codec_info codec_data_canoe[] = {
 	},
 };
 
-static struct color_format_info color_format_data_canoe[] = {
+static struct color_format_info color_format_data_malabar[] = {
 	{
 		.v4l2_color_format = V4L2_PIX_FMT_NV12,
 		.vidc_color_format = MSM_VIDC_FMT_NV12,
@@ -79,23 +79,13 @@ static struct color_format_info color_format_data_canoe[] = {
 		.pixfmt_name       = "NV21",
 	},
 	{
-		.v4l2_color_format = V4L2_PIX_FMT_QC08C,
-		.vidc_color_format = MSM_VIDC_FMT_NV12C,
-		.pixfmt_name       = "NV12C",
-	},
-	{
-		.v4l2_color_format = V4L2_PIX_FMT_QC10C,
-		.vidc_color_format = MSM_VIDC_FMT_TP10C,
-		.pixfmt_name       = "TP10C",
-	},
-	{
-		.v4l2_color_format = V4L2_PIX_FMT_RGBA32,
-		.vidc_color_format = MSM_VIDC_FMT_RGBA8888,
-		.pixfmt_name       = "RGBA",
+		.v4l2_color_format = V4L2_META_FMT_VIDC,
+		.vidc_color_format = MSM_VIDC_FMT_META,
+		.pixfmt_name       = "META",
 	},
 };
 
-static struct color_primaries_info color_primaries_data_canoe[] = {
+static struct color_primaries_info color_primaries_data_malabar[] = {
 	{
 		.v4l2_color_primaries  = V4L2_COLORSPACE_DEFAULT,
 		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_RESERVED,
@@ -130,7 +120,7 @@ static struct color_primaries_info color_primaries_data_canoe[] = {
 	},
 };
 
-static struct transfer_char_info transfer_char_data_canoe[] = {
+static struct transfer_char_info transfer_char_data_malabar[] = {
 	{
 		.v4l2_transfer_char  = V4L2_XFER_FUNC_DEFAULT,
 		.vidc_transfer_char  = MSM_VIDC_TRANSFER_RESERVED,
@@ -153,7 +143,7 @@ static struct transfer_char_info transfer_char_data_canoe[] = {
 	},
 };
 
-static struct matrix_coeff_info matrix_coeff_data_canoe[] = {
+static struct matrix_coeff_info matrix_coeff_data_malabar[] = {
 	{
 		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_DEFAULT,
 		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_RESERVED,
@@ -188,112 +178,52 @@ static struct matrix_coeff_info matrix_coeff_data_canoe[] = {
 	},
 };
 
-static const struct msm_platform_core_capability core_data_canoe[] = {
+/*
+ * IRIS2-1P
+ * Dec: 1080P@60
+ * Enc: 1080P@60
+ */
+static const struct msm_platform_core_capability core_data_malabar[] = {
 	/* {type, value} */
-	{ENC_CODECS, H264 | HEVC},
-	{DEC_CODECS, H264 | HEVC | VP9},
-	{MAX_SESSION_COUNT, 16},
-	{MAX_NUM_720P_SESSIONS, 16},
-	{MAX_NUM_1080P_SESSIONS, 16},
-	{MAX_NUM_4K_SESSIONS, 8},
-	{MAX_NUM_8K_SESSIONS, 2},
-	{MAX_RT_MBPF, 174080},	/* (8192x4352)/256 + (4096x2176)/256*/
-	{MAX_MBPF, 278528}, /* ((8192x4352)/256) * 2 */
-	{MAX_MBPS, 7833600},
-	/* max_load
-	 * 7680x4320@60fps or 3840x2176@240fps
-	 * which is greater than 4096x2176@120fps,
-	 * 8192x4320@48fps
-	 */
+	{ENC_CODECS, H264 | HEVC | HEIC},
+	{DEC_CODECS, H264 | HEVC | VP9 | HEIC},
+	{MAX_SESSION_COUNT, 8},
+	{MAX_NUM_720P_SESSIONS, 4},
+	{MAX_NUM_1080P_SESSIONS, 2},
+	{MAX_NUM_4K_SESSIONS, 0},
+	{MAX_NUM_8K_SESSIONS, 0},
+	{MAX_SECURE_SESSION_COUNT, 3},
+	{MAX_RT_MBPF, 16320}, /* ((1920x1088)/256)*2 */
+	{MAX_MBPF, 32640}, /* ((1920x1088)/256)*4 */
+	/* Concurrency: 1080p@30 decode + 1080p@30 encode */
+	{MAX_MBPS, 489600}, /* ((1088x1920)/256)@60fps */
+	{MAX_IMAGE_MBPF, 262144}, /* (8192x8192)/256 */
 	{MAX_MBPF_HQ, 8160}, /* ((1920x1088)/256) */
-	{MAX_MBPS_HQ, 489600}, /* ((1920x1088)/256)@60fps */
-	{MAX_MBPF_B_FRAME, 32640}, /* 3840x2176/256 */
-	{MAX_MBPS_B_FRAME, 1958400}, /* 3840x2176/256 MBs@60fps */
-	{MAX_MBPS_ALL_INTRA, 1044480}, /* 4096x2176/256 MBs@30fps */
+	{MAX_MBPS_HQ, 244800}, /* ((1920x1088)/256)@30fps */
+	{MAX_MBPF_B_FRAME, 0},
+	{MAX_MBPS_B_FRAME, 0},
+	{MAX_MBPS_ALL_INTRA, 489600}, /* ((1920x1088)/256)@60fps */
 	{MAX_ENH_LAYER_COUNT, 5},
-	{NUM_VPP_PIPE, 2},
+	{NUM_VPP_PIPE, 1},
 	{SW_PC, 1},
 	{FW_UNLOAD, 0},
 	{HW_RESPONSE_TIMEOUT, HW_RESPONSE_TIMEOUT_VALUE}, /* 1000 ms */
 	{SW_PC_DELAY,         SW_PC_DELAY_VALUE        }, /* 1500 ms (>HW_RESPONSE_TIMEOUT)*/
 	{FW_UNLOAD_DELAY,     FW_UNLOAD_DELAY_VALUE    }, /* 3000 ms (>SW_PC_DELAY)*/
+	{PAGEFAULT_NON_FATAL, 1},
+	{PAGETABLE_CACHING, 0},
 	{DCVS, 1},
-	{DECODE_BATCH, 1},
+	{DECODE_BATCH, 0},
 	{DECODE_BATCH_TIMEOUT, 200},
 	{STATS_TIMEOUT_MS, 2000},
+	{AV_SYNC_WINDOW_SIZE, 40},
 	{NON_FATAL_FAULTS, 1},
-	{ENC_AUTO_FRAMERATE, 1},
-	{DEVICE_CAPS, V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING},
-	// TODO gdoddabe Enable when Synx changes are available
-	// {SUPPORTS_SYNX_FENCE, 0},
+	{ENC_AUTO_FRAMERATE, 0},
+	{DEVICE_CAPS, V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_META_CAPTURE | V4L2_CAP_STREAMING},
 	{SUPPORTS_REQUESTS, 0},
 };
 
-static int msm_vidc_set_ring_buffer_count_canoe(void *instance,
-	enum msm_vidc_inst_capability_type cap_id)
-{
-	int rc = 0;
-	struct msm_vidc_inst *inst = (struct msm_vidc_inst *)instance;
-	struct v4l2_format *output_fmt, *input_fmt;
-	struct msm_vidc_core *core;
-	u32 count = 0, data_size = 0, pixel_count = 0, fps = 0;
-	u32 frame_rate = 0, operating_rate = 0;
-
-	core = inst->core;
-	output_fmt = &inst->fmts[OUTPUT_PORT];
-	input_fmt = &inst->fmts[INPUT_PORT];
-
-	frame_rate = inst->capabilities[FRAME_RATE].value >> 16;
-	operating_rate = inst->capabilities[OPERATING_RATE].value >> 16;
-	fps = max(frame_rate, operating_rate);
-	pixel_count = output_fmt->fmt.pix_mp.width *
-		output_fmt->fmt.pix_mp.height;
-
-	/*
-	 * try to enable ring buffer feature if
-	 * resolution >= 8k and fps >= 30fps and
-	 * resolution >= 4k and fps >= 120fps and
-	 * resolution >= 1080p and fps >= 480fps and
-	 * resolution >= 720p and fps >= 960fps
-	 */
-	if ((pixel_count >= 7680 * 4320 && fps >= 30) &&
-	    (pixel_count >= 3840 * 2160 && fps >= 120) &&
-	    (pixel_count >= 1920 * 1080 && fps >= 480) &&
-	    (pixel_count >= 1280 * 720 && fps >= 960)) {
-		data_size = input_fmt->fmt.pix_mp.plane_fmt[0].sizeimage;
-		i_vpr_h(inst, "%s: calculate ring buffer count\n", __func__);
-		rc = call_session_op(core, ring_buf_count, inst, data_size);
-		if (rc) {
-			i_vpr_e(inst, "%s: failed to calculate ring buf count\n",
-				__func__);
-			/* ignore error */
-			rc = 0;
-			inst->capabilities[cap_id].value = 0;
-		}
-	} else {
-		i_vpr_h(inst,
-			"%s: session %ux%u@%u fps does not support ring buffer\n",
-			__func__, output_fmt->fmt.pix_mp.width,
-			output_fmt->fmt.pix_mp.height, fps);
-		inst->capabilities[cap_id].value = 0;
-	}
-
-	count = inst->capabilities[cap_id].value;
-	i_vpr_h(inst, "%s: ring buffer count: %u\n", __func__, count);
-	rc = venus_hfi_session_property(inst,
-			HFI_PROP_ENC_RING_BIN_BUF,
-			HFI_HOST_FLAGS_NONE,
-			HFI_PORT_BITSTREAM,
-			HFI_PAYLOAD_U32,
-			&count,
-			sizeof(u32));
-	if (rc)
-		return rc;
-
-	return rc;
-}
-
-static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
+static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 	/* {cap, domain, codec,
 	 *      min, max, step_or_mask, value,
 	 *      v4l2_id,
@@ -301,29 +231,21 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 	 *      flags}
 	 */
 
-	{FRAME_WIDTH, DEC, CODECS_ALL, 96, 8192, 1, 1920},
+	{FRAME_WIDTH, DEC, CODECS_ALL, 96, 1920, 1, 1920},
 
-	{FRAME_WIDTH, DEC, VP9, 96, 4096, 1, 1920},
+	{FRAME_WIDTH, ENC, CODECS_ALL, 128, 1920, 1, 1920},
 
-	{FRAME_WIDTH, ENC, CODECS_ALL, 128, 8192, 1, 1920},
+	{LOSSLESS_FRAME_WIDTH, ENC, CODECS_ALL, 128, 1920, 1, 1920},
 
-	{FRAME_WIDTH, ENC, HEVC, 96, 8192, 1, 1920},
+	{LOSSLESS_FRAME_WIDTH, ENC, HEVC, 96, 1920, 1, 1920},
 
-	{LOSSLESS_FRAME_WIDTH, ENC, CODECS_ALL, 128, 4096, 1, 1920},
+	{FRAME_HEIGHT, DEC, CODECS_ALL, 96, 1920, 1, 1080},
 
-	{LOSSLESS_FRAME_WIDTH, ENC, HEVC, 96, 4096, 1, 1920},
+	{FRAME_HEIGHT, ENC, CODECS_ALL, 128, 1920, 1, 1080},
 
-	{FRAME_HEIGHT, DEC, CODECS_ALL, 96, 8192, 1, 1080},
+	{LOSSLESS_FRAME_HEIGHT, ENC, CODECS_ALL, 128, 1920, 1, 1080},
 
-	{FRAME_HEIGHT, DEC, VP9, 96, 4096, 1, 1080},
-
-	{FRAME_HEIGHT, ENC, CODECS_ALL, 128, 8192, 1, 1080},
-
-	{FRAME_HEIGHT, ENC, HEVC, 96, 8192, 1, 1080},
-
-	{LOSSLESS_FRAME_HEIGHT, ENC, CODECS_ALL, 128, 4096, 1, 1080},
-
-	{LOSSLESS_FRAME_HEIGHT, ENC, HEVC, 96, 4096, 1, 1080},
+	{LOSSLESS_FRAME_HEIGHT, ENC, HEVC, 96, 1920, 1, 1080},
 
 	{PIX_FMTS, ENC | DEC, H264,
 		MSM_VIDC_FMT_NV12,
@@ -343,32 +265,27 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 		0,
 		CAP_FLAG_VOLATILE},
 
-
 	{MIN_BUFFERS_OUTPUT, ENC | DEC, CODECS_ALL,
 		0, 64, 1, 4,
 		V4L2_CID_MIN_BUFFERS_FOR_CAPTURE,
 		HFI_PROP_BUFFER_FW_MIN_OUTPUT_COUNT,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_VOLATILE},
 
-	/* (8192 * 4320) / 256 */
-	{MBPF, ENC, CODECS_ALL, 64, 138240, 1, 138240},
+	/* (1920 * 1088) / 256 */
+	{MBPF, ENC | DEC, CODECS_ALL, 64, 8160, 1, 8160},
 
-	{MBPF, ENC, HEVC, 36, 138240, 1, 138240},
+	/* ((8192x8192)/256) */
+	{MBPF, ENC | DEC, HEIC, 36, 262144, 1, 262144},
 
-	{MBPF, DEC, CODECS_ALL, 36, 138240, 1, 138240},
-
-	/* (4096 * 2304) / 256 */
-	{MBPF, DEC, VP9, 36, 36864, 1, 36864},
-
-	/* (4096 * 2304) / 256 */
-	{LOSSLESS_MBPF, ENC, H264 | HEVC, 64, 36864, 1, 36864},
+	/* (1920 * 1088) / 256 */
+	{LOSSLESS_MBPF, ENC, H264 | HEVC, 36, 8160, 1, 8160},
 
 	/* Batch Mode Decode */
 	/* TODO: update with new values based on updated voltage corner */
-	{BATCH_MBPF, DEC, H264 | HEVC | VP9, 64, 34816, 1, 34816},
+	{BATCH_MBPF, DEC, H264 | HEVC | VP9, 36, 8162, 1, 8162},
 
 	/* (4096 * 2304) / 256 */
-	{BATCH_FPS, DEC, H264 | HEVC | VP9, 1, 120, 1, 120},
+	{BATCH_FPS, DEC, H264 | HEVC | VP9, 1, 121, 1, 121},
 
 	{FRAME_RATE, ENC, CODECS_ALL,
 		(MINIMUM_FPS << 16), (MAXIMUM_FPS << 16),
@@ -958,9 +875,8 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 
 	{PROFILE, DEC, VP9,
 		V4L2_MPEG_VIDEO_VP9_PROFILE_0,
-		V4L2_MPEG_VIDEO_VP9_PROFILE_2,
-		BIT(V4L2_MPEG_VIDEO_VP9_PROFILE_0) |
-		BIT(V4L2_MPEG_VIDEO_VP9_PROFILE_2),
+		V4L2_MPEG_VIDEO_VP9_PROFILE_0,
+		BIT(V4L2_MPEG_VIDEO_VP9_PROFILE_0),
 		V4L2_MPEG_VIDEO_VP9_PROFILE_0,
 		V4L2_CID_MPEG_VIDEO_VP9_PROFILE,
 		HFI_PROP_PROFILE,
@@ -968,7 +884,7 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 
 	{LEVEL, ENC, H264,
 		V4L2_MPEG_VIDEO_H264_LEVEL_1_0,
-		V4L2_MPEG_VIDEO_H264_LEVEL_6_0,
+		V4L2_MPEG_VIDEO_H264_LEVEL_4_2,
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_0) |
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1B) |
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_1) |
@@ -982,17 +898,13 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_2) |
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_0) |
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_1) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_2) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_0) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_1) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_2) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_6_0),
-		V4L2_MPEG_VIDEO_H264_LEVEL_5_0,
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_2),
+		V4L2_MPEG_VIDEO_H264_LEVEL_4_2,
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
-	{LEVEL, ENC, HEVC,
+	{LEVEL, ENC, HEVC | HEIC,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_6,
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_1) |
@@ -1001,19 +913,15 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_3) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_3_1) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5_1) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5_2) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_6),
-		V4L2_MPEG_VIDEO_HEVC_LEVEL_5,
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1),
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1,
 		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{LEVEL, DEC, H264,
 		V4L2_MPEG_VIDEO_H264_LEVEL_1_0,
-		V4L2_MPEG_VIDEO_H264_LEVEL_6_2,
+		V4L2_MPEG_VIDEO_H264_LEVEL_4_2,
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_0) |
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1B) |
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_1) |
@@ -1027,42 +935,30 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_2) |
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_0) |
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_1) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_2) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_0) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_1) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_2) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_6_0) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_6_1) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_6_2),
-		V4L2_MPEG_VIDEO_H264_LEVEL_6_1,
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_2),
+		V4L2_MPEG_VIDEO_H264_LEVEL_4_2,
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
-	{LEVEL, DEC, HEVC,
+	{LEVEL, DEC, HEVC | HEIC,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
-		V4L2_MPEG_VIDEO_HEVC_LEVEL_6_2,
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1,
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_1) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_2) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_2_1) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_3) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_3_1) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5_1) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5_2) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_6) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_6_1)|
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_6_2),
-		V4L2_MPEG_VIDEO_HEVC_LEVEL_6_1,
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1),
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1,
 		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{LEVEL, DEC, VP9,
 		V4L2_MPEG_VIDEO_VP9_LEVEL_1_0,
-		V4L2_MPEG_VIDEO_VP9_LEVEL_6_0,
+		V4L2_MPEG_VIDEO_VP9_LEVEL_4_1,
 		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_1_0) |
 		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_1_1) |
 		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_2_0) |
@@ -1070,12 +966,8 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_3_0) |
 		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_3_1) |
 		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_4_0) |
-		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_4_1) |
-		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_5_0) |
-		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_5_1) |
-		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_5_2) |
-		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_6_0),
-		V4L2_MPEG_VIDEO_VP9_LEVEL_6_0,
+		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_4_1),
+		V4L2_MPEG_VIDEO_VP9_LEVEL_4_1,
 		V4L2_CID_MPEG_VIDEO_VP9_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
@@ -1293,12 +1185,13 @@ static struct msm_platform_inst_capability instance_cap_data_canoe[] = {
 		0},
 };
 
-static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_canoe[] = {
+static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_malabar[] = {
 	/* {cap, domain, codec,
 	 *      parents,
 	 *      children,
 	 *      adjust, set}
 	 */
+
 	{PIX_FMTS, ENC, H264,
 		{BIT_DEPTH}},
 
@@ -1321,7 +1214,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 	{ENC_RING_BUFFER_COUNT, ENC, H264,
 		{0},
 		NULL,
-		msm_vidc_set_ring_buffer_count_canoe},
+		msm_vidc_set_ring_buffer_count_malabar},
 
 	{HFLIP, ENC, CODECS_ALL,
 		{0},
@@ -1614,7 +1507,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 
 	{CHROMA_QP_INDEX_OFFSET, ENC, HEVC | H264,
 		{0},
-		msm_vidc_adjust_chroma_qp_index_offset_iris35,
+		msm_vidc_adjust_chroma_qp_index_offset,
 		msm_vidc_set_chroma_qp_index_offset},
 
 	{DISPLAY_DELAY_ENABLE, DEC, H264 | HEVC | VP9,
@@ -1703,82 +1596,43 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_cano
 		NULL},
 };
 
-/* Default UBWC config for LPDDR5 */
-static struct msm_vidc_ubwc_config_data ubwc_config_canoe[] = {
-	UBWC_CONFIG(8, 32, 16, 0, 1, 1, 1),
+static struct msm_vidc_format_capability format_data_malabar = {
+	.codec_info = codec_data_malabar,
+	.codec_info_size = ARRAY_SIZE(codec_data_malabar),
+	.color_format_info = color_format_data_malabar,
+	.color_format_info_size = ARRAY_SIZE(color_format_data_malabar),
+	.color_prim_info = color_primaries_data_malabar,
+	.color_prim_info_size = ARRAY_SIZE(color_primaries_data_malabar),
+	.transfer_char_info = transfer_char_data_malabar,
+	.transfer_char_info_size = ARRAY_SIZE(transfer_char_data_malabar),
+	.matrix_coeff_info = matrix_coeff_data_malabar,
+	.matrix_coeff_info_size = ARRAY_SIZE(matrix_coeff_data_malabar),
 };
 
-static struct msm_vidc_format_capability format_data_canoe = {
-	.codec_info = codec_data_canoe,
-	.codec_info_size = ARRAY_SIZE(codec_data_canoe),
-	.color_format_info = color_format_data_canoe,
-	.color_format_info_size = ARRAY_SIZE(color_format_data_canoe),
-	.color_prim_info = color_primaries_data_canoe,
-	.color_prim_info_size = ARRAY_SIZE(color_primaries_data_canoe),
-	.transfer_char_info = transfer_char_data_canoe,
-	.transfer_char_info_size = ARRAY_SIZE(transfer_char_data_canoe),
-	.matrix_coeff_info = matrix_coeff_data_canoe,
-	.matrix_coeff_info_size = ARRAY_SIZE(matrix_coeff_data_canoe),
-};
-
-/* name, start, size, secure, dma_coherant, region, dma_mask */
-const struct context_bank_table canoe_context_bank_table[] = {
-	{"qcom,canoe-iris",          0x25800000, 0xda400000, 0, 1,
-		MSM_VIDC_NON_SECURE |
-		MSM_VIDC_NON_SECURE_BITSTREAM |
-		MSM_VIDC_NON_SECURE_PIXEL,     0 },
-	{"qcom,canoe-iris",          0x01000000, 0x24800000, 1, 0,
-		MSM_VIDC_SECURE_NONPIXEL,      0 },
-};
-
-static const struct msm_vidc_platform_data canoe_data = {
-	.core_data = core_data_canoe,
-	.core_data_size = ARRAY_SIZE(core_data_canoe),
-	.inst_cap_data = instance_cap_data_canoe,
-	.inst_cap_data_size = ARRAY_SIZE(instance_cap_data_canoe),
-	.inst_cap_dependency_data = instance_cap_dependency_data_canoe,
-	.inst_cap_dependency_data_size = ARRAY_SIZE(instance_cap_dependency_data_canoe),
+static const struct msm_vidc_platform_data malabar_data = {
+	.core_data = core_data_malabar,
+	.core_data_size = ARRAY_SIZE(core_data_malabar),
+	.inst_cap_data = instance_cap_data_malabar,
+	.inst_cap_data_size = ARRAY_SIZE(instance_cap_data_malabar),
+	.inst_cap_dependency_data = instance_cap_dependency_data_malabar,
+	.inst_cap_dependency_data_size = ARRAY_SIZE(instance_cap_dependency_data_malabar),
 	.csc_data.vpe_csc_custom_bias_coeff = vpe_csc_custom_bias_coeff,
 	.csc_data.vpe_csc_custom_matrix_coeff = vpe_csc_custom_matrix_coeff,
 	.csc_data.vpe_csc_custom_limit_coeff = vpe_csc_custom_limit_coeff,
-	.ubwc_config = ubwc_config_canoe,
-	.format_data = &format_data_canoe,
-	/* populate context bank */
-	.context_bank_tbl = canoe_context_bank_table,
-	.context_bank_tbl_size = ARRAY_SIZE(canoe_context_bank_table),
+	.ubwc_config = NULL,
+	.format_data = &format_data_malabar,
 };
 
-static int msm_vidc_canoe_check_ddr_type(void)
+int msm_vidc_get_platform_data_malabar(struct msm_vidc_core *core)
 {
-	u32 ddr_type;
-
-	ddr_type = of_fdt_get_ddrtype();
-	if (ddr_type != DDR_TYPE_LPDDR5 &&
-		ddr_type != DDR_TYPE_LPDDR5X) {
-		d_vpr_e("%s: wrong ddr type %d\n", __func__, ddr_type);
-		return -EINVAL;
-	} else {
-		d_vpr_h("%s: ddr type %d\n", __func__, ddr_type);
-	}
-	return 0;
-}
-
-int msm_vidc_get_platform_data_canoe(struct msm_vidc_core *core)
-{
-	d_vpr_h("%s: initialize canoe data\n", __func__);
-	core->platform->data = canoe_data;
+	d_vpr_h("%s: initialize malabar data\n", __func__);
+	core->platform->data = malabar_data;
 
 	return 0;
 }
 
-int msm_vidc_init_platform_canoe(struct msm_vidc_core *core)
+int msm_vidc_init_platform_malabar(struct msm_vidc_core *core)
 {
-	int rc = 0;
-
-	d_vpr_h("%s: initialize canoe ops\n", __func__);
-	rc = msm_vidc_canoe_check_ddr_type();
-	if (rc)
-		return rc;
-
+	d_vpr_h("%s: initialize malabar ops\n", __func__);
 	return 0;
 }
