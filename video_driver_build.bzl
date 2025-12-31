@@ -1,4 +1,4 @@
-load("//build/kernel/kleaf:kernel.bzl", "ddk_module", "kernel_module_group", "ddk_submodule")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_module", "kernel_module_group")
 load("//build/bazel_common_rules/dist:dist.bzl", "copy_to_dist_dir")
 
 def _register_module_to_map(module_map, name, path, config_option, srcs, config_srcs, deps, config_deps):
@@ -123,13 +123,12 @@ def define_target_variant_modules(target, variant, registry, modules, config_opt
     )
 
 def define_lunch_target_variant_modules(target, variant, registry, modules, lunch_target = None):
-    print(lunch_target)
+    print("  target       =", target)
+    print("  variant      =", variant)
+    print("  lunch_target =", lunch_target)
+    print("  modules (names) =", modules)
 
-    if target == "chora":
-        kernel_variant = "canoe"
-        kernel_build = "{}_{}".format(kernel_variant, variant)
-    else:
-        kernel_build = "{}_{}".format(target, variant)
+    kernel_build = "{}_{}".format(target, variant)
 
     deps = []
     all_module_deps = select({
@@ -157,6 +156,7 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
     if lunch_target != None:
         kernel_build = "{}_{}_{}".format(target, variant, lunch_target)
         print("kernel_build: " + kernel_build)
+        headers = registry.hdrs + [":{}_headers".format(lunch_target)]
         dist_target_name = "{}_video_driver_modules_dist".format(kernel_build)
         config_options = [
             "CONFIG_MSM_MMRM",
@@ -165,25 +165,36 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
             "CONFIG_MSM_VIDC_MINIDUMP",
             "CONFIG_MSM_VIDC_{}".format(lunch_target.upper()),
         ]
-        #if lunch_target != "chora":
-         #   config_options.append("CONFIG_MSM_MMRM")
-        #headers = registry.hdrs + [":{}_headers".format(lunch_target)]
-        #dist_dir = "out/target/product/{}/dlkm/lib/modules/".format(lunch_target)
-    else:
+
+    elif target == "canoe":
+        lunch_target = "chora"
         dist_target_name = "{}_video_driver_modules_dist".format(kernel_build)
+        headers = registry.hdrs + [":{}_headers".format(target)]
+        headers += [":{}_headers".format(lunch_target)]
         print("dist_target_name: " + dist_target_name)
         config_options = [
+            "CONFIG_MSM_MMRM",
+            "CONFIG_MSM_VIDC_LLCC",
+            "CONFIG_MSM_VIDC_ANDROID",
+            "CONFIG_MSM_VIDC_MINIDUMP",
+            "CONFIG_MSM_VIDC_{}".format(target.upper()),
+            "CONFIG_MSM_VIDC_{}".format(lunch_target.upper()),
+        ]
+        print("  config_options =", config_options)
+
+    else:
+        dist_target_name = "{}_video_driver_modules_dist".format(kernel_build)
+        headers = registry.hdrs + [":{}_headers".format(target)]
+        print("dist_target_name: " + dist_target_name)
+        config_options = [
+            "CONFIG_MSM_MMRM",
             "CONFIG_MSM_VIDC_LLCC",
             "CONFIG_MSM_VIDC_ANDROID",
             "CONFIG_MSM_VIDC_MINIDUMP",
             "CONFIG_MSM_VIDC_{}".format(target.upper()),
         ]
-        if target != "chora":
-            config_options.append("CONFIG_MSM_MMRM")
-        #headers = registry.hdrs + [":{}_headers".format(target)]
-        #dist_dir = "out/target/product/{}/dlkm/lib/modules/".format(target)
-
-    #ddk_mod_name = "{}_video_driver_modules".format(kernel_build)
+        print("  config_options =", config_options)
+        print(headers)
 
     modules = [registry.get(module_name) for module_name in modules]
 
@@ -193,48 +204,27 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
 
     formatter = lambda s: s.replace("%b", kernel_build).replace("%t", target)
 
-    headers = registry.hdrs + [":{}_headers".format(target)]
-
     print(headers)
 
     all_module_rules = []
 
     for module in modules:
-        print("Module name: " + module.name)
         rule_name = "{}_{}".format(kernel_build, module.name)
         module_srcs = _get_kernel_build_module_srcs(module, options, formatter)
 
         if not module_srcs:
             continue
 
-        deps = headers + all_module_deps
-
-        if target != "chora":
-             deps += _get_kernel_build_module_deps(module, options, formatter)
-
-
-#        ddk_submodule(
-#            name = rule_name,
-#            srcs = module_srcs,
-#            out = "{}.ko".format(module.name),
-#            deps = deps,
-#            local_defines = options.keys(),
-#        )
         ddk_module(
             name = rule_name,
             srcs = module_srcs,
             out = "{}.ko".format(module.name),
-            deps = deps,
+            deps = headers + all_module_deps + _get_kernel_build_module_deps(module, options, formatter),
             kernel_build = kernel_build_label,
             local_defines = options.keys(),
         )
-        all_module_rules.append(rule_name)
 
-    #ddk_module(
-    #    name = ddk_mod_name,
-    #    kernel_build = kernel_build_label,
-    #    deps = all_module_rules,
-    #)
+        all_module_rules.append(rule_name)
 
     kernel_module_group(
         name = "{}_video_modules".format(kernel_build),
