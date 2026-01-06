@@ -502,7 +502,8 @@ static struct msm_platform_inst_capability instance_cap_data_chora_v0[] = {
 	{PIX_FMTS, ENC, HEIC,
 		MSM_VIDC_FMT_NV12,
 		MSM_VIDC_FMT_NV21,
-		MSM_VIDC_FMT_NV12 | MSM_VIDC_FMT_NV21,
+		MSM_VIDC_FMT_NV12 | MSM_VIDC_FMT_NV21 |
+		MSM_VIDC_FMT_P010 | MSM_VIDC_FMT_TP10C,
 		MSM_VIDC_FMT_NV12},
 
 	{PIX_FMTS, DEC, HEIC,
@@ -2030,7 +2031,8 @@ static struct msm_platform_inst_capability instance_cap_data_chora_v1[] = {
 	{PIX_FMTS, ENC, HEIC,
 		MSM_VIDC_FMT_NV12,
 		MSM_VIDC_FMT_NV21,
-		MSM_VIDC_FMT_NV12 | MSM_VIDC_FMT_NV21,
+		MSM_VIDC_FMT_NV12 | MSM_VIDC_FMT_NV21 |
+		MSM_VIDC_FMT_P010 | MSM_VIDC_FMT_TP10C,
 		MSM_VIDC_FMT_NV12},
 
 	{PIX_FMTS, DEC, HEIC,
