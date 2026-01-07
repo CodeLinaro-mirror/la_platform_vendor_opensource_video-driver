@@ -3,6 +3,7 @@ targets = [
     "canoe",
     "hamoa",
     "gen3auto",
+    "shikra",
     "sun",
     "seraph",
     "vienna",

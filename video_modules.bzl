@@ -98,6 +98,12 @@ module_entry(
             "driver/variant/ar50lt/src/msm_vidc_ar50lt.c",
             "driver/platform/ar50lt/src/msm_vidc_ravelin.c",
         ],
+        "CONFIG_MSM_VIDC_SHIKRA" : [
+            "driver/variant/ar50lt/src/msm_vidc_buffer_ar50lt.c",
+            "driver/variant/ar50lt/src/msm_vidc_power_ar50lt.c",
+            "driver/variant/ar50lt/src/msm_vidc_ar50lt.c",
+            "driver/platform/shikra/src/msm_vidc_shikra.c",
+        ],
         "CONFIG_MSM_VIDC_SYNX": [
             "driver/vidc/src/msm_vidc_synx.c",
         ],
@@ -215,6 +221,13 @@ module_entry(
         ],
         "CONFIG_MSM_VIDC_MALABAR" : [
             "driver/platform/malabar/src/malabar.c",
+            "driver/variant/ar50lt/src/msm_vidc_buffer_ar50lt.c",
+            "driver/variant/ar50lt/src/msm_vidc_power_ar50lt.c",
+            "driver/variant/ar50lt/src/msm_vidc_ar50lt.c",
+        ],
+
+        "COiFIG_MSM_VIDC_SHIKRA" : [
+            "driver/platform/shikra/src/shikra.c",
             "driver/variant/ar50lt/src/msm_vidc_buffer_ar50lt.c",
             "driver/variant/ar50lt/src/msm_vidc_power_ar50lt.c",
             "driver/variant/ar50lt/src/msm_vidc_ar50lt.c",
