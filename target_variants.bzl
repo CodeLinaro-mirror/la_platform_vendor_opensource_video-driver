@@ -1,7 +1,6 @@
 targets = [
     # keep sorted
-    #"canoe",
-    "chora",
+    "canoe",
     "hamoa",
     "gen3auto",
     "sun",
@@ -44,11 +43,6 @@ vm_variants = [
     "defconfig",
 ]
 
-#lunch_target_bases = {
-    # keep sorted
-    #"chora": "canoe",
-#}
-
 def get_all_la_variants():
     return [(t, v) for t in targets for v in la_variants]
 
@@ -63,6 +57,3 @@ def get_all_non_la_variants():
 
 def get_all_variants():
     return get_all_la_variants() + get_all_le_variants() + get_all_vm_variants()
-
-#def get_all_lunch_target_base_target_variants():
-#    return [(lt, bt, v) for lt, bt in lunch_target_bases.items() for v in la_variants]
