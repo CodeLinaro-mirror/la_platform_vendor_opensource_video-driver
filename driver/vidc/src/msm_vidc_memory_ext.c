@@ -348,11 +348,19 @@ static u32 get_buffer_region_for_non_secure(struct msm_vidc_inst *inst,
 		break;
 	case MSM_VIDC_BUF_INPUT_META:
 	case MSM_VIDC_BUF_OUTPUT_META:
-	case MSM_VIDC_BUF_COMV:
 	case MSM_VIDC_BUF_NON_COMV:
 	case MSM_VIDC_BUF_LINE:
 	case MSM_VIDC_BUF_PERSIST:
 		region = MSM_VIDC_NON_SECURE;
+		break;
+	case MSM_VIDC_BUF_COMV:
+		if (inst->comv_bitstream_cb)
+			region = MSM_VIDC_NON_SECURE_BITSTREAM;
+		else
+			region = MSM_VIDC_NON_SECURE;
+		break;
+	case MSM_VIDC_BUF_PERSIST_COMV:
+		region = MSM_VIDC_NON_SECURE_BITSTREAM;
 		break;
 	case MSM_VIDC_BUF_BIN:
 #if defined(CONFIG_MSM_VIDC_IRIS33_AU)

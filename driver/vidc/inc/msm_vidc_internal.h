@@ -388,6 +388,7 @@ enum msm_vidc_metadata_bits {
 	BUF_TYPE(PERSIST)                         \
 	BUF_TYPE(VPSS)                            \
 	BUF_TYPE(PARTIAL_DATA)                    \
+	BUF_TYPE(PERSIST_COMV)                    \
 }
 
 #define FOREACH_ALLOW(ALLOW) {                    \

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
-/* Copyright (c) 2022,2024,2025 Qualcomm Innovation Center, Inc. All rights reserved. */
 
 #include "msm_vidc_vb2.h"
 #include "msm_vidc_core.h"
@@ -422,6 +422,12 @@ int msm_vidc_start_streaming(struct vb2_queue *q, unsigned int count)
 
 #if defined(CONFIG_MSM_VIDC_IRIS33_AU)
 		rc = msm_vidc_session_set_core_id(inst);
+		if (rc)
+			goto unlock;
+#endif
+
+#if defined(CONFIG_MSM_VIDC_NORDAU)
+		rc = msm_vidc_session_set_persist_comv(inst);
 		if (rc)
 			goto unlock;
 #endif

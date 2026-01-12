@@ -895,6 +895,8 @@ struct msm_vidc_buffers *msm_vidc_get_buffers(
 		return &inst->buffers.dpb;
 	case MSM_VIDC_BUF_PERSIST:
 		return &inst->buffers.persist;
+	case MSM_VIDC_BUF_PERSIST_COMV:
+		return &inst->buffers.persist_comv;
 	case MSM_VIDC_BUF_VPSS:
 		return &inst->buffers.vpss;
 	case MSM_VIDC_BUF_PARTIAL_DATA:
@@ -927,6 +929,8 @@ struct msm_vidc_mappings *msm_vidc_get_mappings(
 		return &inst->mappings.dpb;
 	case MSM_VIDC_BUF_PERSIST:
 		return &inst->mappings.persist;
+	case MSM_VIDC_BUF_PERSIST_COMV:
+		return &inst->mappings.persist_comv;
 	case MSM_VIDC_BUF_VPSS:
 		return &inst->mappings.vpss;
 	case MSM_VIDC_BUF_PARTIAL_DATA:
@@ -961,6 +965,8 @@ struct msm_vidc_allocations *msm_vidc_get_allocations(
 		return &inst->allocations.vpss;
 	case MSM_VIDC_BUF_PARTIAL_DATA:
 		return &inst->allocations.partial_data;
+	case MSM_VIDC_BUF_PERSIST_COMV:
+		return &inst->allocations.persist_comv;
 	default:
 		i_vpr_e(inst, "%s: invalid driver buffer type %d\n",
 			func, buffer_type);
@@ -4306,6 +4312,22 @@ int msm_vidc_session_set_core_id(struct msm_vidc_inst *inst)
 }
 #endif
 
+int msm_vidc_session_set_persist_comv(struct msm_vidc_inst *inst)
+{
+	int rc = 0;
+
+	if (!inst) {
+		d_vpr_e("%s: invalid params\n", __func__);
+		return -EINVAL;
+	}
+
+	rc = venus_hfi_session_set_persist_comv(inst);
+	if (rc)
+		return rc;
+
+	return 0;
+}
+
 int msm_vidc_session_set_secure_mode(struct msm_vidc_inst *inst)
 {
 	int rc = 0;
@@ -4933,6 +4955,7 @@ int msm_vidc_core_init(struct msm_vidc_core *core)
 		msm_vidc_change_core_sub_state(core, 0,
 			CORE_SUBSTATE_POWER_ENABLE, __func__);
 		call_venus_op(core, enable_intr, core);
+		call_venus_op(g_core, read_tz_ver, g_core);
 
 	}
 
