@@ -5,6 +5,7 @@ targets = [
     "pineapple",
     "sun",
     "vienna",
+    "vienna-le",
 ]
 
 la_variants = [
@@ -18,12 +19,14 @@ le_targets = [
     "sdxkova",
     "sdxkova.cpe.wkk",
     "sun-allyes",
+    "vienna-le"
 ]
 
 le_variants = [
     # keep sorted
     "debug-defconfig",
     "perf-defconfig",
+    "defconfig",
 ]
 
 vm_types = [
