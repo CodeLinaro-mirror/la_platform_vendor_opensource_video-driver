@@ -1395,6 +1395,57 @@ unlock:
 }
 #endif
 
+int venus_hfi_session_set_persist_comv(struct msm_vidc_inst *inst)
+{
+	int rc = 0;
+	struct msm_vidc_core *core = NULL;
+
+	if (!inst || !inst->core || !inst->packet) {
+		d_vpr_e("%s: invalid params\n", __func__);
+		return -EINVAL;
+	}
+	core = inst->core;
+	core_lock(core, __func__);
+
+	if (!__valdiate_session(core, inst, __func__)) {
+		rc = -EINVAL;
+		goto unlock;
+	}
+
+	inst->comv_bitstream_cb = false;
+	if ((!inst->capabilities->cap[SECURE_MODE].value) &&
+		(inst->domain == MSM_VIDC_DECODER) &&
+		(TZ_SUPPORT_COMV_BITSTREAM_CB(core))) {
+		u32 enable_persist_comv = true;
+
+		inst->comv_bitstream_cb = true;
+
+		rc = hfi_create_header(inst->packet, inst->packet_size,
+				inst->session_id, core->header_id++);
+		if (rc)
+			goto unlock;
+
+		rc = hfi_create_packet(inst->packet, inst->packet_size,
+				HFI_PROP_PERSIST_COMV,
+				HFI_HOST_FLAGS_NONE,
+				HFI_PAYLOAD_U32,
+				HFI_PORT_NONE,
+				core->packet_id++,
+				&enable_persist_comv,
+				sizeof(u32));
+		if (rc)
+			goto unlock;
+
+		rc = __cmdq_write(inst->core, inst->packet);
+		if (rc)
+			goto unlock;
+		}
+
+unlock:
+	core_unlock(core, __func__);
+	return rc;
+}
+
 int venus_hfi_session_set_secure_mode(struct msm_vidc_inst *inst)
 {
 	int rc = 0;
