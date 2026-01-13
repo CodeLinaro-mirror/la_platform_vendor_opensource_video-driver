@@ -212,7 +212,7 @@ enum msm_vidc_log_encode_mode {
 #define Q16_FRAC(q) ((((q) & 0xFFFF) * 100) >> 16)
 
 /* define timeout values */
-#define HW_RESPONSE_TIMEOUT_VALUE     (1000)
+#define HW_RESPONSE_TIMEOUT_VALUE     (10000)
 #define SW_PC_DELAY_VALUE             (HW_RESPONSE_TIMEOUT_VALUE + 500)
 #define FW_UNLOAD_DELAY_VALUE         (SW_PC_DELAY_VALUE + 1500)
 
