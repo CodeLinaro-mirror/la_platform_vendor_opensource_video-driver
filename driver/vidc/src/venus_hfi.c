@@ -2293,6 +2293,10 @@ static int venus_hfi_reset_queue_header(struct msm_vidc_core *core)
 
 	for (i = 0; i < VIDC_IFACEQ_NUMQ; i++) {
 		iface_q = &core->iface_queues[i];
+		if (!iface_q->q_hdr) {
+		d_vpr_e("%s: invalid address\n", __func__);
+		return -ENODATA;
+		}
 		__set_queue_hdr_defaults(iface_q->q_hdr);
 	}
 
