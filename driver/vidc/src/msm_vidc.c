@@ -607,11 +607,6 @@ int msm_vidc_streamoff(void *instance, enum v4l2_buf_type type)
 		d_vpr_e("%s: invalid params\n", __func__);
 		return -EINVAL;
 	}
-	inst = get_inst_ref(inst->core, inst);
-	if (!inst) {
-		d_vpr_e("%s: invalid instance\n", __func__);
-		return -EINVAL;
-	}
 
 	port = v4l2_type_to_driver_port(inst, type, __func__);
 	if (port < 0) {
