@@ -2293,6 +2293,10 @@ static int venus_hfi_reset_queue_header(struct msm_vidc_core *core)
 
 	for (i = 0; i < VIDC_IFACEQ_NUMQ; i++) {
 		iface_q = &core->iface_queues[i];
+		if (!iface_q->q_hdr) {
+		d_vpr_e("%s: invalid address\n", __func__);
+		return -ENODATA;
+		}
 		__set_queue_hdr_defaults(iface_q->q_hdr);
 	}
 
@@ -2308,11 +2312,23 @@ static int venus_hfi_reset_queue_header(struct msm_vidc_core *core)
 	q_hdr->qhdr_type |= HFI_Q_ID_HOST_TO_CTRL_CMD_Q;
 
 	iface_q = &core->iface_queues[VIDC_IFACEQ_MSGQ_IDX];
+
+	if (!iface_q) {
+		d_vpr_e("%s: invalid address\n", __func__);
+		return -ENODATA;
+	}
+
 	q_hdr = iface_q->q_hdr;
 	q_hdr->qhdr_start_addr = iface_q->q_array.align_device_addr;
 	q_hdr->qhdr_type |= HFI_Q_ID_CTRL_TO_HOST_MSG_Q;
 
 	iface_q = &core->iface_queues[VIDC_IFACEQ_DBGQ_IDX];
+
+	if (!iface_q) {
+		d_vpr_e("%s: invalid address\n", __func__);
+		return -ENODATA;
+	}
+
 	q_hdr = iface_q->q_hdr;
 	q_hdr->qhdr_start_addr = iface_q->q_array.align_device_addr;
 	q_hdr->qhdr_type |= HFI_Q_ID_CTRL_TO_HOST_DEBUG_Q;

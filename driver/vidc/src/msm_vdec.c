@@ -1476,9 +1476,9 @@ static int msm_vdec_read_input_subcr_params(struct msm_vidc_inst *inst)
 	inst->crop.top = subsc_params.crop_offsets[0] & 0xFFFF;
 	inst->crop.left = (subsc_params.crop_offsets[0] >> 16) & 0xFFFF;
 	inst->crop.height = inst->fmts[INPUT_PORT].fmt.pix_mp.height -
-		(subsc_params.crop_offsets[1] & 0xFFFF);
+		(subsc_params.crop_offsets[1] & 0xFFFF) - inst->crop.top;
 	inst->crop.width = inst->fmts[INPUT_PORT].fmt.pix_mp.width -
-		((subsc_params.crop_offsets[1] >> 16) & 0xFFFF);
+		((subsc_params.crop_offsets[1] >> 16) & 0xFFFF) - inst->crop.left;
 
 	msm_vidc_update_cap_value(inst, PROFILE, subsc_params.profile, __func__);
 	msm_vidc_update_cap_value(inst, LEVEL, subsc_params.level, __func__);
@@ -1529,22 +1529,6 @@ int msm_vdec_input_port_settings_change(struct msm_vidc_inst *inst)
 	event.type = V4L2_EVENT_SOURCE_CHANGE;
 	event.u.src_change.changes = V4L2_EVENT_SRC_CH_RESOLUTION;
 	v4l2_event_queue_fh(&inst->event_handler, &event);
-
-	rc = msm_vdec_get_input_internal_buffers(inst);
-	if (rc)
-		return rc;
-
-	rc = msm_vdec_release_input_internal_buffers(inst);
-	if (rc)
-		return rc;
-
-	rc = msm_vdec_create_input_internal_buffers(inst);
-	if (rc)
-		return rc;
-
-	rc = msm_vdec_queue_input_internal_buffers(inst);
-	if (rc)
-		return rc;
 
 	rc = msm_vidc_set_stage(inst, STAGE);
 	if (rc)
@@ -1980,6 +1964,22 @@ int msm_vdec_streamon_output(struct msm_vidc_inst *inst)
 	rc = msm_vdec_create_output_internal_buffers(inst);
 	if (rc)
 		goto error;
+
+	rc = msm_vdec_get_input_internal_buffers(inst);
+	if (rc)
+		return rc;
+
+	rc = msm_vdec_release_input_internal_buffers(inst);
+	if (rc)
+		return rc;
+
+	rc = msm_vdec_create_input_internal_buffers(inst);
+	if (rc)
+		return rc;
+
+	rc = msm_vdec_queue_input_internal_buffers(inst);
+	if (rc)
+		return rc;
 
 	rc = msm_vidc_session_streamon(inst, OUTPUT_PORT);
 	if (rc)

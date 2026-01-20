@@ -3632,7 +3632,11 @@ int msm_vidc_get_internal_buffers(struct msm_vidc_inst *inst,
 	if (!buffers)
 		return -EINVAL;
 
-	if (buf_size <= buffers->size &&
+	if (is_split_mode_enabled(inst)){
+		buffers->reuse = false;
+		buffers->size = buf_size;
+		buffers->min_count = buf_count;
+        }else if (buf_size <= buffers->size &&
 		buf_count <= buffers->min_count) {
 		buffers->reuse = true;
 	} else {
