@@ -584,13 +584,13 @@ static int calculate_vpp_min_freq(struct api_calculation_input codec_input,
 		/* Decide LP/HQ */
 		u8 hq_mode = 0;
 
-		if (codec_input.pipe_num > 1)
+		if (codec_input.pipe_num > 1 ||
+			(codec_input.vbv_delay >= 34 && codec_input.vbv_delay <= 100))
 			if (codec_input.frame_width * codec_input.frame_height <=
-				1920 * 1080)
+				1920 * 1088)
 				if (codec_input.frame_width * codec_input.frame_height *
-					codec_input.frame_rate <= 1920 * 1080 * 60)
+					codec_input.frame_rate <= 1920 * 1088 * 60)
 					hq_mode = 1;
-
 		codec_output->enc_hqmode = hq_mode;
 
 		/* Section 1. 0 */
