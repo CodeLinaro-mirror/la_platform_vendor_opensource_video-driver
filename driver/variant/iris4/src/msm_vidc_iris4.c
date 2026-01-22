@@ -167,6 +167,7 @@ typedef enum {
  */
 #define NOC_BASE_OFFS                                      0x00010000
 #define NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_MAINCTL_LOW   (NOC_BASE_OFFS + 0xA008)
+#define NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRVLD_LOW    (NOC_BASE_OFFS + 0xA010)
 #define NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRCLR_LOW    (NOC_BASE_OFFS + 0xA018)
 #define NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG0_LOW   (NOC_BASE_OFFS + 0xA020)
 #define NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG0_HIGH  (NOC_BASE_OFFS + 0xA024)
@@ -586,7 +587,8 @@ fail_read_efuse:
 static int __power_off_iris4_hardware(struct msm_vidc_core *core)
 {
 	int rc = 0, i = 0;
-	u32 value = 0, mvp_noc_reset_value = 0;
+	u32 value = 0, mvp_noc_reset_value = 0, vcodec_idle_status = 0;
+
 	bool pwr_collapsed = false;
 	u32 count = 0;
 
@@ -630,8 +632,13 @@ static int __power_off_iris4_hardware(struct msm_vidc_core *core)
 	 * add MNoC idle check before collapsing MVS0 per HPG update
 	 * poll for VCODEC_SS_IDLE_STATUS -> HPG 3.4.4
 	 */
+	if (is_vpu_iris4_1p(core))
+		vcodec_idle_status = 0x7101;
+	else
+		vcodec_idle_status = 0x7103;
+
 	rc = __read_register_with_poll_timeout(core, VCODEC_SS_IDLE_STATUSn_IRIS4,
-			0x7103, 0x7103, 2000, 20000);
+			vcodec_idle_status, vcodec_idle_status, 2000, 20000);
 	if (rc)
 		d_vpr_e("%s: VCODEC_SS_IDLE_STATUS (%d) is not idle (%#x)\n",
 			__func__, i, value);
@@ -941,6 +948,9 @@ static int __power_off_iris4_controller(struct msm_vidc_core *core)
 		rc = 0;
 	}
 
+	if (is_vpu_iris4_1p(core))
+		goto exit;
+
 	rc = call_res_op(core, reset_control_assert, core, "video_axi1_reset");
 	if (rc)
 		d_vpr_e("%s: assert video_axi1_reset failed\n", __func__);
@@ -974,7 +984,7 @@ static int __power_off_iris4_controller(struct msm_vidc_core *core)
 	rc = call_res_op(core, reset_control_deassert, core, "video_axi1_reset");
 	if (rc)
 		d_vpr_e("%s: deassert video_axi1_reset failed\n", __func__);
-
+exit:
 	return rc;
 }
 
@@ -1324,6 +1334,144 @@ static int __watchdog_iris4(struct msm_vidc_core *core, u32 intr_status)
 	return rc;
 }
 
+static int __reset_assert_deassert(struct msm_vidc_core *core)
+{
+	int rc = 0;
+
+	rc = call_res_op(core, reset_control_assert, core, "video_axi1_reset");
+	if (rc)
+		d_vpr_e("%s: assert video_axi1_reset failed\n", __func__);
+
+	rc = call_res_op(core, reset_control_assert, core, "video_axi0_reset");
+	if (rc)
+		d_vpr_e("%s: assert video_axi0_reset failed\n", __func__);
+
+	rc = call_res_op(core, reset_control_assert, core, "video_mvs0c_freerun_reset");
+	if (rc)
+		d_vpr_e("%s: assert video_mvs0c_reset failed\n", __func__);
+
+	rc = call_res_op(core, reset_control_assert, core, "video_mvs0_freerun_reset");
+	if (rc)
+		d_vpr_e("%s: assert video_mvs0_reset failed\n", __func__);
+
+	rc = call_res_op(core, reset_control_assert, core, "video_cc_xo_ares_reset");
+	if (rc)
+		d_vpr_e("%s: assert video_cc_xo_ares_reset failed\n", __func__);
+
+	rc = call_res_op(core, reset_control_assert, core, "gcc_video_xo_ares_reset");
+	if (rc)
+		d_vpr_e("%s: assert gcc_video_xo_ares_reset failed\n", __func__);
+
+	usleep_range(400, 500);
+
+	rc = call_res_op(core, reset_control_deassert, core, "gcc_video_xo_ares_reset");
+	if (rc)
+		d_vpr_e("%s: deassert gcc_video_xo_ares_reset failed\n", __func__);
+
+	rc = call_res_op(core, reset_control_deassert, core, "video_cc_xo_ares_reset");
+	if (rc)
+		d_vpr_e("%s: deassert video_cc_xo_ares_reset failed\n", __func__);
+
+	rc = call_res_op(core, reset_control_deassert, core, "video_mvs0_freerun_reset");
+	if (rc)
+		d_vpr_e("%s: deassert video_mvs0_reset failed\n", __func__);
+
+	rc = call_res_op(core, reset_control_deassert, core, "video_mvs0c_freerun_reset");
+	if (rc)
+		d_vpr_e("%s: deassert video_mvs0c_reset failed\n", __func__);
+
+	rc = call_res_op(core, reset_control_deassert, core, "video_axi0_reset");
+	if (rc)
+		d_vpr_e("%s: deassert video_axi0_reset failed\n", __func__);
+
+	rc = call_res_op(core, reset_control_deassert, core, "video_axi1_reset");
+	if (rc)
+		d_vpr_e("%s: deassert video_axi1_reset failed\n", __func__);
+
+	return rc;
+}
+
+static int __noc_error_info_iris4_1p(struct msm_vidc_core *core)
+{
+	u32 value, intr_status = 0, err_vld_status = 0;
+	int rc = 0;
+
+	rc = __write_register_masked(core, NOC_SIDEBANDMANAGER_MAIN_SIDEBANDMANAGER_FAULTINEN0_LOW,
+				0x1, BIT(0));
+	if (rc)
+		return rc;
+
+	rc = __write_register_masked(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_MAINCTL_LOW, 0x1, BIT(0));
+	if (rc)
+		return rc;
+
+	rc = __write_register_masked(core, WRAPPER_INTR_MASK_IRIS4, 0x0, BIT(5));
+	if (rc)
+		return rc;
+
+	rc = __read_register(core, WRAPPER_INTR_STATUS_IRIS4, &intr_status);
+	if (rc)
+		return rc;
+
+	if (intr_status & BIT(5)) {
+		rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRVLD_LOW, &err_vld_status);
+		if (rc) {
+			d_vpr_e("%s: Failed to read NOC error valid status\n", __func__);
+			return rc;
+		}
+
+		if (err_vld_status & BIT(0)) {
+			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG0_LOW, &value);
+			if (!rc)
+				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG0_LOW: %#x\n", __func__, value);
+
+			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG0_HIGH, &value);
+			if (!rc)
+				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG0_HIGH: %#x\n",
+								 __func__, value);
+
+			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG1_LOW, &value);
+			if (!rc)
+				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG1_LOW: %#x\n",
+								__func__, value);
+
+			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG1_HIGH, &value);
+			if (!rc)
+				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG1_HIGH: %#x\n",
+								__func__, value);
+
+			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG2_LOW, &value);
+			if (!rc)
+				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG2_LOW: %#x\n",
+								__func__, value);
+
+			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG2_HIGH, &value);
+			if (!rc)
+				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG2_HIGH: %#x\n",
+								__func__, value);
+
+			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG3_LOW, &value);
+			if (!rc)
+				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG3_LOW: %#x\n",
+								__func__, value);
+
+			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG3_HIGH, &value);
+			if (!rc)
+				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG3_HIGH: %#x\n",
+								__func__, value);
+		}
+	}
+
+	__power_off_iris4_hardware(core);
+	__power_off_iris4_controller(core);
+	__reset_assert_deassert(core);
+	__power_on_iris4_controller(core);
+	__power_on_iris4_hardware(core);
+	__set_registers(core);
+
+	return rc;
+}
+
 static int __noc_error_info_iris4(struct msm_vidc_core *core)
 {
 	u32 value;
@@ -1331,6 +1479,12 @@ static int __noc_error_info_iris4(struct msm_vidc_core *core)
 
 	if (is_iris4_hw_power_collapsed(core)) {
 		d_vpr_e("%s: video hardware already power collapsed\n", __func__);
+		return rc;
+	}
+
+	/* Decoupled power off and noc error recovery for iris4 1p */
+	if(is_vpu_iris4_1p(core)) {
+		rc = __noc_error_info_iris4_1p(core);
 		return rc;
 	}
 
