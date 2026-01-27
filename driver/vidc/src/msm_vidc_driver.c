@@ -4220,7 +4220,7 @@ static int msm_vidc_remove_dangling_session(struct msm_vidc_inst *inst)
 
 	core_lock(core, __func__);
 	list_for_each_entry_safe(i, temp, &core->dangling_instances, list) {
-		if (i->session_id == inst->session_id) {
+		if (i == inst) {
 			list_del_init(&i->list);
 			i_vpr_h(inst, "%s: removed dangling session %#x\n",
 				__func__, i->session_id);
