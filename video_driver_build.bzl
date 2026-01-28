@@ -149,6 +149,7 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
         config_options = [
             "CONFIG_MSM_MMRM",
             "CONFIG_MSM_VIDC_YUPIK",
+            "CONFIG_MSM_VIDC_LAHAINA",
             "CONFIG_MSM_VIDC_{}".format(lunch_target.upper()),
         ]
     else:
@@ -157,6 +158,7 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
         config_options = [
             "CONFIG_MSM_MMRM",
             "CONFIG_MSM_VIDC_YUPIK",
+            "CONFIG_MSM_VIDC_LAHAINA",
             "CONFIG_MSM_VIDC_{}".format(target.upper()),
         ]
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2020-2022, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
@@ -4714,6 +4714,24 @@ struct msm_vidc_inst *get_inst_ref(struct msm_vidc_core *core,
 	mutex_lock(&core->lock);
 	list_for_each_entry(inst, &core->instances, list) {
 		if (inst == instance) {
+			matches = true;
+			break;
+		}
+	}
+	inst = matches ? get_inst_ref_locked(inst) : NULL;
+	mutex_unlock(&core->lock);
+	return inst;
+}
+
+struct msm_vidc_inst *get_inst(struct msm_vidc_core *core,
+		u32 session_id)
+{
+	struct msm_vidc_inst *inst = NULL;
+	bool matches = false;
+
+	mutex_lock(&core->lock);
+	list_for_each_entry(inst, &core->instances, list) {
+		if (inst->session_id == session_id) {
 			matches = true;
 			break;
 		}

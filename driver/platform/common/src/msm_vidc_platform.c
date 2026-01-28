@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include <linux/io.h>
@@ -24,6 +24,10 @@
 
 #if defined(CONFIG_MSM_VIDC_YUPIK)
 #include "msm_vidc_yupik.h"
+#include "msm_vidc_iris2.h"
+#endif
+#if defined(CONFIG_MSM_VIDC_LAHAINA)
+#include "msm_vidc_lahaina.h"
 #include "msm_vidc_iris2.h"
 #endif
 #if defined(CONFIG_MSM_VIDC_SUN)
@@ -229,6 +233,13 @@ static const struct msm_vidc_compat_handle compat_handle[] = {
 	{
 		.compat                     = "qcom,yupik-vidc",
 		.init_platform              = msm_vidc_init_platform_yupik,
+		.init_iris                  = msm_vidc_init_iris2,
+	},
+#endif
+#if defined(CONFIG_MSM_VIDC_LAHAINA)
+	{
+		.compat                     = "qcom,lahaina-vidc",
+		.init_platform              = msm_vidc_init_platform_lahaina,
 		.init_iris                  = msm_vidc_init_iris2,
 	},
 #endif
