@@ -3,7 +3,6 @@
  * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
-#ifndef CONFIG_MSM_VIDC_MALABAR
 #include <synx_api.h>
 #include <synx_hwfence.h>
 
@@ -373,4 +372,3 @@ const struct msm_vidc_fence_ops *get_synx_fence_ops(void)
 
 	return &synx_ops;
 }
-#endif

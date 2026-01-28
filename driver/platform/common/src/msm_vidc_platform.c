@@ -67,10 +67,7 @@
 #include "msm_vidc_ravelin.h"
 #include "msm_vidc_ar50lt.h"
 #endif
-#if defined(CONFIG_MSM_VIDC_MALABAR)
-#include "msm_vidc_malabar.h"
-#include "msm_vidc_ar50lt.h"
-#endif
+
 
 #define CAP_TO_8BIT_QP(a) {          \
 	if ((a) < MIN_QP_8BIT)                 \
@@ -435,14 +432,6 @@ static const struct msm_vidc_compat_handle compat_handle[] = {
 		.compat                     = "qcom,msm-vidc-ravelin",
 		.get_platform_data          = msm_vidc_get_platform_data_ravelin,
 		.init_platform              = msm_vidc_init_platform_ravelin,
-		.init_vpu                   = msm_vidc_init_ar50lt,
-	},
-#endif
-#if defined(CONFIG_MSM_VIDC_MALABAR)
-	{
-		.compat                     = "qcom,malabar-vidc",
-		.get_platform_data          = msm_vidc_get_platform_data_malabar,
-		.init_platform              = msm_vidc_init_platform_malabar,
 		.init_vpu                   = msm_vidc_init_ar50lt,
 	},
 #endif
