@@ -63,6 +63,12 @@ module_entry(
             "driver/variant/iris2/src/msm_vidc_power_iris2.c",
             "driver/platform/yupik/src/msm_vidc_yupik.c",
         ],
+        "CONFIG_MSM_VIDC_LAHAINA" : [
+            "driver/variant/iris2/src/msm_vidc_buffer_iris2.c",
+            "driver/variant/iris2/src/msm_vidc_iris2.c",
+            "driver/variant/iris2/src/msm_vidc_power_iris2.c",
+            "driver/platform/lahaina/src/msm_vidc_lahaina.c",
+        ],
     },
     deps = [
             "//vendor/qcom/opensource/mm-drivers:mm_drivers_headers",
@@ -131,7 +137,12 @@ module_entry(
             "driver/variant/iris2/src/msm_vidc_power_iris2.c",
             "driver/platform/yupik/src/msm_vidc_yupik.c",
         ],
-
+        "CONFIG_MSM_VIDC_LAHAINA" : [
+            "driver/variant/iris2/src/msm_vidc_buffer_iris2.c",
+            "driver/variant/iris2/src/msm_vidc_iris2.c",
+            "driver/variant/iris2/src/msm_vidc_power_iris2.c",
+            "driver/platform/lahaina/src/msm_vidc_lahaina.c",
+        ],
     },
     deps = [
         "//vendor/qcom/opensource/mmrm-driver:%b_mmrm_driver",

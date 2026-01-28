@@ -246,10 +246,7 @@ static int __power_off_iris2_hardware(struct msm_vidc_core *core)
 		goto disable_power;
 	}
 
-	/*
-	 * check to make sure core clock branch enabled else
-	 * we cannot read vcodec top idle register
-	 */
+	/* check to make sure core clock branch enabled */
 	rc = __read_register(core, WRAPPER_CORE_CLOCK_CONFIG_IRIS2, &value);
 	if (rc)
 		return rc;
@@ -296,10 +293,16 @@ disable_power:
 		rc = 0;
 	}
 
-	rc = call_res_op(core, clk_disable, core, "video_cc_mvs0_ctl_axi");
-	if (rc) {
-		d_vpr_e("%s: disable unprepare vcodec_bus failed\n", __func__);
-		rc = 0;
+	/*
+	 * MODIFIED: Only disable video_cc_mvs0_ctl_axi for Yupik.
+	 * Lahaina DTS does not have this clock.
+	 */
+	if (core->platform->data.vpu_ver == VPU_VERSION_IRIS2_1) {
+		rc = call_res_op(core, clk_disable, core, "video_cc_mvs0_ctl_axi");
+		if (rc) {
+			d_vpr_e("%s: disable unprepare vcodec_bus failed\n", __func__);
+			rc = 0;
+		}
 	}
 
 	rc = call_res_op(core, clk_disable, core, "vcodec_clk");
@@ -349,16 +352,24 @@ static int __power_off_iris2_controller(struct msm_vidc_core *core)
 		rc = 0;
 	}
 
-	rc = call_res_op(core, clk_disable, core, "iface_clk");
-	if (rc) {
-		d_vpr_e("%s: disable unprepare bus failed\n", __func__);
-		rc = 0;
-	}
-
-	rc = call_res_op(core, clk_disable, core, "video_cc_mvsc_ctl_axi");
-	if (rc) {
-		d_vpr_e("%s: disable unprepare bus failed\n", __func__);
-		rc = 0;
+	/*
+	 * MODIFIED: Handle Clock Differences
+	 * Yupik: iface_clk + video_cc_mvsc_ctl_axi
+	 * Lahaina: gcc_video_axi0
+	 */
+	if (core->platform->data.vpu_ver == VPU_VERSION_IRIS2_1) {
+		rc = call_res_op(core, clk_disable, core, "iface_clk");
+		if (rc) {
+			d_vpr_e("%s: disable iface_clk failed\n", __func__);
+		}
+		rc = call_res_op(core, clk_disable, core, "video_cc_mvsc_ctl_axi");
+		if (rc) {
+			d_vpr_e("%s: disable ctl_axi failed\n", __func__);
+		}
+	} else {
+		/* LAHAINA SPECIFIC: Disable GCC AXI */
+		rc = call_res_op(core, clk_disable, core, "gcc_video_axi0");
+		if (rc) d_vpr_e("%s: disable gcc_video_axi0 failed\n", __func__);
 	}
 
 	rc = call_res_op(core, reset_bridge, core);
@@ -367,7 +378,6 @@ static int __power_off_iris2_controller(struct msm_vidc_core *core)
 		rc = 0;
 	}
 
-	/* power down process */
 	rc = call_res_op(core, gdsc_off, core, "iris-ctl");
 	if (rc) {
 		d_vpr_e("%s: disable regulator iris-ctl failed\n", __func__);
@@ -418,28 +428,50 @@ static int __power_on_iris2_controller(struct msm_vidc_core *core)
 	if (rc)
 		goto fail_regulator;
 
+		/* 2. BUS/IFACE CLOCKS (Split based on DTS) */
+	if (core->platform->data.vpu_ver == VPU_VERSION_IRIS2_1) {
+		/* YUPIK Sequence */
+		rc = call_res_op(core, clk_enable, core, "iface_clk");
+		if (rc) {
+			goto fail_clk_yupik;
+		}
+
+		rc = call_res_op(core, clk_enable, core, "video_cc_mvsc_ctl_axi");
+		if (rc) {
+			goto fail_clk_controller;
+		}
+	} else {
+		/* LAHAINA Sequence: Enable gcc_video_axi0 as per DTS */
+		rc = call_res_op(core, clk_enable, core, "gcc_video_axi0");
+		if (rc) {
+			goto fail_clk_lahaina;
+		}
+	}
+
 	rc = call_res_op(core, reset_bridge, core);
-	if (rc)
+	if (rc) {
 		goto fail_reset_ahb2axi;
+	}
 
+	/* 1. CORE CLK (Common to both) */
 	rc = call_res_op(core, clk_enable, core, "core_clk");
-	if (rc)
+	if (rc) {
 		goto fail_clk_axi;
-
-	rc = call_res_op(core, clk_enable, core, "iface_clk");
-	if (rc)
-		goto fail_clk_axi;
-
-	rc = call_res_op(core, clk_enable, core, "video_cc_mvsc_ctl_axi");
-	if (rc)
-		goto fail_clk_controller;
+	}
 
 	return 0;
 
 fail_clk_controller:
+	if (core->platform->data.vpu_ver == VPU_VERSION_IRIS2_1)
+		call_res_op(core, clk_disable, core, "iface_clk");
+fail_clk_yupik:
 	call_res_op(core, clk_disable, core, "core_clk");
-	call_res_op(core, clk_disable, core, "iface_clk");
-	call_res_op(core, clk_disable, core, "video_cc_mvsc_ctl_axi");
+	goto fail_reset_ahb2axi;
+
+fail_clk_lahaina:
+	call_res_op(core, clk_disable, core, "core_clk");
+	goto fail_reset_ahb2axi;
+
 fail_clk_axi:
 fail_reset_ahb2axi:
 	call_res_op(core, gdsc_off, core, "iris-ctl");
@@ -464,10 +496,17 @@ static int __power_on_iris2_hardware(struct msm_vidc_core *core)
 	if (rc)
 		goto fail_sw_ctrl;
 
-	rc = call_res_op(core, clk_enable, core, "video_cc_mvs0_ctl_axi");
-	if (rc)
-		goto fail_bus_clk;
+	/*
+	 * MODIFIED: Lahaina DTS does NOT have video_cc_mvs0_ctl_axi.
+	 * Only enable this for Yupik.
+	 */
+	if (core->platform->data.vpu_ver == VPU_VERSION_IRIS2_1) {
+		rc = call_res_op(core, clk_enable, core, "video_cc_mvs0_ctl_axi");
+		if (rc)
+			goto fail_bus_clk;
+	}
 
+	/* Common VCODEC CLK */
 	rc = call_res_op(core, clk_enable, core, "vcodec_clk");
 	if (rc)
 		goto fail_core_clk;
@@ -475,7 +514,8 @@ static int __power_on_iris2_hardware(struct msm_vidc_core *core)
 	return 0;
 
 fail_core_clk:
-	call_res_op(core, clk_disable, core, "video_cc_mvs0_ctl_axi");
+	if (core->platform->data.vpu_ver == VPU_VERSION_IRIS2_1)
+		call_res_op(core, clk_disable, core, "video_cc_mvs0_ctl_axi");
 fail_bus_clk:
 	call_res_op(core, gdsc_hw_ctrl, core);
 fail_power_on_substate:

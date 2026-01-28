@@ -9,6 +9,11 @@ include $(VIDEO_ROOT)/config/yupik_video.conf
 LINUXINCLUDE   += -include $(VIDEO_ROOT)/config/yupik_video.h
 endif
 
+ifeq ($(CONFIG_ARCH_LAHAINA), y)
+include $(VIDEO_ROOT)/config/lahaina_video.conf
+LINUXINCLUDE   += -include $(VIDEO_ROOT)/config/lahaina_video.h
+endif
+
 ifeq ($(CONFIG_ARCH_PINEAPPLE), y)
 include $(VIDEO_ROOT)/config/pineapple_video.conf
 LINUXINCLUDE   += -include $(VIDEO_ROOT)/config/pineapple_video.h
@@ -26,6 +31,11 @@ endif
 
 ifeq ($(CONFIG_MSM_VIDC_YUPIK), y)
 LINUXINCLUDE   += -I$(VIDEO_DRIVER_ABS_PATH)/platform/yupik/inc \
+                  -I$(VIDEO_DRIVER_ABS_PATH)/variant/iris2/inc
+endif
+
+ifeq ($(CONFIG_MSM_VIDC_LAHAINA), y)
+LINUXINCLUDE   += -I$(VIDEO_DRIVER_ABS_PATH)/platform/lahaina/inc \
                   -I$(VIDEO_DRIVER_ABS_PATH)/variant/iris2/inc
 endif
 
@@ -52,6 +62,12 @@ msm_video-objs += $(VIDEO_DRIVER_REL_PATH)/variant/iris2/src/msm_vidc_buffer_iri
                   $(VIDEO_DRIVER_REL_PATH)/variant/iris2/src/msm_vidc_iris2.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/iris2/src/msm_vidc_power_iris2.o \
                   $(VIDEO_DRIVER_REL_PATH)/platform/volcano/src/msm_vidc_yupik.o
+endif
+ifeq ($(CONFIG_MSM_VIDC_LAHAINA), y)
+msm_video-objs += $(VIDEO_DRIVER_REL_PATH)/variant/iris2/src/msm_vidc_buffer_iris2.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/iris2/src/msm_vidc_iris2.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/iris2/src/msm_vidc_power_iris2.o \
+                  $(VIDEO_DRIVER_REL_PATH)/platform/lahaina/src/msm_vidc_lahaina.o
 endif
 ifeq ($(CONFIG_MSM_VIDC_PINEAPPLE), y)
 msm_video-objs += $(VIDEO_DRIVER_REL_PATH)/platform/pineapple/src/msm_vidc_pineapple.o \
