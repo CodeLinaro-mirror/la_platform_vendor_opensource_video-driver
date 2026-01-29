@@ -2712,7 +2712,8 @@ static void handle_fbd(enum hal_command_response cmd, void *data)
 	 * dma cache operations need to be performed before dma_unmap
 	 * which is done inside msm_comm_put_vidc_buffer()
 	 */
-	msm_comm_dqbuf_cache_operations(inst, mbuf);
+	if(!is_secure_session(inst))
+		msm_comm_dqbuf_cache_operations(inst, mbuf);
 	/*
 	 * put_buffer should be done before vb2_buffer_done else
 	 * client might queue the same buffer before it is unmapped
@@ -7017,7 +7018,8 @@ struct msm_vidc_buffer *msm_comm_get_vidc_buffer(struct msm_vidc_inst *inst,
 		}
 	}
 	/* dma cache operations need to be performed after dma_map */
-	msm_comm_qbuf_cache_operations(inst, mbuf);
+	if(!is_secure_session(inst))
+		msm_comm_qbuf_cache_operations(inst, mbuf);
 
 	/* special handling for decoder */
 	if (inst->session_type == MSM_VIDC_DECODER) {
