@@ -35,6 +35,9 @@ module_entry(
         "CONFIG_MSM_VIDC_KHAJE"  : [
             "driver/platform/khaje/src/msm_vidc_khaje.c",
         ],
+        "CONFIG_MSM_VIDC_SCUBA"  : [
+            "driver/platform/scuba/src/msm_vidc_scuba.c",
+        ],
         "CONFIG_MSM_VIDC_VIENNA"  : [
             "driver/platform/vienna/src/msm_vidc_vienna.c",
         ],
