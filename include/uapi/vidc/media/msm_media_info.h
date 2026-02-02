@@ -509,6 +509,7 @@ enum color_fmts {
 	 * Total size = align(RGB_Plane_size , 4096)
 	 */
 	COLOR_FMT_RGBA8888,
+	COLOR_FMT_RGBA1010102,
 	/* Venus RGBA8888 UBWC format:
 	 * Contains 2 planes in the following order -
 	 * (A) Meta plane
@@ -1115,6 +1116,7 @@ unsigned int __attribute__ ((weak)) VENUS_RGB_STRIDE(unsigned int color_fmt,
 
 	switch (color_fmt) {
 	case COLOR_FMT_RGBA8888:
+	case COLOR_FMT_RGBA1010102:
 		alignment = 128;
 		break;
 	case COLOR_FMT_RGB565_UBWC:
@@ -1145,6 +1147,7 @@ unsigned int __attribute__ ((weak)) VENUS_RGB_SCANLINES(unsigned int color_fmt,
 
 	switch (color_fmt) {
 	case COLOR_FMT_RGBA8888:
+	case COLOR_FMT_RGBA1010102:
 		alignment = 32;
 		break;
 	case COLOR_FMT_RGBA8888_UBWC:
@@ -1330,6 +1333,7 @@ unsigned int __attribute__ ((weak)) VENUS_BUFFER_SIZE(unsigned int color_fmt,
 			uv_meta_plane;
 		break;
 	case COLOR_FMT_RGBA8888:
+	case COLOR_FMT_RGBA1010102:
 		rgb_plane = MSM_MEDIA_ALIGN(rgb_stride  * rgb_scanlines, 4096);
 		size = rgb_plane;
 		break;
