@@ -18,12 +18,10 @@
 #include "msm_vidc_memory.h"
 #include "resources.h"
 
-#if 0
 static bool is_non_secure_buffer(struct dma_buf *dmabuf)
 {
 	return mem_buf_dma_buf_exclusive_owner(dmabuf);
 }
-#endif
 
 static struct dma_buf_attachment *msm_vidc_dma_buf_attach_ext(struct msm_vidc_core *core,
 	struct dma_buf *dbuf, struct device *dev, bool delayed_unmap)
@@ -43,7 +41,7 @@ static struct dma_buf_attachment *msm_vidc_dma_buf_attach_ext(struct msm_vidc_co
 			 __func__, dev_name(dev));
 		return NULL;
 	}
-#if 0
+
 	/* reject non-secure mapping request for a secure buffer(or vice versa) */
 	if (cb->region & MSM_VIDC_NON_SECURE || cb->region & MSM_VIDC_NON_SECURE_BITSTREAM ||
 	    cb->region & MSM_VIDC_NON_SECURE_PIXEL) {
@@ -59,7 +57,7 @@ static struct dma_buf_attachment *msm_vidc_dma_buf_attach_ext(struct msm_vidc_co
 			return NULL;
 		}
 	}
-#endif
+
 	attach = dma_buf_attach(dbuf, dev);
 	if (IS_ERR_OR_NULL(attach)) {
 		rc = PTR_ERR(attach) ? PTR_ERR(attach) : -1;
@@ -254,7 +252,7 @@ static int msm_vidc_memory_map_ext(struct msm_vidc_core *core, struct msm_vidc_m
 		mem->refcount++;
 		goto exit;
 	}
-#if 0
+
 	/* reject non-secure mapping request for a secure buffer(or vice versa) */
 	if (mem->region & MSM_VIDC_NON_SECURE || mem->region & MSM_VIDC_NON_SECURE_BITSTREAM ||
 	    mem->region & MSM_VIDC_NON_SECURE_PIXEL) {
@@ -270,7 +268,7 @@ static int msm_vidc_memory_map_ext(struct msm_vidc_core *core, struct msm_vidc_m
 			return -EINVAL;
 		}
 	}
-#endif
+
 	cb = msm_vidc_get_context_bank_for_region(core, mem->region);
 	if (!cb || !cb->dev) {
 		d_vpr_e("%s: Failed to get context bank device\n",
