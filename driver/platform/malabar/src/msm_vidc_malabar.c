@@ -267,14 +267,15 @@ static const struct msm_platform_core_capability core_data_malabar[] = {
 	{DEC_CODECS, H264 | HEVC | VP9 | HEIC},
 	{MAX_SESSION_COUNT, 8},
 	{MAX_NUM_720P_SESSIONS, 4},
-	{MAX_NUM_1080P_SESSIONS, 2},
+	{MAX_NUM_1080P_SESSIONS, 3},
 	{MAX_NUM_4K_SESSIONS, 0},
 	{MAX_NUM_8K_SESSIONS, 0},
 	{MAX_SECURE_SESSION_COUNT, 3},
 	{MAX_RT_MBPF, 16320}, /* ((1920x1088)/256)*2 */
 	{MAX_MBPF, 32640}, /* ((1920x1088)/256)*4 */
 	/* Concurrency: 1080p@30 decode + 1080p@30 encode */
-	{MAX_MBPS, 489600}, /* ((1088x1920)/256)@60fps */
+	/* Concurrency: 3 * 1080p@30 decode */
+	{MAX_MBPS, 734400}, /* ((1088x1920)/256)@90fps */
 	{MAX_IMAGE_MBPF, 262144}, /* (8192x8192)/256 */
 	{MAX_MBPF_HQ, 8160}, /* ((1920x1088)/256) */
 	{MAX_MBPS_HQ, 244800}, /* ((1920x1088)/256)@30fps */
