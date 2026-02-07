@@ -4196,6 +4196,7 @@ int msm_vidc_remove_session(struct msm_vidc_inst *inst)
 			list_move_tail(&i->list, &core->dangling_instances);
 			i_vpr_h(inst, "%s: removed session %#x\n",
 				__func__, i->session_id);
+			break;
 		}
 	}
 	list_for_each_entry(i, &core->instances, list)
