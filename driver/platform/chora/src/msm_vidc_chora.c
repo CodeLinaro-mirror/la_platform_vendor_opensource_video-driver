@@ -4357,6 +4357,35 @@ static const struct msm_vidc_platform_data chora_data_v1 = {
 	.sku_version = SKU_VERSION_1,
 };
 
+static int msm_vidc_chora_check_ddr_type(struct msm_vidc_platform_data *platform_data,
+                u32 hbb_override_val)
+{
+    u32 ddr_type = DDR_TYPE_LPDDR5;
+
+    if (!platform_data || !platform_data->ubwc_config) {
+        d_vpr_e("%s: invalid params\n", __func__);
+        return -EINVAL;
+    }
+
+    ddr_type = of_fdt_get_ddrtype();
+
+    if (ddr_type == -ENOENT) {
+        d_vpr_e("Failed to get ddr type, use LPDDR5\n");
+        ddr_type = DDR_TYPE_LPDDR5;
+    }
+
+    if (platform_data->ubwc_config &&
+        (ddr_type == DDR_TYPE_LPDDR4 ||
+         ddr_type == DDR_TYPE_LPDDR4X))
+        platform_data->ubwc_config->highest_bank_bit = hbb_override_val;
+
+    d_vpr_h("%s: DDR Type 0x%x hbb 0x%x\n",
+        __func__, ddr_type, platform_data->ubwc_config ?
+        platform_data->ubwc_config->highest_bank_bit : -1);
+
+    return 0;
+}
+
 int msm_vidc_get_platform_data_chora(struct msm_vidc_core *core)
 {
 	int rc = 0;
@@ -4391,6 +4420,7 @@ int msm_vidc_init_platform_chora(struct msm_vidc_core *core)
 		d_vpr_e("%s: invalid resource ext ops\n", __func__);
 		return -EINVAL;
 	}
+	rc = msm_vidc_chora_check_ddr_type(&core->platform->data, 0xe);
 	if (rc)
 		return rc;
 
