@@ -169,6 +169,7 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
             "CONFIG_MSM_VIDC_LLCC",
             "CONFIG_MSM_VIDC_ANDROID",
             "CONFIG_MSM_VIDC_MINIDUMP",
+            "CONFIG_MSM_VIDC_RAVELIN",
             "CONFIG_MSM_VIDC_{}".format(lunch_target.upper()),
             "CONFIG_MSM_VIDC_SYNX",
         ]
@@ -182,6 +183,7 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
             "CONFIG_MSM_VIDC_LLCC",
             "CONFIG_MSM_VIDC_ANDROID",
             "CONFIG_MSM_VIDC_MINIDUMP",
+            "CONFIG_MSM_VIDC_RAVELIN",
             "CONFIG_MSM_VIDC_{}".format(target.upper()),
             "CONFIG_MSM_VIDC_{}".format(lunch_target_chora.upper()),
         ]
@@ -215,6 +217,7 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
             "CONFIG_MSM_VIDC_LLCC",
             "CONFIG_MSM_VIDC_ANDROID",
             "CONFIG_MSM_VIDC_MINIDUMP",
+            "CONFIG_MSM_VIDC_RAVELIN",
             "CONFIG_MSM_VIDC_{}".format(target.upper()),
             "CONFIG_MSM_VIDC_SYNX",
             ]

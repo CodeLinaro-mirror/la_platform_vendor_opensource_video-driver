@@ -96,7 +96,7 @@ module_entry(
             "driver/variant/ar50lt/src/msm_vidc_buffer_ar50lt.c",
             "driver/variant/ar50lt/src/msm_vidc_power_ar50lt.c",
             "driver/variant/ar50lt/src/msm_vidc_ar50lt.c",
-            "driver/platform/ar50lt/src/msm_vidc_ravelin.c",
+            "driver/platform/ravelin/src/msm_vidc_ravelin.c",
         ],
         "CONFIG_MSM_VIDC_SHIKRA" : [
             "driver/variant/ar50lt/src/msm_vidc_buffer_ar50lt.c",
@@ -153,6 +153,9 @@ module_entry(
         "driver/vidc/src/venus_hfi_response.c",
         "driver/platform/common/src/msm_vidc_platform.c",
         "driver/variant/common/src/msm_vidc_variant.c",
+        "driver/platform/common/src/msm_vidc_platform_ext.c",
+        "driver/vidc/src/resources_ext.c",
+        "driver/vidc/src/msm_vidc_memory_ext.c",
         ],
     config_srcs = {
         "CONFIG_MSM_VIDC_HAMOA" : [
@@ -214,7 +217,7 @@ module_entry(
             "driver/vidc/src/msm_vidc_md.c",
         ],
         "CONFIG_MSM_VIDC_RAVELIN" : [
-            "driver/platform/ar50lt/src/msm_vidc_ravelin.c",
+            "driver/platform/ravelin/src/ravelin.c",
             "driver/variant/ar50lt/src/msm_vidc_buffer_ar50lt.c",
             "driver/variant/ar50lt/src/msm_vidc_power_ar50lt.c",
             "driver/variant/ar50lt/src/msm_vidc_ar50lt.c",
