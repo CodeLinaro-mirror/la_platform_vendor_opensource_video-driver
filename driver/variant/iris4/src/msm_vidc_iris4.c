@@ -2007,7 +2007,7 @@ static int __noc_error_info_iris4_1p(struct msm_vidc_core *core)
 
 static int __noc_error_info_iris4(struct msm_vidc_core *core)
 {
-	u32 value, intr_status = 0, err_vld_status = 0;
+	u32 value;
 	int rc = 0;
 
 	if (is_iris4_hw_power_collapsed(core)) {
