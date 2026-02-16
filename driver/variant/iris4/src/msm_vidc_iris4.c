@@ -2015,80 +2015,6 @@ static int __noc_error_info_iris4(struct msm_vidc_core *core)
 		return rc;
 	}
 
-<<<<<<< HEAD
-	rc = __write_register_masked(core, NOC_SIDEBANDMANAGER_MAIN_SIDEBANDMANAGER_FAULTINEN0_LOW,
-				0x1, BIT(0));
-	if (rc)
-		return rc;
-
-	rc = __write_register_masked(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_MAINCTL_LOW, 0x1, BIT(0));
-	if (rc)
-		return rc;
-
-	rc = __write_register_masked(core, WRAPPER_INTR_MASK_IRIS4, 0x0, BIT(5));
-	if (rc)
-		return rc;
-
-	rc = __read_register(core, WRAPPER_INTR_STATUS_IRIS4, &intr_status);
-	if (rc)
-		return rc;
-
-	if (intr_status & BIT(5)) {
-		rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRVLD_LOW, &err_vld_status);
-		if (rc) {
-			d_vpr_e("%s: Failed to read NOC error valid status\n", __func__);
-			return rc;
-		}
-
-		if (err_vld_status & BIT(0)) {
-			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG0_LOW, &value);
-			if (!rc)
-				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG0_LOW: %#x\n", __func__, value);
-
-			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG0_HIGH, &value);
-			if (!rc)
-				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG0_HIGH: %#x\n",
-								 __func__, value);
-
-			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG1_LOW, &value);
-			if (!rc)
-				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG1_LOW: %#x\n",
-								__func__, value);
-
-			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG1_HIGH, &value);
-			if (!rc)
-				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG1_HIGH: %#x\n",
-								__func__, value);
-
-			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG2_LOW, &value);
-			if (!rc)
-				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG2_LOW: %#x\n",
-								__func__, value);
-
-			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG2_HIGH, &value);
-			if (!rc)
-				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG2_HIGH: %#x\n",
-								__func__, value);
-
-			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG3_LOW, &value);
-			if (!rc)
-				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG3_LOW: %#x\n",
-								__func__, value);
-
-			rc = __read_register(core, NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG3_HIGH, &value);
-			if (!rc)
-				d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG3_HIGH: %#x\n",
-								__func__, value);
-		}
-	}
-
-	__power_off_iris4_hardware_noc(core);
-	__power_off_iris4_controller_noc(core);
-	__power_on_iris4_controller_noc(core);
-	__power_on_iris4_hardware_noc(core);
-	//QOS
-	__set_registers(core);
-=======
 	/* Decoupled power off and noc error recovery for iris4 1p */
 	if(is_vpu_iris4_1p(core)) {
 		rc = __noc_error_info_iris4_1p(core);
@@ -2135,7 +2061,6 @@ static int __noc_error_info_iris4(struct msm_vidc_core *core)
 	if (!rc)
 		d_vpr_e("%s: NOC_ERL_ERRORLOGGER_MAIN_ERRORLOGGER_ERRLOG3_HIGH:  %#x\n",
 			__func__, value);
->>>>>>> 554e285366c8306f92bbc215abf7196e112a3366
 
 	return rc;
 }
