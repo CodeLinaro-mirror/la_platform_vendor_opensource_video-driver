@@ -2882,6 +2882,9 @@ int venus_hfi_core_deinit(struct msm_vidc_core *core, bool force)
 	if (msm_vidc_fw_dump)
 		fw_coredump(core);
 
+	if (core->capabilities[FW_UNLOAD].value)
+		venus_hfi_interface_queues_deinit(core);
+
 	return 0;
 }
 

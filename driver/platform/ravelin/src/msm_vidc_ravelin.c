@@ -63,7 +63,7 @@ static struct msm_platform_core_capability core_data_ravelin[] = {
 	{MAX_ENH_LAYER_COUNT, 5},
 	{NUM_VPP_PIPE, 1},
 	{SW_PC, 1},
-	{FW_UNLOAD, 0},
+	{FW_UNLOAD, 1},
 	{HW_RESPONSE_TIMEOUT, HW_RESPONSE_TIMEOUT_VALUE}, /* 1000 ms */
 	{SW_PC_DELAY,         SW_PC_DELAY_VALUE        }, /* 1500 ms (>HW_RESPONSE_TIMEOUT)*/
 	{FW_UNLOAD_DELAY,     FW_UNLOAD_DELAY_VALUE    }, /* 3000 ms (>SW_PC_DELAY)*/
