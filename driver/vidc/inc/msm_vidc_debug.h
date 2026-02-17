@@ -99,7 +99,7 @@ enum vidc_msg_prio_fw {
 	FW_FTRACE       = 0x20000000,
 };
 
-#define DRV_LOG        (VIDC_ERR | VIDC_PRINTK | VIDC_HIGH)
+#define DRV_LOG        (VIDC_ERR | VIDC_PRINTK)
 #define DRV_LOGSHIFT   (0)
 #define DRV_LOGMASK    (0x0FFFFFFF)
 

@@ -182,7 +182,7 @@ static int __setup_ucregion_memory_map_ar50lt(struct msm_vidc_core *vidc_core)
 static int __boot_firmware_ar50lt(struct msm_vidc_core *vidc_core)
 {
 	int rc = 0;
-	u32 ctrl_init_val = 0, ctrl_status = 0, count = 0, max_tries = 60000;
+	u32 ctrl_init_val = 0, ctrl_status = 0, count = 0, max_tries = 1000;
 	struct msm_vidc_core *core = vidc_core;
 
 	if (!core) {
@@ -608,12 +608,12 @@ static int __watchdog_ar50lt(struct msm_vidc_core *vidc_core, u32 intr_status)
 
 	return rc;
 }
-#if 0
+
 static int __hw_ctrl_gdsc_ar50lt(struct msm_vidc_core *core)
 {
 	return call_res_op(core, gdsc_hw_ctrl, core);
 }
-#endif
+
 static struct msm_vidc_venus_ops ar50lt_ops = {
 	.boot_firmware = __boot_firmware_ar50lt,
 	.raise_interrupt = __raise_interrupt_ar50lt,
@@ -624,7 +624,7 @@ static struct msm_vidc_venus_ops ar50lt_ops = {
 	.prepare_pc = __prepare_pc_ar50lt,
 	.watchdog = __watchdog_ar50lt,
 	.noc_error_info = NULL, //TODO Pavan
-	//.hw_ctrl_gdsc = __hw_ctrl_gdsc_ar50lt,
+	.hw_ctrl_gdsc = __hw_ctrl_gdsc_ar50lt,
 	.scm_mem_protect = msm_vidc_mem_protect_video_regions_v1,
 };
 
