@@ -673,7 +673,7 @@ static int msm_vidc_component_master_bind(struct device *dev)
 
 	pr_info("boot_kpi: video driver ready\n");
 
-	d_vpr_e("%s(): successful\n", __func__);
+	d_vpr_h("%s(): successful\n", __func__);
 
 	return 0;
 
