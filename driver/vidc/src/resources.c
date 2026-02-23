@@ -1172,7 +1172,8 @@ static int llcc_enable(struct msm_vidc_core *core, bool enable)
 	return ret;
 }
 
-static int __vote_bandwidth(struct bus_info *bus, unsigned long bw_kbps)
+static int __vote_bandwidth(struct bus_info *bus, unsigned long bw_kbps,
+	unsigned long ib_kbps)
 {
 	int rc = 0;
 
@@ -1181,12 +1182,12 @@ static int __vote_bandwidth(struct bus_info *bus, unsigned long bw_kbps)
 		return -EINVAL;
 	}
 
-	d_vpr_p("Voting bus %s to ab %lu kBps\n", bus->name, bw_kbps);
+	d_vpr_p("Voting bus %s to ab %lu ib %lu kBps\n", bus->name, bw_kbps, ib_kbps);
 
-	rc = icc_set_bw(bus->icc, bw_kbps, 0);
+	rc = icc_set_bw(bus->icc, bw_kbps, ib_kbps);
 	if (rc)
-		d_vpr_e("Failed voting bus %s to ab %lu, rc=%d\n",
-			bus->name, bw_kbps, rc);
+		d_vpr_e("Failed voting bus %s to ab %lu ib %lu, rc=%d\n",
+				bus->name, bw_kbps, ib_kbps, rc);
 
 	return rc;
 }
@@ -1200,7 +1201,7 @@ static int __unvote_buses(struct msm_vidc_core *core)
 	core->power.bw_llcc = 0;
 
 	venus_hfi_for_each_bus(core, bus) {
-		rc = __vote_bandwidth(bus, 0);
+		rc = __vote_bandwidth(bus, 0, 0);
 		if (rc)
 			goto err_unknown_device;
 	}
@@ -1214,7 +1215,7 @@ static int __vote_buses(struct msm_vidc_core *core,
 {
 	int rc = 0;
 	struct bus_info *bus = NULL;
-	unsigned long bw_kbps = 0, bw_prev = 0;
+	unsigned long bw_kbps = 0, ib_kbps = 0, bw_prev = 0;
 	enum vidc_bus_type type;
 
 	venus_hfi_for_each_bus(core, bus) {
@@ -1242,8 +1243,13 @@ static int __vote_buses(struct msm_vidc_core *core,
 					bus->name, bw_kbps);
 				continue;
 			}
+			/* For other platforms, IB is set to 0 (AB-only voting) */
+			/* Here bw_kbps is ab_kbps */
+			if (core->platform->data.vpu_ver == VENUS_VERSION_AR50LT_V1 ||
+				core->platform->data.vpu_ver == VENUS_VERSION_AR50LT_V2)
+				ib_kbps = 2 * bw_kbps;
 
-			rc = __vote_bandwidth(bus, bw_kbps);
+			rc = __vote_bandwidth(bus, bw_kbps, ib_kbps);
 
 			if (type == DDR)
 				core->power.bw_ddr = bw_kbps;
