@@ -348,8 +348,8 @@ static const struct msm_platform_core_capability core_data_chora_v1[] = {
 	{MAX_MBPF_HQ, 8160}, /* ((1920x1088)/256) */
 	{MAX_MBPS_HQ, 244800}, /* ((1920x1088)/256)@30fps */
 	{MAX_MBPF_B_FRAME, 8160},/* ((1920x1088)/256) */
-	{MAX_MBPS_B_FRAME, 489600}, /* ((1920x1088)/256) MBs@60fps */
-	{MAX_MBPS_ALL_INTRA, 489600}, /* ((1920x1088)/256)@60fps */
+	{MAX_MBPS_B_FRAME, 244800}, /* ((1920x1088)/256) MBs@60fps */
+	{MAX_MBPS_ALL_INTRA, 244800}, /* ((1920x1088)/256)@60fps */
 	{MAX_ENH_LAYER_COUNT, 5},
 	{NUM_VPP_PIPE, 1},
 	{SW_PC, 1},
@@ -850,7 +850,7 @@ static struct msm_platform_inst_capability instance_cap_data_chora_v0[] = {
 		0},
 
 	{B_FRAME, ENC, H264 | HEVC,
-		0, 7, 1, 0,
+		0, 1, 1, 0,
 		V4L2_CID_MPEG_VIDEO_B_FRAMES,
 		HFI_PROP_MAX_B_FRAMES,
 		CAP_FLAG_OUTPUT_PORT},
@@ -2379,7 +2379,7 @@ static struct msm_platform_inst_capability instance_cap_data_chora_v1[] = {
 		0},
 
 	{B_FRAME, ENC, H264 | HEVC,
-		0, 7, 1, 0,
+		0, 1, 1, 0,
 		V4L2_CID_MPEG_VIDEO_B_FRAMES,
 		HFI_PROP_MAX_B_FRAMES,
 		CAP_FLAG_OUTPUT_PORT},
@@ -4129,19 +4129,19 @@ static const struct clk_table chora_clk_table[] = {
 
 /* name, start, size, secure, dma_coherant, region, dma_mask */
 const struct context_bank_table chora_context_bank_table[] = {
-	{"qcom,vidc,cb-sec-non-pxl",	0x010000000, 0x24800000, 1, 0,
-		MSM_VIDC_SECURE_NONPIXEL,		0 },
-	{"qcom,vidc,cb-ns",				0x25800000, 0xba800000, 0, 1,
-		MSM_VIDC_NON_SECURE |
-		MSM_VIDC_NON_SECURE_BITSTREAM,	0 },
-	{"qcom,vidc,cb-ns-bitstream",	0x00100000, 0xffb00000, 0, 1,
-		MSM_VIDC_REGION_NONE,			0 },
-	{"qcom,vidc,cb-ns-pxl",			0x00100000, 0xdff00000, 0, 1,
-		MSM_VIDC_NON_SECURE_PIXEL,		0 },
-	{"qcom,vidc,cb-sec-pxl",		0x00500000, 0xdfb00000, 1, 0,
-		MSM_VIDC_SECURE_PIXEL,			0 },
-	{"qcom,vidc,cb-sec-bitstream",	0x00500000, 0xdfb00000, 1, 0,
-		MSM_VIDC_SECURE_BITSTREAM,		0 },
+    {"qcom,vidc,cb-sec-non-pxl",    0x01000000, 0x24800000, 1, 0,
+        MSM_VIDC_SECURE_NONPIXEL,      0 },
+    {"qcom,vidc,cb-ns",             0x25800000, 0xda400000, 0, 1,
+        MSM_VIDC_NON_SECURE |
+        MSM_VIDC_NON_SECURE_BITSTREAM, 0 },
+    {"qcom,vidc,cb-ns-bitstream",   0x00100000, 0xffb00000, 0, 1,
+        MSM_VIDC_REGION_NONE,          0 },
+    {"qcom,vidc,cb-ns-pxl",         0x00100000, 0xffb00000, 0, 1,
+        MSM_VIDC_NON_SECURE_PIXEL,     0 },
+    {"qcom,vidc,cb-sec-pxl",        0x00100000, 0xffb00000, 1, 0,
+        MSM_VIDC_SECURE_PIXEL,         0 },
+    {"qcom,vidc,cb-sec-bitstream",  0x00100000, 0xffb00000, 1, 0,
+        MSM_VIDC_SECURE_BITSTREAM,     0 },
 };
 
 /* register, value, mask */
@@ -4230,7 +4230,7 @@ static const u32 chora_msm_vidc_ssr_type[] = {
 
 static struct msm_vidc_efuse_data efuse_data_chora[] = {
 	/* IRIS_PLL_FMAX - max 4k@30 encode */
-	EFUSE_ENTRY(0x221C8118, 4, 0x100, 0x8, SKU_VERSION),
+	EFUSE_ENTRY(0x221C8120, 4, 0x10, 0x4, SKU_VERSION),
 };
 
 static const struct msm_vidc_platform_data chora_data_v0 = {
@@ -4253,7 +4253,7 @@ static const struct msm_vidc_platform_data chora_data_v0 = {
 	.fwname = "vpu20_1v",
 	.pas_id = 9,
 	.supports_mmrm = 0,
-	.vpu_ver = VPU_VERSION_IRIS2_1PIPE,
+	.vpu_ver = VPU_VERSION_IRIS2_1P,
 
 	/* caps related resorces */
 	.core_data = core_data_chora_v0,
@@ -4315,7 +4315,7 @@ static const struct msm_vidc_platform_data chora_data_v1 = {
 	.fwname = "vpu20_1v",
 	.pas_id = 9,
 	.supports_mmrm = 0,
-	.vpu_ver = VPU_VERSION_IRIS2_1PIPE,
+	.vpu_ver = VPU_VERSION_IRIS2_1P,
 
 	/* caps related resorces */
 	.core_data = core_data_chora_v1,
@@ -4357,6 +4357,35 @@ static const struct msm_vidc_platform_data chora_data_v1 = {
 	.sku_version = SKU_VERSION_1,
 };
 
+static int msm_vidc_chora_check_ddr_type(struct msm_vidc_platform_data *platform_data,
+                u32 hbb_override_val)
+{
+    u32 ddr_type = DDR_TYPE_LPDDR5;
+
+    if (!platform_data || !platform_data->ubwc_config) {
+        d_vpr_e("%s: invalid params\n", __func__);
+        return -EINVAL;
+    }
+
+    ddr_type = of_fdt_get_ddrtype();
+
+    if (ddr_type == -ENOENT) {
+        d_vpr_e("Failed to get ddr type, use LPDDR5\n");
+        ddr_type = DDR_TYPE_LPDDR5;
+    }
+
+    if (platform_data->ubwc_config &&
+        (ddr_type == DDR_TYPE_LPDDR4 ||
+         ddr_type == DDR_TYPE_LPDDR4X))
+        platform_data->ubwc_config->highest_bank_bit = hbb_override_val;
+
+    d_vpr_h("%s: DDR Type 0x%x hbb 0x%x\n",
+        __func__, ddr_type, platform_data->ubwc_config ?
+        platform_data->ubwc_config->highest_bank_bit : -1);
+
+    return 0;
+}
+
 int msm_vidc_get_platform_data_chora(struct msm_vidc_core *core)
 {
 	int rc = 0;
@@ -4391,6 +4420,7 @@ int msm_vidc_init_platform_chora(struct msm_vidc_core *core)
 		d_vpr_e("%s: invalid resource ext ops\n", __func__);
 		return -EINVAL;
 	}
+	rc = msm_vidc_chora_check_ddr_type(&core->platform->data, 0xe);
 	if (rc)
 		return rc;
 
