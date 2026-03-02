@@ -1,9 +1,10 @@
-// SPDX-License-Identifier: GPL-2.0-only
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
-#include <dt-bindings/clock/qcom,malabar-gcc.h>
+#include <dt-bindings/clock/qcom,sm4450-gcc.h>
+#include <dt-bindings/clock/qcom,sm4450-gpucc.h>
 
 #include <linux/soc/qcom/llcc-qcom.h>
 #include <soc/qcom/of_common.h>
@@ -11,39 +12,38 @@
 
 #include <media/v4l2_vidc_extensions.h>
 #include <media/videobuf2-core.h>
-#include "msm_vidc_malabar.h"
+#include "msm_vidc_ar50lt.h"
+#include "msm_vidc_shikra.h"
 #include "msm_vidc_inst.h"
 #include "msm_vidc_platform.h"
 #include "msm_vidc_debug.h"
 #include "msm_vidc_internal.h"
 #include "msm_vidc_platform_ext.h"
 #include "msm_vidc_memory_ext.h"
+#include "msm_vidc_synx.h"
 #include "resources_ext.h"
-#include "msm_vidc_ar50lt.h"
 #include "hfi_property.h"
 #include "hfi_command.h"
 #include "venus_hfi.h"
 
-/* version: major[24:31], minor[16:23], revision[0:15] */
-#define DRIVER_VERSION          0x04000000
 #define DEFAULT_VIDEO_CONCEAL_COLOR_BLACK 0x8020010
 #define MAX_LTR_FRAME_COUNT     2
 #define MAX_BASE_LAYER_PRIORITY_ID 63
-#define MAX_BITRATE             100000000
+#define MAX_BITRATE             60000000
 #define DEFAULT_BITRATE         20000000
 #define MINIMUM_FPS             1
 #define MAXIMUM_FPS             120
-#define MIN_QP_10BIT_MALABAR   -12
-#define MIN_QP_8BIT_MALABAR    0
+#define MIN_QP_10BIT_SHIKRA	    -12
+#define MIN_QP_8BIT_SHIKRA	    0
 #define MAX_QP                  51
 #define DEFAULT_QP              20
 #define MAX_CONSTANT_QUALITY    100
-#define MAX_BITRATE_BOOST_MALABAR  15
+#define MAX_BITRATE_BOOST_SHIKRA  15
 #define MIN_SLICE_BYTE_SIZE     512
-#define MAX_SLICE_BYTE_SIZE  \
-	((MAX_BITRATE) >> 3)
+#define MAX_SLICE_BYTE_SIZE       \
+		((MAX_BITRATE) >> 3)
 #define MAX_SLICE_MB_SIZE         \
-	(((1920 + 15) >> 4) * ((1088 + 15) >> 4))
+		(((1920 + 15) >> 4) * ((1088 + 15) >> 4))
 
 #define ENC     MSM_VIDC_ENCODER
 #define DEC     MSM_VIDC_DECODER
@@ -51,10 +51,10 @@
 #define HEVC    MSM_VIDC_HEVC
 #define VP9     MSM_VIDC_VP9
 #define HEIC    MSM_VIDC_HEIC
-#define CODECS_ALL     (H264 | HEVC | VP9 | HEIC)
-#define MAXIMUM_OVERRIDE_VP9_FPS 60
+#define CODECS_ALL     (H264|HEVC|VP9|HEIC)
 
-static struct codec_info codec_data_malabar[] = {
+
+static struct codec_info codec_data_shikra[] = {
 	{
 		.v4l2_codec  = V4L2_PIX_FMT_H264,
 		.vidc_codec  = MSM_VIDC_H264,
@@ -77,7 +77,7 @@ static struct codec_info codec_data_malabar[] = {
 	},
 };
 
-static struct color_format_info color_format_data_malabar[] = {
+static struct color_format_info color_format_data_shikra[] = {
 	{
 		.v4l2_color_format = V4L2_PIX_FMT_NV12,
 		.vidc_color_format = MSM_VIDC_FMT_NV12,
@@ -89,13 +89,13 @@ static struct color_format_info color_format_data_malabar[] = {
 		.pixfmt_name       = "NV21",
 	},
 	{
-		.v4l2_color_format = V4L2_META_FMT_VIDC,
-		.vidc_color_format = MSM_VIDC_FMT_META,
-		.pixfmt_name       = "META",
+		 .v4l2_color_format = V4L2_META_FMT_VIDC,
+		 .vidc_color_format = MSM_VIDC_FMT_META,
+		 .pixfmt_name		= "META",
 	},
 };
 
-static struct color_primaries_info color_primaries_data_malabar[] = {
+static struct color_primaries_info color_primaries_data_shikra[] = {
 	{
 		.v4l2_color_primaries  = V4L2_COLORSPACE_DEFAULT,
 		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_RESERVED,
@@ -142,7 +142,7 @@ static struct color_primaries_info color_primaries_data_malabar[] = {
 	},
 };
 
-static struct transfer_char_info transfer_char_data_malabar[] = {
+static struct transfer_char_info transfer_char_data_shikra[] = {
 	{
 		.v4l2_transfer_char  = V4L2_XFER_FUNC_DEFAULT,
 		.vidc_transfer_char  = MSM_VIDC_TRANSFER_RESERVED,
@@ -201,7 +201,7 @@ static struct transfer_char_info transfer_char_data_malabar[] = {
 	},
 };
 
-static struct matrix_coeff_info matrix_coeff_data_malabar[] = {
+static struct matrix_coeff_info matrix_coeff_data_shikra[] = {
 	{
 		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_DEFAULT,
 		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_RESERVED,
@@ -244,16 +244,11 @@ static struct matrix_coeff_info matrix_coeff_data_malabar[] = {
 	},
 };
 
-/*
- * IRIS2-1P
- * Dec: 1080P@60
- * Enc: 1080P@60
- */
-
-static const struct msm_platform_core_capability core_data_malabar[] = {
-	{ENC_CODECS, H264 | HEVC | HEIC},
-	{DEC_CODECS, H264 | HEVC | VP9 | HEIC},
-	{MAX_SESSION_COUNT, 8},
+static const struct msm_platform_core_capability core_data_shikra[] = {
+	/* {type, value} */
+	{ENC_CODECS, H264|HEVC|HEIC},
+	{DEC_CODECS, H264|HEVC|VP9|HEIC},
+	{MAX_SESSION_COUNT, 16},
 	{MAX_NUM_720P_SESSIONS, 4},
 	{MAX_NUM_1080P_SESSIONS, 2},
 	{MAX_NUM_4K_SESSIONS, 0},
@@ -261,14 +256,13 @@ static const struct msm_platform_core_capability core_data_malabar[] = {
 	{MAX_SECURE_SESSION_COUNT, 3},
 	{MAX_RT_MBPF, 16320}, /* ((1920x1088)/256)*2 */
 	{MAX_MBPF, 32640}, /* ((1920x1088)/256)*4 */
-	/* Concurrency: 1080p@30 decode + 1080p@30 encode */
 	{MAX_MBPS, 489600}, /* ((1088x1920)/256)@60fps */
-	{MAX_IMAGE_MBPF, 262144}, /* (8192x8192)/256 */
+	{MAX_IMAGE_MBPF, 262144}, /* ((8192x8192)/256) */
 	{MAX_MBPF_HQ, 8160}, /* ((1920x1088)/256) */
-	{MAX_MBPS_HQ, 244800}, /* ((1920x1088)/256)@30fps */
+	{MAX_MBPS_HQ, 244800}, /* (1920 x 1088)@30fps */
 	{MAX_MBPF_B_FRAME, 0},
 	{MAX_MBPS_B_FRAME, 0},
-	{MAX_MBPS_ALL_INTRA, 489600}, /* ((1920x1088)/256)@60fps */
+	{MAX_MBPS_ALL_INTRA, 489600}, /* (1920x1088)/256 MBs@60fps */
 	{MAX_ENH_LAYER_COUNT, 5},
 	{NUM_VPP_PIPE, 1},
 	{SW_PC, 1},
@@ -276,8 +270,6 @@ static const struct msm_platform_core_capability core_data_malabar[] = {
 	{HW_RESPONSE_TIMEOUT, HW_RESPONSE_TIMEOUT_VALUE}, /* 1000 ms */
 	{SW_PC_DELAY,         SW_PC_DELAY_VALUE        }, /* 1500 ms (>HW_RESPONSE_TIMEOUT)*/
 	{FW_UNLOAD_DELAY,     FW_UNLOAD_DELAY_VALUE    }, /* 3000 ms (>SW_PC_DELAY)*/
-	{PAGEFAULT_NON_FATAL, 1},
-	{PAGETABLE_CACHING, 0},
 	{DCVS, 1},
 	{DECODE_BATCH, 0},
 	{DECODE_BATCH_TIMEOUT, 200},
@@ -287,45 +279,26 @@ static const struct msm_platform_core_capability core_data_malabar[] = {
 	{ENC_AUTO_FRAMERATE, 0},
 	{DEVICE_CAPS, V4L2_CAP_VIDEO_CAPTURE_MPLANE | V4L2_CAP_VIDEO_OUTPUT_MPLANE |
 		V4L2_CAP_META_CAPTURE | V4L2_CAP_META_OUTPUT | V4L2_CAP_STREAMING},
-	{SUPPORTS_REQUESTS, 0},
-	{CACHE_OPS_REQUIRED, 1},
 };
 
-static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
+static struct msm_platform_inst_capability instance_cap_data_shikra[] = {
 	/* {cap, domain, codec,
 	 *      min, max, step_or_mask, value,
 	 *      v4l2_id,
 	 *      hfi_id,
 	 *      flags}
 	 */
-	{DRV_VERSION, DEC | ENC, CODECS_ALL,
-		0, INT_MAX, 1, DRIVER_VERSION,
-		V4L2_CID_MPEG_VIDC_DRIVER_VERSION},
 
 	{FRAME_WIDTH, DEC, CODECS_ALL, 96, 1920, 1, 1920},
-
-	{FRAME_WIDTH, ENC, CODECS_ALL, 128, 1920, 1, 1920},
-
-	{FRAME_WIDTH, ENC, HEIC, 128, 8192, 1, 8192},
-
-	{LOSSLESS_FRAME_WIDTH, ENC, CODECS_ALL, 128, 1920, 1, 1920},
-
-	{SECURE_FRAME_WIDTH, DEC, CODECS_ALL, 96, 1920, 1, 1920},
-
-	{SECURE_FRAME_WIDTH, ENC, CODECS_ALL, 128, 1920, 1, 1920},
-
+	{FRAME_WIDTH, ENC, H264|HEVC|HEIC, 128, 1920, 1, 1920},
+	{LOSSLESS_FRAME_WIDTH, ENC, H264|HEVC, 128, 1920, 1, 1920},
+	{SECURE_FRAME_WIDTH, DEC, H264|HEVC|VP9, 96, 1920, 1, 1920},
+	{SECURE_FRAME_WIDTH, ENC, H264|HEVC, 128, 1920, 1, 1920},
 	{FRAME_HEIGHT, DEC, CODECS_ALL, 96, 1920, 1, 1080},
-
-	{FRAME_HEIGHT, ENC, CODECS_ALL, 128, 1920, 1, 1080},
-
-	{FRAME_HEIGHT, ENC, HEIC, 128, 16384, 1, 16384},
-
-	{LOSSLESS_FRAME_HEIGHT, ENC, CODECS_ALL, 128, 1920, 1, 1080},
-
-	{SECURE_FRAME_HEIGHT, DEC, CODECS_ALL, 96, 1920, 1, 1080},
-
-	{SECURE_FRAME_HEIGHT, ENC, CODECS_ALL, 128, 1920, 1, 1080},
-
+	{FRAME_HEIGHT, ENC,  H264|HEVC|HEIC, 128, 1920, 1, 1080},
+	{LOSSLESS_FRAME_HEIGHT, ENC, H264|HEVC, 128, 1920, 1, 1080},
+	{SECURE_FRAME_HEIGHT, DEC, H264|HEVC|VP9, 96, 1920, 1, 1080},
+	{SECURE_FRAME_HEIGHT, ENC, H264|HEVC, 128, 1920, 1, 1080},
 	{PIX_FMTS, ENC, H264,
 		MSM_VIDC_FMT_NV12,
 		MSM_VIDC_FMT_NV21,
@@ -358,10 +331,10 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 	{PIX_FMTS, DEC, H264|VP9,
 		MSM_VIDC_FMT_NV12,
 		MSM_VIDC_FMT_NV21,
-		MSM_VIDC_FMT_NV12 | MSM_VIDC_FMT_NV21,
+		MSM_VIDC_FMT_NV12|MSM_VIDC_FMT_NV21,
 		MSM_VIDC_FMT_NV12},
 
-	{MIN_BUFFERS_INPUT, ENC | DEC, CODECS_ALL, 0, 64, 1, 4,
+	{MIN_BUFFERS_INPUT, ENC|DEC, CODECS_ALL, 0, 64, 1, 4,
 		V4L2_CID_MIN_BUFFERS_FOR_OUTPUT,
 		0,
 		CAP_FLAG_VOLATILE},
@@ -371,29 +344,28 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		0,
 		CAP_FLAG_VOLATILE},
 
-	{MIN_BUFFERS_OUTPUT, ENC | DEC, CODECS_ALL,
+	{MIN_BUFFERS_OUTPUT, ENC|DEC, CODECS_ALL,
 		0, 64, 1, 4,
 		V4L2_CID_MIN_BUFFERS_FOR_CAPTURE,
 		HFI_PROP_BUFFER_FW_MIN_OUTPUT_COUNT,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_VOLATILE},
 
-	/* (1920 * 1088) / 256 */
-	{MBPF, ENC | DEC, CODECS_ALL, 64, 8160, 1, 8160},
+	 /*  ((1920 * 1080) / 256) */
+	{MBPF, ENC, CODECS_ALL, 36, 8160, 1, 8160},
+	{MBPF, DEC, CODECS_ALL, 36, 8160, 1, 8160},
 
-	/* ((8192x8192)/256) */
-	{MBPF, ENC | DEC, HEIC, 36, 262144, 1, 262144},
-
-	/* (1920 * 1088) / 256 */
-	{LOSSLESS_MBPF, ENC, H264 | HEVC, 36, 8160, 1, 8160},
+	/*  ((1920 * 1080) / 256) */
+	{LOSSLESS_MBPF, ENC, H264|HEVC, 36, 8160, 1, 8160},
 
 	/* Batch Mode Decode */
-	/* TODO: update with new values based on updated voltage corner */
-	{BATCH_MBPF, DEC, H264 | HEVC | VP9, 36, 8162, 1, 8162},
-
-	/* (4096 * 2304) / 256 */
-	{BATCH_FPS, DEC, H264 | HEVC | VP9, 1, 121, 1, 121},
-
-	{SECURE_MBPF, ENC | DEC, H264 | HEVC | VP9, 36, 8160, 1, 8160},
+	/* BATCH_MBPF + 2 is done for chipsets other than waipio
+	 * due to timeline constraints since msm_vidc_allow_decode_batch
+	 * has checks to allow batching for less than BATCH_MBPF.
+	 * Same applies for BATCH_FPS.
+	 */
+	{BATCH_MBPF, DEC, H264|HEVC|VP9, 36, 8162, 1, 8162},
+	{BATCH_FPS, DEC, H264|HEVC|VP9, 1, 121, 1, 121},
+	{SECURE_MBPF, ENC|DEC, H264|HEVC|VP9, 36, 8160, 1, 8160},
 
 	{FRAME_RATE, ENC, CODECS_ALL,
 		(MINIMUM_FPS << 16), (MAXIMUM_FPS << 16),
@@ -407,39 +379,19 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		1, (DEFAULT_FPS << 16),
 		V4L2_CID_MPEG_VIDC_FRAME_RATE},
 
-	{FRAME_RATE, DEC, VP9,
-		(MINIMUM_FPS << 16), (MAXIMUM_OVERRIDE_VP9_FPS << 16),
-		1, (DEFAULT_FPS << 16),
-		V4L2_CID_MPEG_VIDC_FRAME_RATE},
-
-	{OPERATING_RATE, ENC, CODECS_ALL,
-		(MINIMUM_FPS << 16), INT_MAX,
+	{OPERATING_RATE, ENC|DEC, CODECS_ALL,
+		(MINIMUM_FPS << 16), (MAXIMUM_FPS << 16),
 		1, (DEFAULT_FPS << 16)},
-
-	{OPERATING_RATE, DEC, CODECS_ALL,
-		(MINIMUM_FPS << 16), INT_MAX,
-		1, (DEFAULT_FPS << 16),
-		V4L2_CID_MPEG_VIDC_OPERATING_RATE,
-		0,
-		CAP_FLAG_OUTPUT_PORT |
-		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{SCALE_FACTOR, ENC, H264|HEVC, 1, 8, 1, 8},
 
 	{MB_CYCLES_VSP, ENC, CODECS_ALL, 0, 0, 0, 0},
-
 	{MB_CYCLES_VSP, DEC, CODECS_ALL, 0, 0, 0, 0},
-
 	{MB_CYCLES_VPP, ENC, CODECS_ALL, 675, 675, 1, 675},
-
 	{MB_CYCLES_VPP, DEC, CODECS_ALL, 440, 440, 1, 440},
-
 	{MB_CYCLES_LP, ENC, CODECS_ALL, 320, 320, 1, 320},
-
 	{MB_CYCLES_LP, DEC, CODECS_ALL, 440, 440, 1, 440},
-
 	{MB_CYCLES_FW, ENC|DEC, CODECS_ALL, 733003, 733003, 1, 733003},
-
 	{MB_CYCLES_FW_VPP, ENC|DEC, CODECS_ALL, 225975, 225975, 1, 225975},
 
 	{SECURE_MODE, ENC|DEC, H264|HEVC|VP9,
@@ -625,13 +577,6 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
-	{GOP_SIZE, ENC, HEIC,
-		0, INT_MAX, 1, 0 /* all intra */,
-		V4L2_CID_MPEG_VIDEO_GOP_SIZE,
-		HFI_PROP_MAX_GOP_FRAMES,
-		CAP_FLAG_OUTPUT_PORT |
-			CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
-
 	{GOP_CLOSURE, ENC, H264|HEVC,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
 		1, V4L2_MPEG_MSM_VIDC_DISABLE,
@@ -686,13 +631,13 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		HFI_PROP_SEQ_CHANGE_AT_SYNC_FRAME,
 		CAP_FLAG_INPUT_PORT},
 
-	{LTR_COUNT, ENC, H264 | HEVC,
-		0, MAX_LTR_FRAME_COUNT, 1, 0,
+	{LTR_COUNT, ENC, H264|HEVC,
+		0, 2, 1, 0,
 		V4L2_CID_MPEG_VIDEO_LTR_COUNT,
 		HFI_PROP_LTR_COUNT,
 		CAP_FLAG_OUTPUT_PORT},
 
-	{USE_LTR, ENC, H264 | HEVC,
+	{USE_LTR, ENC, H264|HEVC,
 		0,
 		((1 << MAX_LTR_FRAME_COUNT) - 1),
 		0, 0,
@@ -714,7 +659,7 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		HFI_PROP_BASELAYER_PRIORITYID,
 		CAP_FLAG_OUTPUT_PORT},
 
-	{IR_PERIOD, ENC, H264 | HEVC,
+	{IR_PERIOD, ENC, H264|HEVC,
 		0, INT_MAX, 1, 0,
 		V4L2_CID_MPEG_VIDEO_INTRA_REFRESH_PERIOD,
 		HFI_PROP_IR_RANDOM_PERIOD,
@@ -742,141 +687,142 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		0,
 		CAP_FLAG_OUTPUT_PORT},
 
-	{BITRATE_BOOST, ENC, H264 | HEVC,
-		0, MAX_BITRATE_BOOST_MALABAR, 25, MAX_BITRATE_BOOST_MALABAR,
+	{BITRATE_BOOST, ENC, H264|HEVC,
+		0, MAX_BITRATE_BOOST_SHIKRA,
+		MAX_BITRATE_BOOST_SHIKRA, 0,
 		V4L2_CID_MPEG_VIDC_QUALITY_BITRATE_BOOST,
 		HFI_PROP_BITRATE_BOOST,
 		CAP_FLAG_OUTPUT_PORT},
 
-	{MIN_QUALITY, ENC, H264 | HEVC,
+	{MIN_QUALITY, ENC, H264|HEVC,
 		0, 0, 1, 0},
 
-	{VBV_DELAY, ENC, H264 | HEVC,
+	{VBV_DELAY, ENC, H264|HEVC,
 		200, 300, 100, 300,
 		V4L2_CID_MPEG_VIDEO_VBV_DELAY,
 		HFI_PROP_VBV_DELAY,
 		CAP_FLAG_OUTPUT_PORT},
 
-	{PEAK_BITRATE, ENC, H264 | HEVC,
-		/* default peak bitrate is 10% larger than avg bitrate */
+	{PEAK_BITRATE, ENC, H264|HEVC,
+		/* default peak bitrate is 10% larger than avrg bitrate */
 		1, MAX_BITRATE, 1, DEFAULT_BITRATE,
 		V4L2_CID_MPEG_VIDEO_BITRATE_PEAK,
 		HFI_PROP_TOTAL_PEAK_BITRATE,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
+		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{MIN_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_MALABAR, MAX_QP, 1, MIN_QP_8BIT_MALABAR,
+		MIN_QP_8BIT_SHIKRA, MAX_QP, 1, MIN_QP_8BIT_SHIKRA,
 		V4L2_CID_MPEG_VIDEO_H264_MIN_QP,
 		HFI_PROP_MIN_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT},
 
-	{MIN_FRAME_QP, ENC, HEVC | HEIC,
-		MIN_QP_10BIT_MALABAR, MAX_QP, 1, MIN_QP_10BIT_MALABAR,
+	{MIN_FRAME_QP, ENC, HEVC|HEIC,
+		MIN_QP_10BIT_SHIKRA, MAX_QP, 1, MIN_QP_10BIT_SHIKRA,
 		V4L2_CID_MPEG_VIDEO_HEVC_MIN_QP,
 		HFI_PROP_MIN_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT},
 
 	{I_FRAME_MIN_QP, ENC, H264,
-		MIN_QP_8BIT_MALABAR, MAX_QP, 1, MIN_QP_8BIT_MALABAR,
+		MIN_QP_8BIT_SHIKRA, MAX_QP, 1, MIN_QP_8BIT_SHIKRA,
 		V4L2_CID_MPEG_VIDEO_H264_I_FRAME_MIN_QP},
 
-	{I_FRAME_MIN_QP, ENC, HEVC | HEIC,
-		MIN_QP_10BIT_MALABAR, MAX_QP, 1, MIN_QP_10BIT_MALABAR,
+	{I_FRAME_MIN_QP, ENC, HEVC|HEIC,
+		MIN_QP_10BIT_SHIKRA, MAX_QP, 1, MIN_QP_10BIT_SHIKRA,
 		V4L2_CID_MPEG_VIDEO_HEVC_I_FRAME_MIN_QP},
 
 	{P_FRAME_MIN_QP, ENC, H264,
-		MIN_QP_8BIT_MALABAR, MAX_QP, 1, MIN_QP_8BIT_MALABAR,
+		MIN_QP_8BIT_SHIKRA, MAX_QP, 1, MIN_QP_8BIT_SHIKRA,
 		V4L2_CID_MPEG_VIDEO_H264_P_FRAME_MIN_QP},
 
-	{P_FRAME_MIN_QP, ENC, HEVC | HEIC,
-		MIN_QP_10BIT_MALABAR, MAX_QP, 1, MIN_QP_10BIT_MALABAR,
+	{P_FRAME_MIN_QP, ENC, HEVC|HEIC,
+		MIN_QP_10BIT_SHIKRA, MAX_QP, 1, MIN_QP_10BIT_SHIKRA,
 		V4L2_CID_MPEG_VIDEO_HEVC_P_FRAME_MIN_QP},
 
 	{B_FRAME_MIN_QP, ENC, H264,
-		MIN_QP_8BIT_MALABAR, MAX_QP, 1, MIN_QP_8BIT_MALABAR,
+		MIN_QP_8BIT_SHIKRA, MAX_QP, 1, MIN_QP_8BIT_SHIKRA,
 		V4L2_CID_MPEG_VIDEO_H264_B_FRAME_MIN_QP},
 
-	{B_FRAME_MIN_QP, ENC, HEVC | HEIC,
-		MIN_QP_10BIT_MALABAR, MAX_QP, 1, MIN_QP_10BIT_MALABAR,
+	{B_FRAME_MIN_QP, ENC, HEVC|HEIC,
+		MIN_QP_10BIT_SHIKRA, MAX_QP, 1, MIN_QP_10BIT_SHIKRA,
 		V4L2_CID_MPEG_VIDEO_HEVC_B_FRAME_MIN_QP},
 
 	{MAX_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_MALABAR, MAX_QP, 1, MAX_QP,
+		MIN_QP_8BIT_SHIKRA, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_H264_MAX_QP,
 		HFI_PROP_MAX_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT},
 
-	{MAX_FRAME_QP, ENC, HEVC | HEIC,
-		MIN_QP_10BIT_MALABAR, MAX_QP, 1, MAX_QP,
+	{MAX_FRAME_QP, ENC, HEVC|HEIC,
+		MIN_QP_10BIT_SHIKRA, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_MAX_QP,
 		HFI_PROP_MAX_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT},
 
 	{I_FRAME_MAX_QP, ENC, H264,
-		MIN_QP_8BIT_MALABAR, MAX_QP, 1, MAX_QP,
+		MIN_QP_8BIT_SHIKRA, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_H264_I_FRAME_MAX_QP},
 
-	{I_FRAME_MAX_QP, ENC, HEVC | HEIC,
-		MIN_QP_10BIT_MALABAR, MAX_QP, 1, MAX_QP,
+	{I_FRAME_MAX_QP, ENC, HEVC|HEIC,
+		MIN_QP_10BIT_SHIKRA, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_I_FRAME_MAX_QP},
 
 	{P_FRAME_MAX_QP, ENC, H264,
-		MIN_QP_8BIT_MALABAR, MAX_QP, 1, MAX_QP,
+		MIN_QP_8BIT_SHIKRA, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_H264_P_FRAME_MAX_QP},
 
-	{P_FRAME_MAX_QP, ENC, HEVC | HEIC,
-		MIN_QP_10BIT_MALABAR, MAX_QP, 1, MAX_QP,
+	{P_FRAME_MAX_QP, ENC, HEVC|HEIC,
+		MIN_QP_10BIT_SHIKRA, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_P_FRAME_MAX_QP},
 
 	{B_FRAME_MAX_QP, ENC, H264,
-		MIN_QP_8BIT_MALABAR, MAX_QP, 1, MAX_QP,
+		MIN_QP_8BIT_SHIKRA, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_H264_B_FRAME_MAX_QP},
 
-	{B_FRAME_MAX_QP, ENC, HEVC | HEIC,
-		MIN_QP_10BIT_MALABAR, MAX_QP, 1, MAX_QP,
+	{B_FRAME_MAX_QP, ENC, HEVC|HEIC,
+		MIN_QP_10BIT_SHIKRA, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_B_FRAME_MAX_QP},
 
 	{I_FRAME_QP, ENC, HEVC,
-		MIN_QP_10BIT_MALABAR, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_10BIT_SHIKRA, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_I_FRAME_QP,
 		HFI_PROP_QP_PACKED,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
+		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{I_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_MALABAR, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_8BIT_SHIKRA, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_H264_I_FRAME_QP,
 		HFI_PROP_QP_PACKED,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
+		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{P_FRAME_QP, ENC, HEVC,
-		MIN_QP_10BIT_MALABAR, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_10BIT_SHIKRA, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_P_FRAME_QP,
 		HFI_PROP_QP_PACKED,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
+		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{P_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_MALABAR, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_8BIT_SHIKRA, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_H264_P_FRAME_QP,
 		HFI_PROP_QP_PACKED,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
+		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{B_FRAME_QP, ENC, HEVC,
-		MIN_QP_10BIT_MALABAR, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_10BIT_SHIKRA, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_B_FRAME_QP,
 		HFI_PROP_QP_PACKED,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
+		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{B_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_MALABAR, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_8BIT_SHIKRA, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_H264_B_FRAME_QP,
 		HFI_PROP_QP_PACKED,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
+		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{LAYER_TYPE, ENC, HEVC,
@@ -886,7 +832,7 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		V4L2_MPEG_VIDEO_HEVC_HIERARCHICAL_CODING_P,
 		V4L2_CID_MPEG_VIDEO_HEVC_HIER_CODING_TYPE,
 		HFI_PROP_LAYER_ENCODING_TYPE,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_MENU},
 
 	{LAYER_TYPE, ENC, H264,
 		V4L2_MPEG_VIDEO_H264_HIERARCHICAL_CODING_P,
@@ -895,7 +841,7 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		V4L2_MPEG_VIDEO_H264_HIERARCHICAL_CODING_P,
 		V4L2_CID_MPEG_VIDEO_H264_HIERARCHICAL_CODING_TYPE,
 		HFI_PROP_LAYER_ENCODING_TYPE,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_MENU},
 
 	{LAYER_ENABLE, ENC, H264,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
@@ -908,7 +854,7 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		0, 5, 1, 0,
 		V4L2_CID_MPEG_VIDEO_HEVC_HIER_CODING_LAYER,
 		HFI_PROP_LAYER_COUNT,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
+		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{ENH_LAYER_COUNT, ENC, H264,
@@ -954,7 +900,7 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		1, MAX_BITRATE, 1, DEFAULT_BITRATE,
 		V4L2_CID_MPEG_VIDEO_HEVC_HIER_CODING_L4_BR,
 		HFI_PROP_BITRATE_LAYER5,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_INPUT_PORT |
+		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{L5_BR, ENC, HEVC,
@@ -1025,6 +971,7 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		0,
 		HFI_PROP_CABAC_SESSION},
 
+	/* H264 does not support 10 bit, PIX_FMTS would not be a Parent for this */
 	{PROFILE, ENC, H264,
 		V4L2_MPEG_VIDEO_H264_PROFILE_BASELINE,
 		V4L2_MPEG_VIDEO_H264_PROFILE_CONSTRAINED_HIGH,
@@ -1036,7 +983,7 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		V4L2_MPEG_VIDEO_H264_PROFILE_HIGH,
 		V4L2_CID_MPEG_VIDEO_H264_PROFILE,
 		HFI_PROP_PROFILE,
-		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{PROFILE, DEC, H264,
 		V4L2_MPEG_VIDEO_H264_PROFILE_BASELINE,
@@ -1051,10 +998,10 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		HFI_PROP_PROFILE,
 		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
-	{PROFILE, ENC | DEC, HEVC | HEIC,
+	{PROFILE, ENC|DEC, HEVC|HEIC,
 		V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN,
 		V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_STILL_PICTURE,
-		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN) |
+		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN)|
 		BIT(V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN_STILL_PICTURE),
 		V4L2_MPEG_VIDEO_HEVC_PROFILE_MAIN,
 		V4L2_CID_MPEG_VIDEO_HEVC_PROFILE,
@@ -1112,24 +1059,24 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 	{LEVEL, ENC, H264,
 		V4L2_MPEG_VIDEO_H264_LEVEL_1_0,
 		V4L2_MPEG_VIDEO_H264_LEVEL_4_2,
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_0) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1B) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_1) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_2) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_3) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_2_0) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_2_1) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_2_2) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_0) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_1) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_2) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_0) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_1) |
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_0)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1B)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_1)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_2)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_3)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_2_0)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_2_1)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_2_2)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_0)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_1)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_2)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_0)|
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_1)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_2),
 		V4L2_MPEG_VIDEO_H264_LEVEL_4_2,
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
-		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{LEVEL, DEC, HEVC|HEIC,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
@@ -1159,13 +1106,13 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1,
 		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
 		HFI_PROP_LEVEL,
-		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	/* TODO: Bring the VP9 Level upstream GKI change, and level cap here:
 	 *	go/videogki
 	 */
 
-	{HEVC_TIER, ENC | DEC, HEVC,
+	{HEVC_TIER, ENC|DEC, HEVC,
 		V4L2_MPEG_VIDEO_HEVC_TIER_MAIN,
 		V4L2_MPEG_VIDEO_HEVC_TIER_HIGH,
 		BIT(V4L2_MPEG_VIDEO_HEVC_TIER_MAIN) |
@@ -1178,19 +1125,19 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 	{LF_MODE, ENC, H264,
 		V4L2_MPEG_VIDEO_H264_LOOP_FILTER_MODE_ENABLED,
 		DB_H264_DISABLE_SLICE_BOUNDARY,
-		BIT(V4L2_MPEG_VIDEO_H264_LOOP_FILTER_MODE_ENABLED) |
-		BIT(V4L2_MPEG_VIDEO_H264_LOOP_FILTER_MODE_DISABLED) |
+		BIT(V4L2_MPEG_VIDEO_H264_LOOP_FILTER_MODE_ENABLED)|
+		BIT(V4L2_MPEG_VIDEO_H264_LOOP_FILTER_MODE_DISABLED)|
 		BIT(DB_H264_DISABLE_SLICE_BOUNDARY),
 		V4L2_MPEG_VIDEO_H264_LOOP_FILTER_MODE_ENABLED,
 		V4L2_CID_MPEG_VIDEO_H264_LOOP_FILTER_MODE,
 		HFI_PROP_DEBLOCKING_MODE,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
-	{LF_MODE, ENC, HEVC | HEIC,
+	{LF_MODE, ENC, HEVC|HEIC,
 		V4L2_MPEG_VIDEO_HEVC_LOOP_FILTER_MODE_DISABLED,
 		DB_HEVC_DISABLE_SLICE_BOUNDARY,
-		BIT(V4L2_MPEG_VIDEO_HEVC_LOOP_FILTER_MODE_DISABLED) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_LOOP_FILTER_MODE_ENABLED) |
+		BIT(V4L2_MPEG_VIDEO_HEVC_LOOP_FILTER_MODE_DISABLED)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LOOP_FILTER_MODE_ENABLED)|
 		BIT(DB_HEVC_DISABLE_SLICE_BOUNDARY),
 		V4L2_MPEG_VIDEO_HEVC_LOOP_FILTER_MODE_ENABLED,
 		V4L2_CID_MPEG_VIDEO_HEVC_LOOP_FILTER_MODE,
@@ -1201,7 +1148,7 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		-6, 6, 1, 0,
 		V4L2_CID_MPEG_VIDEO_H264_LOOP_FILTER_ALPHA},
 
-	{LF_ALPHA, ENC, HEVC | HEIC,
+	{LF_ALPHA, ENC, HEVC|HEIC,
 		-6, 6, 1, 0,
 		V4L2_CID_MPEG_VIDEO_HEVC_LF_TC_OFFSET_DIV2},
 
@@ -1209,29 +1156,29 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		-6, 6, 1, 0,
 		V4L2_CID_MPEG_VIDEO_H264_LOOP_FILTER_BETA},
 
-	{LF_BETA, ENC, HEVC | HEIC,
+	{LF_BETA, ENC, HEVC|HEIC,
 		-6, 6, 1, 0,
 		V4L2_CID_MPEG_VIDEO_HEVC_LF_BETA_OFFSET_DIV2},
 
-	{SLICE_MODE, ENC, H264 | HEVC | HEIC,
+	{SLICE_MODE, ENC, H264|HEVC|HEIC,
 		V4L2_MPEG_VIDEO_MULTI_SLICE_MODE_SINGLE,
 		V4L2_MPEG_VIDEO_MULTI_SLICE_MODE_MAX_BYTES,
-		BIT(V4L2_MPEG_VIDEO_MULTI_SLICE_MODE_SINGLE) |
-		BIT(V4L2_MPEG_VIDEO_MULTI_SLICE_MODE_MAX_MB) |
+		BIT(V4L2_MPEG_VIDEO_MULTI_SLICE_MODE_SINGLE)|
+		BIT(V4L2_MPEG_VIDEO_MULTI_SLICE_MODE_MAX_MB)|
 		BIT(V4L2_MPEG_VIDEO_MULTI_SLICE_MODE_MAX_BYTES),
 		V4L2_MPEG_VIDEO_MULTI_SLICE_MODE_SINGLE,
 		V4L2_CID_MPEG_VIDEO_MULTI_SLICE_MODE,
 		0,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_MENU},
 
-	{SLICE_MAX_BYTES, ENC, H264 | HEVC | HEIC,
+	{SLICE_MAX_BYTES, ENC, H264|HEVC|HEIC,
 		MIN_SLICE_BYTE_SIZE, MAX_SLICE_BYTE_SIZE,
 		1, MIN_SLICE_BYTE_SIZE,
 		V4L2_CID_MPEG_VIDEO_MULTI_SLICE_MAX_BYTES,
 		HFI_PROP_MULTI_SLICE_BYTES_COUNT,
 		CAP_FLAG_OUTPUT_PORT},
 
-	{SLICE_MAX_MB, ENC, H264 | HEVC | HEIC,
+	{SLICE_MAX_MB, ENC, H264|HEVC|HEIC,
 		1, MAX_SLICE_MB_SIZE, 1, 1,
 		V4L2_CID_MPEG_VIDEO_MULTI_SLICE_MAX_MB,
 		HFI_PROP_MULTI_SLICE_MB_COUNT,
@@ -1258,7 +1205,7 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		HFI_PROP_DECODE_ORDER_OUTPUT,
 		CAP_FLAG_INPUT_PORT},
 
-	{DISPLAY_DELAY, DEC, H264 | HEVC | VP9,
+	{DISPLAY_DELAY, DEC, H264|HEVC|VP9,
 		0, 1, 1, 0,
 		V4L2_CID_MPEG_VIDEO_DEC_DISPLAY_DELAY,
 		HFI_PROP_DECODE_ORDER_OUTPUT,
@@ -1284,6 +1231,7 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		HFI_PROP_BUFFER_HOST_MAX_COUNT,
 		CAP_FLAG_OUTPUT_PORT},
 
+	/* conceal color */
 	{CONCEAL_COLOR_8BIT, DEC, CODECS_ALL, 0x0, 0xff3fcff, 1,
 		DEFAULT_VIDEO_CONCEAL_COLOR_BLACK,
 		V4L2_CID_MPEG_VIDEO_MUTE_YUV,
@@ -1297,6 +1245,12 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		MSM_VIDC_STAGE_2,
 		0,
 		HFI_PROP_STAGE},
+
+	{PIPE, DEC|ENC, CODECS_ALL,
+		MSM_VIDC_PIPE_NONE,
+		MSM_VIDC_PIPE_NONE, 0,
+		MSM_VIDC_PIPE_NONE,
+		0},
 
 	{POC, DEC, H264, 0, 18, 1, 1},
 
@@ -1316,7 +1270,7 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		0,
 		HFI_PROP_LUMA_CHROMA_BIT_DEPTH},
 
-	{CODEC_CONFIG, DEC, H264 | HEVC | HEIC, 0, 1, 1, 0,
+	{CODEC_CONFIG, DEC, H264|HEVC|HEIC, 0, 1, 1, 0,
 		V4L2_CID_MPEG_VIDC_CODEC_CONFIG, 0,
 		CAP_FLAG_DYNAMIC_ALLOWED},
 
@@ -1348,7 +1302,7 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		1, V4L2_MPEG_MSM_VIDC_ENABLE,
 		0,
 		HFI_PROP_SEQ_CHANGE_AT_SYNC_FRAME,
-		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
+		CAP_FLAG_INPUT_PORT|CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{PRIORITY, DEC|ENC, CODECS_ALL,
 		0, 2, 1, 1,
@@ -1454,16 +1408,18 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		MSM_VIDC_META_ENABLE |
 		MSM_VIDC_META_DYN_ENABLE | MSM_VIDC_META_TX_INPUT,
 		0, MSM_VIDC_META_DISABLE,
-		0,
-		0},
+		V4L2_CID_MPEG_VIDC_METADATA_HDR10PLUS,
+		HFI_PROP_SEI_HDR10PLUS_USERDATA,
+		CAP_FLAG_BITMASK | CAP_FLAG_META},
 
 	{META_HDR10PLUS, DEC, HEVC | HEIC,
 		MSM_VIDC_META_DISABLE,
 		MSM_VIDC_META_ENABLE | MSM_VIDC_META_RX_INPUT |
 			MSM_VIDC_META_RX_OUTPUT,
 		0, MSM_VIDC_META_DISABLE,
-		0,
-		0},
+		V4L2_CID_MPEG_VIDC_METADATA_HDR10PLUS,
+		HFI_PROP_SEI_HDR10PLUS_USERDATA,
+		CAP_FLAG_BITMASK | CAP_FLAG_META},
 
 	{META_EVA_STATS, ENC, CODECS_ALL,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
@@ -1563,10 +1519,17 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		HEIC_GRID_WIDTH, HEIC_GRID_WIDTH,
 		V4L2_CID_MPEG_VIDC_GRID_WIDTH},
 
+	{GOP_SIZE, ENC, HEIC,
+		0, INT_MAX, 1, 0 /* all intra */,
+		V4L2_CID_MPEG_VIDEO_GOP_SIZE,
+		HFI_PROP_MAX_GOP_FRAMES,
+		CAP_FLAG_OUTPUT_PORT |
+		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
+
 	{OPEN_GOP, ENC, HEVC,
 		0, 1, 1, 0,
 		V4L2_CID_MPEG_VIDC_OPEN_GOP_ENABLE,
-		0,
+		HFI_PROP_OPEN_GOP,
 		CAP_FLAG_OUTPUT_PORT},
 
 	{B_FRAME, ENC, HEIC,
@@ -1632,7 +1595,8 @@ static struct msm_platform_inst_capability instance_cap_data_malabar[] = {
 		HFI_PROP_MAX_NUM_REORDER_FRAMES},
 };
 
-static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_malabar[] = {
+
+static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_shikra[] = {
 	/* {cap, domain, codec,
 	 *      children,
 	 *      adjust, set}
@@ -1787,63 +1751,52 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_mala
 
 	{VBV_DELAY, ENC, H264|HEVC,
 		{0},
-		NULL,
-		msm_vidc_set_cbr_related_properties},
+		NULL, msm_vidc_set_cbr_related_properties},
 
-	{PEAK_BITRATE, ENC, H264 | HEVC,
+	{PEAK_BITRATE, ENC, H264|HEVC,
 		{0},
 		msm_vidc_adjust_peak_bitrate,
 		msm_vidc_set_cbr_related_properties},
 
 	{MIN_FRAME_QP, ENC, H264,
 		{0},
-		NULL,
-		msm_vidc_set_min_qp},
+		NULL, msm_vidc_set_min_qp},
 
 	{MIN_FRAME_QP, ENC, HEVC,
 		{0},
-		msm_vidc_adjust_hevc_min_qp,
-		msm_vidc_set_min_qp},
+		msm_vidc_adjust_hevc_min_qp, msm_vidc_set_min_qp},
 
 	{MAX_FRAME_QP, ENC, H264,
 		{0},
-		NULL,
-		msm_vidc_set_max_qp},
+		NULL, msm_vidc_set_max_qp},
 
 	{MAX_FRAME_QP, ENC, HEVC,
 		{0},
-		msm_vidc_adjust_hevc_max_qp,
-		msm_vidc_set_max_qp},
+		msm_vidc_adjust_hevc_max_qp, msm_vidc_set_max_qp},
 
 	{I_FRAME_QP, ENC, HEVC,
 		{0},
-		msm_vidc_adjust_hevc_i_frame_qp,
-		msm_vidc_set_frame_qp},
+		msm_vidc_adjust_hevc_i_frame_qp, msm_vidc_set_frame_qp},
 
 	{I_FRAME_QP, ENC, H264,
 		{0},
-		NULL,
-		msm_vidc_set_frame_qp},
+		NULL, msm_vidc_set_frame_qp},
 
 	{P_FRAME_QP, ENC, HEVC,
 		{0},
-		msm_vidc_adjust_hevc_p_frame_qp,
-		msm_vidc_set_frame_qp},
+		msm_vidc_adjust_hevc_p_frame_qp, msm_vidc_set_frame_qp},
 
 	{P_FRAME_QP, ENC, H264,
 		{0},
-		NULL,
-		msm_vidc_set_frame_qp},
+		NULL, msm_vidc_set_frame_qp},
 
 	{B_FRAME_QP, ENC, HEVC,
 		{0},
-		msm_vidc_adjust_hevc_b_frame_qp,
-		msm_vidc_set_frame_qp},
+		msm_vidc_adjust_hevc_b_frame_qp, msm_vidc_set_frame_qp},
 
 	{B_FRAME_QP, ENC, H264,
 		{0},
-		NULL,
-		msm_vidc_set_frame_qp},
+		NULL, msm_vidc_set_frame_qp},
 
 	{LAYER_TYPE, ENC, H264, {LEVEL, LTR_COUNT}},
 
@@ -2027,9 +1980,9 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_mala
 		msm_vidc_set_u32},
 
 	{CONCEAL_COLOR_8BIT, DEC, CODECS_ALL,
-                {0},
-                NULL,
-                msm_vidc_set_conceal_color},
+		{0},
+		NULL,
+		msm_vidc_set_conceal_color},
 
 	// TODO
 	{STAGE, DEC|ENC, CODECS_ALL,
@@ -2116,45 +2069,45 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_mala
 		msm_vidc_set_signal_color_info},
 };
 
-static struct msm_vidc_format_capability format_data_malabar = {
-	.codec_info = codec_data_malabar,
-	.codec_info_size = ARRAY_SIZE(codec_data_malabar),
-	.color_format_info = color_format_data_malabar,
-	.color_format_info_size = ARRAY_SIZE(color_format_data_malabar),
-	.color_prim_info = color_primaries_data_malabar,
-	.color_prim_info_size = ARRAY_SIZE(color_primaries_data_malabar),
-	.transfer_char_info = transfer_char_data_malabar,
-	.transfer_char_info_size = ARRAY_SIZE(transfer_char_data_malabar),
-	.matrix_coeff_info = matrix_coeff_data_malabar,
-	.matrix_coeff_info_size = ARRAY_SIZE(matrix_coeff_data_malabar),
+static struct msm_vidc_format_capability format_data_shikra = {
+	.codec_info = codec_data_shikra,
+	.codec_info_size = ARRAY_SIZE(codec_data_shikra),
+	.color_format_info = color_format_data_shikra,
+	.color_format_info_size = ARRAY_SIZE(color_format_data_shikra),
+	.color_prim_info = color_primaries_data_shikra,
+	.color_prim_info_size = ARRAY_SIZE(color_primaries_data_shikra),
+	.transfer_char_info = transfer_char_data_shikra,
+	.transfer_char_info_size = ARRAY_SIZE(transfer_char_data_shikra),
+	.matrix_coeff_info = matrix_coeff_data_shikra,
+	.matrix_coeff_info_size = ARRAY_SIZE(matrix_coeff_data_shikra),
 };
 
 /* name, min_kbps, max_kbps */
-static const struct bw_table malabar_bw_table[] = {
-	{ "venus-cnoc",  1000, 1000    },
+static const struct bw_table shikra_bw_table[] = {
+	{ "venus-cnoc",  1000, 1000     },
 	{ "venus-ddr",   1000, 6500000 },
 };
 
-/* name, hw_trigger */
-static const struct regulator_table malabar_regulator_table[] = {
-	{ "venus",       0 },
+/* name, hw_trigger, hw_enable */
+static struct regulator_table shikra_regulator_table[] = {
+	{ "venus", 0 },
 	{ "venus-core0", 1 },
 };
 
 /* name, clock id, scaling */
-static const struct clk_table malabar_clk_table[] = {
+static const struct clk_table shikra_clk_table[] = {
 	{ "core_clk",        GCC_VIDEO_VENUS_CTL_CLK,         0},
 	{ "bus_clk",         GCC_VENUS_CTL_AXI_CLK,           0},
 	{ "core0_clk",       GCC_VIDEO_VCODEC0_SYS_CLK,       0},
 	{ "core0_bus_clk",   GCC_VCODEC0_AXI_CLK,             0},
 	{ "throttle_clk",    GCC_VIDEO_THROTTLE_CORE_CLK,     0},
 	{ "video_clk_src",   GCC_VIDEO_VENUS_CLK_SRC,         1,
-	 (u64[]) {420000000, 384000000, 365000000, 240000000, 133330000}, 5},
+	 (u64[]) {384000000, 365000000, 240000000, 133330000}, 4},
 };
 
 /* name, start, size, secure, dma_coherant, region, dma_mask */
-const struct context_bank_table malabar_context_bank_table[] = {
-	{"qcom,vidc,cb-ns",             0x25800000, 0xba800000, 0, 0,
+const struct context_bank_table shikra_context_bank_table[] = {
+	{"qcom,vidc,cb-ns",             0x25800000, 0xba800000, 0, 1,
 		MSM_VIDC_NON_SECURE |
 		MSM_VIDC_NON_SECURE_PIXEL |
 		MSM_VIDC_NON_SECURE_BITSTREAM, 0 },
@@ -2167,12 +2120,12 @@ const struct context_bank_table malabar_context_bank_table[] = {
 };
 
 /* register, value, mask */
-static const struct reg_preset_table malabar_reg_preset_table[] = {
+static const struct reg_preset_table shikra_reg_preset_table[] = {
 	{ 0xB0080, 0x0, 0x03},
 };
 
 /* decoder properties */
-static const u32 malabar_vdec_psc_avc[] = {
+static const u32 shikra_vdec_psc_avc[] = {
 	HFI_PROP_BITSTREAM_RESOLUTION,
 	HFI_PROP_CROP_OFFSETS,
 	HFI_PROP_CODED_FRAMES,
@@ -2183,7 +2136,7 @@ static const u32 malabar_vdec_psc_avc[] = {
 	HFI_PROP_SIGNAL_COLOR_INFO,
 };
 
-static const u32 malabar_vdec_psc_hevc[] = {
+static const u32 shikra_vdec_psc_hevc[] = {
 	HFI_PROP_BITSTREAM_RESOLUTION,
 	HFI_PROP_CROP_OFFSETS,
 	HFI_PROP_LUMA_CHROMA_BIT_DEPTH,
@@ -2194,7 +2147,7 @@ static const u32 malabar_vdec_psc_hevc[] = {
 	HFI_PROP_SIGNAL_COLOR_INFO,
 };
 
-static const u32 malabar_vdec_psc_vp9[] = {
+static const u32 shikra_vdec_psc_vp9[] = {
 	HFI_PROP_BITSTREAM_RESOLUTION,
 	HFI_PROP_CROP_OFFSETS,
 	HFI_PROP_LUMA_CHROMA_BIT_DEPTH,
@@ -2203,22 +2156,22 @@ static const u32 malabar_vdec_psc_vp9[] = {
 	HFI_PROP_LEVEL,
 };
 
-static const u32 malabar_vdec_input_properties_avc[] = {
+static const u32 shikra_vdec_input_properties_avc[] = {
 	HFI_PROP_NO_OUTPUT,
 	HFI_PROP_SUBFRAME_INPUT,
 };
 
-static const u32 malabar_vdec_input_properties_hevc[] = {
+static const u32 shikra_vdec_input_properties_hevc[] = {
 	HFI_PROP_NO_OUTPUT,
 	HFI_PROP_SUBFRAME_INPUT,
 };
 
-static const u32 malabar_vdec_input_properties_vp9[] = {
+static const u32 shikra_vdec_input_properties_vp9[] = {
 	HFI_PROP_NO_OUTPUT,
 	HFI_PROP_SUBFRAME_INPUT,
 };
 
-static const u32 malabar_vdec_output_properties_avc[] = {
+static const u32 shikra_vdec_output_properties_avc[] = {
 	HFI_PROP_WORST_COMPRESSION_RATIO,
 	HFI_PROP_WORST_COMPLEXITY_FACTOR,
 	HFI_PROP_PICTURE_TYPE,
@@ -2227,7 +2180,7 @@ static const u32 malabar_vdec_output_properties_avc[] = {
 	HFI_PROP_DPB_LIST,
 };
 
-static const u32 malabar_vdec_output_properties_hevc[] = {
+static const u32 shikra_vdec_output_properties_hevc[] = {
 	HFI_PROP_WORST_COMPRESSION_RATIO,
 	HFI_PROP_WORST_COMPLEXITY_FACTOR,
 	HFI_PROP_PICTURE_TYPE,
@@ -2236,7 +2189,7 @@ static const u32 malabar_vdec_output_properties_hevc[] = {
 	HFI_PROP_DPB_LIST,
 };
 
-static const u32 malabar_vdec_output_properties_vp9[] = {
+static const u32 shikra_vdec_output_properties_vp9[] = {
 	HFI_PROP_WORST_COMPRESSION_RATIO,
 	HFI_PROP_WORST_COMPLEXITY_FACTOR,
 	HFI_PROP_PICTURE_TYPE,
@@ -2245,81 +2198,85 @@ static const u32 malabar_vdec_output_properties_vp9[] = {
 	HFI_PROP_DPB_LIST,
 };
 
-static const u32 malabar_msm_vidc_ssr_type[] = {
+static const u32 shikra_msm_vidc_ssr_type[] = {
 	HFI_SSR_TYPE_SW_ERR_FATAL,
 };
 
-static const struct msm_vidc_platform_data malabar_data = {
+static const struct msm_vidc_platform_data shikra_data = {
 	/* resources dependent on other module */
-	.bw_tbl = malabar_bw_table,
-	.bw_tbl_size = ARRAY_SIZE(malabar_bw_table),
-	.regulator_tbl = malabar_regulator_table,
-	.regulator_tbl_size = ARRAY_SIZE(malabar_regulator_table),
-	.clk_tbl = malabar_clk_table,
-	.clk_tbl_size = ARRAY_SIZE(malabar_clk_table),
+	.bw_tbl = shikra_bw_table,
+	.bw_tbl_size = ARRAY_SIZE(shikra_bw_table),
+	.regulator_tbl = shikra_regulator_table,
+	.regulator_tbl_size = ARRAY_SIZE(shikra_regulator_table),
+	.clk_tbl = shikra_clk_table,
+	.clk_tbl_size = ARRAY_SIZE(shikra_clk_table),
 
 	/* populate context bank */
-	.context_bank_tbl = malabar_context_bank_table,
-	.context_bank_tbl_size = ARRAY_SIZE(malabar_context_bank_table),
+	.context_bank_tbl = shikra_context_bank_table,
+	.context_bank_tbl_size = ARRAY_SIZE(shikra_context_bank_table),
 
 	/* platform specific resources */
-	.reg_prst_tbl = malabar_reg_preset_table,
-	.reg_prst_tbl_size = ARRAY_SIZE(malabar_reg_preset_table),
+	.reg_prst_tbl = shikra_reg_preset_table,
+	.reg_prst_tbl_size = ARRAY_SIZE(shikra_reg_preset_table),
 	.clock_source_scaling_ratio = 1,
-	.fwname = "venus_5mb_v6_rsa",
+	.fwname = "venus_v7",
 	.pas_id = 9,
 	.supports_mmrm = 0,
 
 	/* caps related resorces */
-	.core_data = core_data_malabar,
-	.core_data_size = ARRAY_SIZE(core_data_malabar),
-	.inst_cap_data = instance_cap_data_malabar,
-	.inst_cap_data_size = ARRAY_SIZE(instance_cap_data_malabar),
-	.inst_cap_dependency_data = instance_cap_dependency_data_malabar,
-	.inst_cap_dependency_data_size = ARRAY_SIZE(instance_cap_dependency_data_malabar),
+	.core_data = core_data_shikra,
+	.core_data_size = ARRAY_SIZE(core_data_shikra),
+	.inst_cap_data = instance_cap_data_shikra,
+	.inst_cap_data_size = ARRAY_SIZE(instance_cap_data_shikra),
+	.inst_cap_dependency_data = instance_cap_dependency_data_shikra,
+	.inst_cap_dependency_data_size = ARRAY_SIZE(instance_cap_dependency_data_shikra),
 	.csc_data.vpe_csc_custom_bias_coeff = vpe_csc_custom_bias_coeff,
 	.csc_data.vpe_csc_custom_matrix_coeff = vpe_csc_custom_matrix_coeff,
 	.csc_data.vpe_csc_custom_limit_coeff = vpe_csc_custom_limit_coeff,
 	.ubwc_config = NULL,
-	.format_data = &format_data_malabar,
+	.format_data = &format_data_shikra,
 
 	/* decoder properties related*/
-	.psc_avc_tbl = malabar_vdec_psc_avc,
-	.psc_avc_tbl_size = ARRAY_SIZE(malabar_vdec_psc_avc),
-	.psc_hevc_tbl = malabar_vdec_psc_hevc,
-	.psc_hevc_tbl_size = ARRAY_SIZE(malabar_vdec_psc_hevc),
-	.psc_vp9_tbl = malabar_vdec_psc_vp9,
-	.psc_vp9_tbl_size = ARRAY_SIZE(malabar_vdec_psc_vp9),
-	.dec_input_prop_avc = malabar_vdec_input_properties_avc,
-	.dec_input_prop_hevc = malabar_vdec_input_properties_hevc,
-	.dec_input_prop_vp9 = malabar_vdec_input_properties_vp9,
-	.dec_input_prop_size_avc = ARRAY_SIZE(malabar_vdec_input_properties_avc),
-	.dec_input_prop_size_hevc = ARRAY_SIZE(malabar_vdec_input_properties_hevc),
-	.dec_input_prop_size_vp9 = ARRAY_SIZE(malabar_vdec_input_properties_vp9),
-	.dec_output_prop_avc = malabar_vdec_output_properties_avc,
-	.dec_output_prop_hevc = malabar_vdec_output_properties_hevc,
-	.dec_output_prop_vp9 = malabar_vdec_output_properties_vp9,
-	.dec_output_prop_size_avc = ARRAY_SIZE(malabar_vdec_output_properties_avc),
-	.dec_output_prop_size_hevc = ARRAY_SIZE(malabar_vdec_output_properties_hevc),
-	.dec_output_prop_size_vp9 = ARRAY_SIZE(malabar_vdec_output_properties_vp9),
+	.psc_avc_tbl = shikra_vdec_psc_avc,
+	.psc_avc_tbl_size = ARRAY_SIZE(shikra_vdec_psc_avc),
+	.psc_hevc_tbl = shikra_vdec_psc_hevc,
+	.psc_hevc_tbl_size = ARRAY_SIZE(shikra_vdec_psc_hevc),
+	.psc_vp9_tbl = shikra_vdec_psc_vp9,
+	.psc_vp9_tbl_size = ARRAY_SIZE(shikra_vdec_psc_vp9),
 
-	.msm_vidc_ssr_type = malabar_msm_vidc_ssr_type,
-	.msm_vidc_ssr_type_size = ARRAY_SIZE(malabar_msm_vidc_ssr_type),
+	.dec_input_prop_avc =  shikra_vdec_input_properties_avc,
+	.dec_input_prop_hevc = shikra_vdec_input_properties_hevc,
+	.dec_input_prop_vp9 =  shikra_vdec_input_properties_vp9,
+	.dec_input_prop_size_avc = ARRAY_SIZE(shikra_vdec_input_properties_avc),
+	.dec_input_prop_size_hevc = ARRAY_SIZE(shikra_vdec_input_properties_hevc),
+	.dec_input_prop_size_vp9 = ARRAY_SIZE(shikra_vdec_input_properties_vp9),
+	.dec_output_prop_avc = shikra_vdec_output_properties_avc,
+	.dec_output_prop_hevc = shikra_vdec_output_properties_hevc,
+	.dec_output_prop_vp9 = shikra_vdec_output_properties_vp9,
+	.dec_output_prop_size_avc = ARRAY_SIZE(shikra_vdec_output_properties_avc),
+	.dec_output_prop_size_hevc = ARRAY_SIZE(shikra_vdec_output_properties_hevc),
+	.dec_output_prop_size_vp9 = ARRAY_SIZE(shikra_vdec_output_properties_vp9),
+
+	.msm_vidc_ssr_type = shikra_msm_vidc_ssr_type,
+	.msm_vidc_ssr_type_size = ARRAY_SIZE(shikra_msm_vidc_ssr_type),
 	.vpu_ver = VENUS_VERSION_AR50LT_V2,
 };
 
-int msm_vidc_get_platform_data_malabar(struct msm_vidc_core *core)
+int msm_vidc_get_platform_data_shikra(struct msm_vidc_core *core)
 {
-	d_vpr_h("%s: initialize malabar data\n", __func__);
-	core->platform->data = malabar_data;
+
+	d_vpr_h("%s: initialize shikra data\n", __func__);
+	core->platform->data = shikra_data;
+
 	return 0;
 }
 
-int msm_vidc_init_platform_malabar(struct msm_vidc_core *core)
+int msm_vidc_init_platform_shikra(struct msm_vidc_core *core)
 {
+	int rc = 0;
 	static struct msm_vidc_memory_ops mem_ops_ext_ar50lt;
 
-	d_vpr_h("%s: initialize malabar ops\n", __func__);
+	d_vpr_h("%s: initialize shikra ops\n", __func__);
 	core->mem_ops = get_mem_ops_ext();
 
 	memcpy(&mem_ops_ext_ar50lt, core->mem_ops, sizeof(struct msm_vidc_memory_ops));
@@ -2336,5 +2293,5 @@ int msm_vidc_init_platform_malabar(struct msm_vidc_core *core)
 		return -EINVAL;
 	}
 
-	return 0;
+	return rc;
 }

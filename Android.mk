@@ -30,6 +30,8 @@ KBUILD_OPTIONS += TARGET_BOARD_PLATFORM=$(TARGET_BOARD_PLATFORM)
 
 ifneq ($(TARGET_BOARD_PLATFORM),canoe)
 ifneq ($(TARGET_BOARD_PLATFORM),hamoa)
+ifneq ($(TARGET_BOARD_PLATFORM),malabar)
+ifneq ($(TARGET_BOARD_PLATFORM),shikra)
 ifneq ($(TARGET_BOARD_PLATFORM),parrot)
 KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS+=$(shell pwd)/$(call intermediates-dir-for,DLKM,hw-fence-module-symvers)/Module.symvers
 endif
@@ -38,9 +40,11 @@ KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(shell pwd)/$(call intermediates-dir-for
 ifneq ($(TARGET_BOARD_PLATFORM),parrot)
 KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS+=$(shell pwd)/$(call intermediates-dir-for,DLKM,synx-driver-symvers)/synx-driver-symvers
 endif
+endif
 else
 ifeq ($(ENABLE_HYP), true)
 KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(PWD)/$(call intermediates-dir-for,DLKM,virtio-video-symvers)/Module.symvers
+endif
 endif
 endif
 endif
@@ -65,6 +69,8 @@ LOCAL_MODULE_KO_DIRS      := msm_video/msm_video.ko
 
 ifneq ($(TARGET_BOARD_PLATFORM),canoe)
 ifneq ($(TARGET_BOARD_PLATFORM),hamoa)
+ifneq ($(TARGET_BOARD_PLATFORM),malabar)
+ifneq ($(TARGET_BOARD_PLATFORM),shikra)
 ifneq ($(TARGET_BOARD_PLATFORM),parrot)
 LOCAL_REQUIRED_MODULES    += hw-fence-module-symvers
 endif
@@ -85,6 +91,8 @@ endif
 endif
 ifneq ($(TARGET_BOARD_PLATFORM),parrot)
 LOCAL_ADDITIONAL_DEPENDENCIES += $(call intermediates-dir-for,DLKM,hw-fence-module-symvers)/Module.symvers
+endif
+endif
 endif
 endif
 endif
