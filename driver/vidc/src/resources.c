@@ -1172,7 +1172,8 @@ static int llcc_enable(struct msm_vidc_core *core, bool enable)
 	return ret;
 }
 
-static int __vote_bandwidth(struct bus_info *bus, unsigned long bw_kbps)
+static int __vote_bandwidth(struct bus_info *bus, unsigned long ab_kbps,
+	unsigned long ib_kbps)
 {
 	int rc = 0;
 
@@ -1181,12 +1182,12 @@ static int __vote_bandwidth(struct bus_info *bus, unsigned long bw_kbps)
 		return -EINVAL;
 	}
 
-	d_vpr_p("Voting bus %s to ab %lu kBps\n", bus->name, bw_kbps);
+	d_vpr_p("Voting bus %s to ab %lu ib %lu kBps\n", bus->name, ab_kbps, ib_kbps);
 
-	rc = icc_set_bw(bus->icc, bw_kbps, 0);
+	rc = icc_set_bw(bus->icc, ab_kbps, ib_kbps);
 	if (rc)
-		d_vpr_e("Failed voting bus %s to ab %lu, rc=%d\n",
-			bus->name, bw_kbps, rc);
+		d_vpr_e("Failed voting bus %s to ab %lu ib %lu, rc=%d\n",
+				bus->name, ab_kbps, ib_kbps, rc);
 
 	return rc;
 }
@@ -1200,7 +1201,7 @@ static int __unvote_buses(struct msm_vidc_core *core)
 	core->power.bw_llcc = 0;
 
 	venus_hfi_for_each_bus(core, bus) {
-		rc = __vote_bandwidth(bus, 0);
+		rc = __vote_bandwidth(bus, 0, 0);
 		if (rc)
 			goto err_unknown_device;
 	}
@@ -1214,7 +1215,7 @@ static int __vote_buses(struct msm_vidc_core *core,
 {
 	int rc = 0;
 	struct bus_info *bus = NULL;
-	unsigned long bw_kbps = 0, bw_prev = 0;
+	unsigned long ab_kbps = 0, ib_kbps = 0, bw_prev = 0;
 	enum vidc_bus_type type;
 
 	venus_hfi_for_each_bus(core, bus) {
@@ -1222,33 +1223,37 @@ static int __vote_buses(struct msm_vidc_core *core,
 			type = get_type_frm_name(bus->name);
 
 			if (type == DDR) {
-				bw_kbps = bw_ddr;
+				ab_kbps = bw_ddr;
 				bw_prev = core->power.bw_ddr;
 			} else if (type == LLCC) {
-				bw_kbps = bw_llcc;
+				ab_kbps = bw_llcc;
 				bw_prev = core->power.bw_llcc;
 			} else {
-				bw_kbps = bus->max_kbps;
+				ab_kbps = bus->max_kbps;
 				bw_prev = core->power.bw_ddr ?
-						bw_kbps : 0;
+						ab_kbps : 0;
 			}
 
 			/* ensure freq is within limits */
-			bw_kbps = clamp_t(typeof(bw_kbps), bw_kbps,
+			ab_kbps = clamp_t(typeof(ab_kbps), ab_kbps,
 						 bus->min_kbps, bus->max_kbps);
 
-			if (TRIVIAL_BW_CHANGE(bw_kbps, bw_prev) && bw_prev) {
+			if (TRIVIAL_BW_CHANGE(ab_kbps, bw_prev) && bw_prev) {
 				d_vpr_l("Skip voting bus %s to %lu kBps\n",
-					bus->name, bw_kbps);
+					bus->name, ab_kbps);
 				continue;
 			}
 
-			rc = __vote_bandwidth(bus, bw_kbps);
+            if (core->platform->data.vpu_ver == VENUS_VERSION_AR50LT_V1 ||
+                core->platform->data.vpu_ver == VENUS_VERSION_AR50LT_V2)
+                ib_kbps = 2 * ab_kbps;
+
+			rc = __vote_bandwidth(bus, ab_kbps, ib_kbps);
 
 			if (type == DDR)
-				core->power.bw_ddr = bw_kbps;
+				core->power.bw_ddr = ab_kbps;
 			else if (type == LLCC)
-				core->power.bw_llcc = bw_kbps;
+				core->power.bw_llcc = ab_kbps;
 		} else {
 			d_vpr_e("No BUS to Vote\n");
 		}
