@@ -2,6 +2,7 @@ targets = [
     # keep sorted
     "canoe",
     "hamoa",
+    "hamoa_la",
     "gen3auto",
     "shikra",
     "sun",
