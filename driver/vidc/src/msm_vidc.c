@@ -721,7 +721,11 @@ void *msm_vidc_open(struct msm_vidc_core *core, u32 session_type)
 
 	inst->core = core;
 	inst->domain = session_type;
-	inst->session_id = hash32_ptr(inst);
+	core_lock(core, __func__);
+	if (!core->session_id)
+		core->session_id = 0x7FFF0000;
+	inst->session_id = core->session_id++;
+	core_unlock(core, __func__);
 	msm_vidc_update_state(inst, MSM_VIDC_OPEN, __func__);
 	inst->sub_state = MSM_VIDC_SUB_STATE_NONE;
 	strscpy(inst->sub_state_name, "SUB_STATE_NONE", sizeof(inst->sub_state_name));
