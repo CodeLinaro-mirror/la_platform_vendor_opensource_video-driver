@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2024,2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include "msm_vidc_buffer_iris33_au.h"
@@ -252,6 +252,7 @@ static u32 msm_vidc_decoder_persist_size_iris33_au(struct msm_vidc_inst *inst)
 {
 	u32 size = 0;
 	u32 rpu_enabled = 0;
+	u32 persist_comv_enable = inst->comv_bitstream_cb;
 
 	if (!inst) {
 		d_vpr_e("%s: invalid params\n", __func__);
@@ -266,7 +267,7 @@ static u32 msm_vidc_decoder_persist_size_iris33_au(struct msm_vidc_inst *inst)
 	} else if (inst->codec == MSM_VIDC_HEVC || inst->codec == MSM_VIDC_HEIC) {
 		HFI_BUFFER_PERSIST_H265D(size, rpu_enabled);
 	} else if (inst->codec == MSM_VIDC_VP9) {
-		HFI_BUFFER_PERSIST_VP9D(size);
+		HFI_BUFFER_PERSIST_VP9D(size, persist_comv_enable);
 	} else if (inst->codec == MSM_VIDC_AV1) {
 		/*
 		 * When DRAP is enabled, COMV buffer is part of PERSIST buffer and
@@ -278,14 +279,47 @@ static u32 msm_vidc_decoder_persist_size_iris33_au(struct msm_vidc_inst *inst)
 		if (inst->capabilities->cap[DRAP].value)
 			HFI_BUFFER_PERSIST_AV1D(size,
 				inst->capabilities->cap[FRAME_WIDTH].max,
-				inst->capabilities->cap[FRAME_HEIGHT].max, 16);
+				inst->capabilities->cap[FRAME_HEIGHT].max, 16,
+				persist_comv_enable);
 		else
-			HFI_BUFFER_PERSIST_AV1D(size, 0, 0, 0);
+			HFI_BUFFER_PERSIST_AV1D(size, 0, 0, 0, persist_comv_enable);
 	} else if (inst->codec == MSM_VIDC_MPEG2) {
 		HFI_BUFFER_PERSIST_MP2D(size);
 	}
 
 	i_vpr_l(inst, "%s: size %d\n", __func__, size);
+	return size;
+}
+
+static u32 msm_vidc_decoder_persist_comv_size_iris33_au(struct msm_vidc_inst *inst)
+{
+	u32 size = 0;
+
+	if (!inst) {
+		d_vpr_e("%s: invalid params\n", __func__);
+		return size;
+	}
+
+	if (inst->codec == MSM_VIDC_VP9) {
+		HFI_BUFFER_PERSIST_COMV_VP9D(size);
+	} else if (inst->codec == MSM_VIDC_AV1) {
+		/*
+		 * When DRAP is enabled, COMV buffer is part of PERSIST buffer and
+		 * should not be allocated separately. PERSIST buffer should include
+		 * COMV buffer calculated with width, height, refcount.
+		 * When DRAP is disabled, COMV buffer should not be included in PERSIST
+		 * buffer.
+		 */
+		if (inst->capabilities->cap[DRAP].value)
+			HFI_BUFFER_PERSIST_COMV_AV1D(size,
+				inst->capabilities->cap[FRAME_WIDTH].max,
+				inst->capabilities->cap[FRAME_HEIGHT].max, 16);
+		else
+			HFI_BUFFER_PERSIST_COMV_AV1D(size, 0, 0, 0);
+	}
+
+	i_vpr_l(inst, "%s: size %d\n", __func__, size);
+
 	return size;
 }
 
@@ -670,6 +704,7 @@ int msm_buffer_size_iris33_au(struct msm_vidc_inst *inst,
 		{MSM_VIDC_BUF_PERSIST,         msm_vidc_decoder_persist_size_iris33_au      },
 		{MSM_VIDC_BUF_DPB,             msm_vidc_decoder_dpb_size_iris33_au          },
 		{MSM_VIDC_BUF_PARTIAL_DATA,    msm_vidc_decoder_partial_data_size_iris33_au },
+		{MSM_VIDC_BUF_PERSIST_COMV,    msm_vidc_decoder_persist_comv_size_iris33_au },
 	};
 	static const struct msm_vidc_buf_type_handle enc_buf_type_handle[] = {
 		{MSM_VIDC_BUF_INPUT,           msm_vidc_encoder_input_size                  },
@@ -848,6 +883,7 @@ int msm_buffer_min_count_iris33_au(struct msm_vidc_inst *inst,
 	case MSM_VIDC_BUF_ARP:
 	case MSM_VIDC_BUF_VPSS:
 	case MSM_VIDC_BUF_PARTIAL_DATA:
+	case MSM_VIDC_BUF_PERSIST_COMV:
 		count = msm_vidc_internal_buffer_count(inst, buffer_type);
 		break;
 	case MSM_VIDC_BUF_DPB:
