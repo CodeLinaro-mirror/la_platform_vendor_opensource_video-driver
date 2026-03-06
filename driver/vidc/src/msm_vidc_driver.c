@@ -4993,7 +4993,6 @@ int msm_vidc_inst_timeout(struct msm_vidc_inst *inst)
 	 */
 	if (core->is_hw_virt) {
 		msm_vidc_change_state(inst, MSM_VIDC_ERROR, __func__);
-		list_move_tail(&inst->list, &core->dangling_instances);
 		goto unlock;
 	}
 
