@@ -5192,7 +5192,6 @@ int msm_vidc_trigger_ssr(struct msm_vidc_core *core,
 void msm_vidc_hw_virt_ssr_handler(struct work_struct *work)
 {
 	struct msm_vidc_core *core = NULL;
-	struct msm_vidc_inst *i = NULL, *temp = NULL;
 	bool bug_on = false;
 
 	core = container_of(work, struct msm_vidc_core, hw_virt_ssr_work);
@@ -5207,10 +5206,6 @@ void msm_vidc_hw_virt_ssr_handler(struct work_struct *work)
 
 	core_lock(core, __func__);
 	msm_vidc_core_deinit_locked(core, true);
-
-	/* clear dangling session list */
-	list_for_each_entry_safe(i, temp, &core->dangling_instances, list)
-		list_del_init(&i->list);
 
 	if (core->ssr_dev == GVM_SSR_DEVICE_DRIVER) {
 		virtio_video_msm_cmd_close_gvm();
