@@ -96,9 +96,10 @@ struct msm_vidc_memory_ops {
 			 struct msm_vidc_mem *mem);
 	int (*iommu_unmap)(struct msm_vidc_core *core,
 			   struct msm_vidc_mem *mem);
-	int (*memory_cache_ops)(struct msm_vidc_inst *inst,
-			   struct dma_buf *dbuf, enum msm_memory_cache_op_type cache_type);
-	};
+	int (*memory_cache)(struct msm_vidc_inst *inst,
+		struct dma_buf *dbuf, enum msm_memory_cache_op_type cache_type,
+		u32 offset, u32 size);
+};
 
 const struct msm_vidc_memory_ops *get_mem_ops(void);
 

@@ -651,6 +651,41 @@ static int msm_vidc_iommu_unmap(struct msm_vidc_core *core, struct msm_vidc_mem 
 	return rc;
 }
 
+static int msm_vidc_memory_cache(struct msm_vidc_inst *inst,
+	struct dma_buf *dbuf, enum msm_memory_cache_op_type cache_op_type,
+	u32 offset, u32 size)
+{
+	int rc = 0;
+
+	if (!inst || !dbuf) {
+		d_vpr_e("%s: Invalid params\n", __func__);
+		return -EINVAL;
+	}
+
+	switch (cache_op_type) {
+	case MSM_MEM_CACHE_CLEAN:
+	case MSM_MEM_CACHE_CLEAN_INVALIDATE:
+		rc = dma_buf_begin_cpu_access(dbuf, DMA_TO_DEVICE);
+		if (rc)
+			break;
+		rc = dma_buf_end_cpu_access(dbuf, DMA_FROM_DEVICE);
+		break;
+	case MSM_MEM_CACHE_INVALIDATE:
+		rc = dma_buf_begin_cpu_access(dbuf, DMA_FROM_DEVICE);
+		if (rc)
+			break;
+		rc = dma_buf_end_cpu_access(dbuf, DMA_FROM_DEVICE);
+		break;
+	default:
+		i_vpr_e(inst, "%s: cache (%d) operation not supported\n",
+			__func__, cache_op_type);
+		rc = -EINVAL;
+		break;
+	}
+
+	return rc;
+}
+
 static const struct msm_vidc_memory_ops msm_mem_ops = {
 	.dma_buf_get                    = msm_vidc_dma_buf_get,
 	.dma_buf_put                    = msm_vidc_dma_buf_put,
@@ -666,6 +701,7 @@ static const struct msm_vidc_memory_ops msm_mem_ops = {
 	.buffer_region                  = msm_vidc_buffer_region,
 	.iommu_map                      = msm_vidc_iommu_map,
 	.iommu_unmap                    = msm_vidc_iommu_unmap,
+	.memory_cache                   = msm_vidc_memory_cache,
 };
 
 const struct msm_vidc_memory_ops *get_mem_ops(void)
