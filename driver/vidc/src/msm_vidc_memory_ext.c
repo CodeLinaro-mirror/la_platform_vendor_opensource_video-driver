@@ -476,8 +476,8 @@ static int msm_vidc_memory_unmap_free_ext(struct msm_vidc_core *core, struct msm
 	return rc;
 }
 
-static int msm_vidc_memory_cache_ops_ext(struct msm_vidc_inst *inst,
-	struct dma_buf *dbuf, enum msm_memory_cache_op_type cache_op_type)
+static int msm_vidc_memory_cache_ext(struct msm_vidc_inst *inst,
+	struct dma_buf *dbuf, enum msm_memory_cache_op_type cache_op_type, u32 offset, u32 size)
 {
 	int rc = 0;
 
@@ -489,16 +489,19 @@ static int msm_vidc_memory_cache_ops_ext(struct msm_vidc_inst *inst,
 	switch (cache_op_type) {
 	case MSM_MEM_CACHE_CLEAN:
 	case MSM_MEM_CACHE_CLEAN_INVALIDATE:
-		rc = dma_buf_begin_cpu_access(dbuf, DMA_TO_DEVICE);
+		rc = dma_buf_end_cpu_access_partial(dbuf, DMA_FROM_DEVICE,
+				offset, size);
 		if (rc)
 			break;
-		rc = dma_buf_end_cpu_access(dbuf, DMA_FROM_DEVICE);
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
+		rc = dma_buf_begin_cpu_access_partial(dbuf, DMA_FROM_DEVICE,
+				offset, size);
+#endif
 		break;
 	case MSM_MEM_CACHE_INVALIDATE:
-		rc = dma_buf_begin_cpu_access(dbuf, DMA_FROM_DEVICE);
-		if (rc)
-			break;
-		rc = dma_buf_end_cpu_access(dbuf, DMA_FROM_DEVICE);
+		rc = dma_buf_begin_cpu_access_partial(dbuf, DMA_FROM_DEVICE,
+				offset, size);
 		break;
 	default:
 		i_vpr_e(inst, "%s: cache (%d) operation not supported\n",
@@ -520,7 +523,7 @@ const struct msm_vidc_memory_ops *get_mem_ops_ext(void)
 	mem_ops_ext.memory_alloc_map  = msm_vidc_memory_alloc_map_ext;
 	mem_ops_ext.memory_unmap_free = msm_vidc_memory_unmap_free_ext;
 	mem_ops_ext.buffer_region     = msm_vidc_buffer_region_ext;
-	mem_ops_ext.memory_cache_ops  = msm_vidc_memory_cache_ops_ext;
+	mem_ops_ext.memory_cache      = msm_vidc_memory_cache_ext;
 
 	return &mem_ops_ext;
 }
