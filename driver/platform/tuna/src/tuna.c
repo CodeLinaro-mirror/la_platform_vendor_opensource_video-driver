@@ -224,6 +224,7 @@ static const struct msm_platform_core_capability core_data_tuna[] = {
 	// TODO gdoddabe Enable when Synx changes are available
 	// {SUPPORTS_SYNX_FENCE, 0},
 	{SUPPORTS_REQUESTS, 0},
+	{SUPPORTS_10BIT_ROI, 0},
 };
 
 static struct msm_platform_inst_capability instance_cap_data_tuna[] = {
