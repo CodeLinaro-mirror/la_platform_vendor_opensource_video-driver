@@ -660,6 +660,7 @@ enum msm_vidc_core_capability_type {
 	DEVICE_CAPS,
 	SUPPORTS_REQUESTS,
 	SUPPORTS_SYNX_FENCE,
+	SUPPORTS_10BIT_ROI,
 	SSR_TYPE,
 	CORE_CAP_MAX,
 };
