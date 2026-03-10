@@ -301,7 +301,7 @@ static int msm_vidc_deinit_platform_variant(struct msm_vidc_core *core, struct d
 static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct device *dev)
 {
 	int rc = -EINVAL;
-#if defined(CONFIG_MSM_VIDC_BLAIR)
+#if defined(CONFIG_MSM_VIDC_BLAIR) || defined(CONFIG_MSM_VIDC_KHAJE)
 	struct msm_platform_core_capability *platform_data;
 	int i, num_platform_caps;
 #endif
@@ -397,12 +397,30 @@ static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct dev
 #endif
 
 #if defined(CONFIG_MSM_VIDC_KHAJE)
-	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-khaje")) {
-		rc = msm_vidc_init_platform_khaje(core, dev);
-		if (rc)
-			d_vpr_e("%s: failed with %d\n", __func__, rc);
-		return rc;
-	}
+    if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-khaje") ||
+            of_device_is_compatible(dev->of_node, "qcom,msm-vidc-khaje-iot")) {
+        rc = msm_vidc_init_platform_khaje(core, dev);
+        if (rc) {
+            d_vpr_e("%s: failed with %d\n", __func__, rc);
+            return rc;
+        }
+
+        // Apply khaje-iot specific overrides
+        if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-khaje-iot")) {
+            if (!core || !core->platform) {
+                d_vpr_e("%s: Invalid params\n", __func__);
+                return -EINVAL;
+            }
+            platform_data = core->platform->data.core_data;
+            num_platform_caps = core->platform->data.core_data_size;
+            for (i = 0; i < num_platform_caps && i < CORE_CAP_MAX; i++) {
+                if (platform_data[i].type == MAX_SESSION_COUNT) {
+                    platform_data[i].value = 4;
+                    break;
+                }
+            }
+        }
+    }
 #endif
 
 #if defined(CONFIG_MSM_VIDC_MONACO)
