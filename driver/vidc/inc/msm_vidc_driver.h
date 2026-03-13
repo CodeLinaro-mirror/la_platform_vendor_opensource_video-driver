@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2020-2021,, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022,2024,2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #ifndef _MSM_VIDC_DRIVER_H_
@@ -20,6 +20,13 @@
 #define GVM_SSR_DEVICE_DRIVER       0x80000000
 #define GVM_SSR                     0x300
 #endif
+
+#define INVALID_BUFFER_DEV_ADDR 0x00A00000
+
+#define TZ_VIDEO_VERSION_1 0xbeef0001
+
+#define TZ_SUPPORT_COMV_BITSTREAM_CB(core) (core->tz_ver == TZ_VIDEO_VERSION_1)
+
 
 enum msm_vidc_debugfs_event;
 
@@ -103,7 +110,8 @@ static inline bool is_internal_buffer(enum msm_vidc_buffer_type buffer_type)
 		buffer_type == MSM_VIDC_BUF_DPB ||
 		buffer_type == MSM_VIDC_BUF_PERSIST ||
 		buffer_type == MSM_VIDC_BUF_VPSS ||
-		buffer_type == MSM_VIDC_BUF_PARTIAL_DATA;
+		buffer_type == MSM_VIDC_BUF_PARTIAL_DATA ||
+		buffer_type == MSM_VIDC_BUF_PERSIST_COMV;
 }
 
 static inline bool is_meta_cap(struct msm_vidc_inst *inst, u32 cap)
@@ -446,6 +454,9 @@ int msm_vidc_session_set_secure_mode(struct msm_vidc_inst *inst);
 #if defined(CONFIG_MSM_VIDC_IRIS33_AU)
 int msm_vidc_session_set_core_id(struct msm_vidc_inst *inst);
 #endif
+#if defined(CONFIG_MSM_VIDC_NORDAU)
+int msm_vidc_session_set_persist_comv(struct msm_vidc_inst *inst);
+#endif
 int msm_vidc_session_set_default_header(struct msm_vidc_inst *inst);
 int msm_vidc_session_streamoff(struct msm_vidc_inst *inst,
 		enum msm_vidc_port_type port);
@@ -473,7 +484,9 @@ void msm_vidc_ssr_handler(struct work_struct *work);
 void msm_vidc_hw_virt_ssr_handler(struct work_struct *work);
 #endif
 int msm_vidc_trigger_stability(struct msm_vidc_core *core,
-		u64 trigger_stability_val);
+			       u64 trigger_stability_val);
+int msm_vidc_trigger_s2(struct msm_vidc_core *core,
+			       u64 trigger_s2_val);
 void msm_vidc_stability_handler(struct work_struct *work);
 int cancel_stability_work_sync(struct msm_vidc_inst *inst);
 void msm_vidc_fw_unload_handler(struct work_struct *work);

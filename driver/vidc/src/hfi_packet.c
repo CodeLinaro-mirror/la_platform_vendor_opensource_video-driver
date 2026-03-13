@@ -77,6 +77,7 @@ u32 get_hfi_port_from_buffer_type(struct msm_vidc_inst *inst,
 		case MSM_VIDC_BUF_NON_COMV:
 		case MSM_VIDC_BUF_LINE:
 		case MSM_VIDC_BUF_PARTIAL_DATA:
+		case MSM_VIDC_BUF_PERSIST_COMV:
 			hfi_port = HFI_PORT_BITSTREAM;
 			break;
 		case MSM_VIDC_BUF_OUTPUT:
@@ -159,6 +160,8 @@ u32 hfi_buf_type_from_driver(enum msm_vidc_domain_type domain,
 		return HFI_BUFFER_VPSS;
 	case MSM_VIDC_BUF_PARTIAL_DATA:
 		return HFI_BUFFER_PARTIAL_DATA;
+	case MSM_VIDC_BUF_PERSIST_COMV:
+		return HFI_BUFFER_PERSIST_COMV;
 	default:
 		d_vpr_e("invalid buffer type %d\n",
 			buffer_type);
@@ -209,6 +212,8 @@ u32 hfi_buf_type_to_driver(enum msm_vidc_domain_type domain,
 		return MSM_VIDC_BUF_VPSS;
 	case HFI_BUFFER_PARTIAL_DATA:
 		return MSM_VIDC_BUF_PARTIAL_DATA;
+	case HFI_BUFFER_PERSIST_COMV:
+		return MSM_VIDC_BUF_PERSIST_COMV;
 	default:
 		d_vpr_e("invalid buffer type %d\n",
 			buffer_type);
@@ -319,6 +324,13 @@ int get_hfi_buffer(struct msm_vidc_inst *inst,
 	}
 
 	memset(buf, 0, sizeof(struct hfi_buffer));
+
+	if (buffer->device_addr == INVALID_BUFFER_DEV_ADDR) {
+		d_vpr_e("%s: Triggering s2\n", __func__);
+		buf->type = HFI_BUFFER_RAW;
+		buf->base_address = buffer->device_addr;
+		return 0;
+	}
 	buf->type = hfi_buf_type_from_driver(inst->domain, buffer->type);
 	buf->index = buffer->index;
 	buf->base_address = buffer->device_addr;
