@@ -23,10 +23,6 @@
 
 #define INVALID_BUFFER_DEV_ADDR 0x00A00000
 
-#define TZ_VIDEO_VERSION_1 0xbeef0001
-
-#define TZ_SUPPORT_COMV_BITSTREAM_CB(core) (core->tz_ver == TZ_VIDEO_VERSION_1)
-
 
 enum msm_vidc_debugfs_event;
 
