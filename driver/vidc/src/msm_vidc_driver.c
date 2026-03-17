@@ -4956,7 +4956,6 @@ int msm_vidc_core_init(struct msm_vidc_core *core)
 		msm_vidc_change_core_sub_state(core, 0,
 			CORE_SUBSTATE_POWER_ENABLE, __func__);
 		call_venus_op(core, enable_intr, core);
-		call_venus_op(g_core, read_tz_ver, g_core);
 
 	}
 
