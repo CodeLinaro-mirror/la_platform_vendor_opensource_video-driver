@@ -1439,7 +1439,7 @@ static struct msm_platform_inst_capability instance_data_neo[] = {
 		0,
 		0,
 		CAP_FLAG_OUTPUT_PORT,
-		{GOP_SIZE, B_FRAME},
+		{GOP_SIZE, B_FRAME, BITRATE_MODE},
 		{LTR_COUNT, IR_RANDOM, SLICE_MODE},
 		msm_vidc_adjust_all_intra, NULL},
 
