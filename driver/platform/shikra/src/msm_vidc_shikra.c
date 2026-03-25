@@ -2107,7 +2107,7 @@ static const struct clk_table shikra_clk_table[] = {
 
 /* name, start, size, secure, dma_coherant, region, dma_mask */
 const struct context_bank_table shikra_context_bank_table[] = {
-	{"qcom,vidc,cb-ns",             0x25800000, 0xba800000, 0, 1,
+	{"qcom,vidc,cb-ns",             0x25800000, 0xba800000, 0, 0,
 		MSM_VIDC_NON_SECURE |
 		MSM_VIDC_NON_SECURE_PIXEL |
 		MSM_VIDC_NON_SECURE_BITSTREAM, 0 },
@@ -2219,7 +2219,7 @@ static const struct msm_vidc_platform_data shikra_data = {
 	.reg_prst_tbl = shikra_reg_preset_table,
 	.reg_prst_tbl_size = ARRAY_SIZE(shikra_reg_preset_table),
 	.clock_source_scaling_ratio = 1,
-	.fwname = "venus_v7",
+	.fwname = "venus_5mb_v6",
 	.pas_id = 9,
 	.supports_mmrm = 0,
 
