@@ -2049,6 +2049,10 @@ int msm_vidc_get_control(struct msm_vidc_inst *inst, struct v4l2_ctrl *ctrl)
 		ctrl->val = inst->capabilities[CODED_FRAMES].value;
 		i_vpr_h(inst, "%s: coded frames: %d\n", __func__, ctrl->val);
 		break;
+	case PROFILE:
+		ctrl->val = inst->capabilities[PROFILE].value;
+		i_vpr_h(inst, "%s: profile: %d\n", __func__, ctrl->val);
+		break;
 	case LEVEL:
 		ctrl->val = inst->capabilities[LEVEL].value;
 		i_vpr_h(inst, "%s: level: %d\n", __func__, ctrl->val);
@@ -3166,6 +3170,9 @@ static int msm_vidc_queue_buffer(struct msm_vidc_inst *inst, struct msm_vidc_buf
 
 	/* if cache ops fails ignore the error */
 	msm_vidc_qbuf_cache_operation(inst, buf);
+
+	if (meta)
+		msm_vidc_qbuf_cache_operation(inst, meta);
 
 	if (msm_vidc_is_super_buffer(inst) && is_input_buffer(buf->type))
 		rc = venus_hfi_queue_super_buffer(inst, buf, meta);

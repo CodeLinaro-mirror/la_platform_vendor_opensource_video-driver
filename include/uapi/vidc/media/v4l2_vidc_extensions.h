@@ -438,4 +438,7 @@ enum v4l2_mpeg_vidc_apv_level {
 /* Control to enable or disable LOG video encoding */
 #define V4L2_CID_MPEG_VIDC_LOG_VIDEO_ENCODE                  (VIDC_BASE + 0x69)
 
+/* Control to enable/disable multiple slices encoding for multiple tiles */
+#define V4L2_CID_MPEG_VIDEO_VIDC_MULTI_SLICE_MULTI_TILE       (V4L2_CID_MPEG_VIDC_BASE + 0x6F)
+
 #endif

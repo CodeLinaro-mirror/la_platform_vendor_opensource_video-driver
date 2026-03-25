@@ -18,7 +18,6 @@
 #include "msm_media_info.h"
 #include <media/v4l2_vidc_extensions.h>
 
-
 static u32 msm_vidc_decoder_bin_size_ar50lt(struct msm_vidc_inst *inst)
 {
 	struct msm_vidc_core *core;

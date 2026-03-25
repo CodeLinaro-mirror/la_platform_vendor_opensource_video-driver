@@ -8,7 +8,6 @@
 
 #include <linux/soc/qcom/llcc-qcom.h>
 #include <soc/qcom/of_common.h>
-#include <soc/qcom/socinfo.h>
 
 #include <media/v4l2_vidc_extensions.h>
 #include "msm_vidc_alor.h"
@@ -773,6 +772,12 @@ static struct msm_platform_inst_capability instance_cap_data_alor[] = {
 		0,
 		HFI_PROP_EARLY_NOTIFY_FENCE_COUNT,
 		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
+
+	{MULTI_SLICE_MULTI_TILE_MODE, ENC, HEVC,
+		0, 1, 1, 0,
+		V4L2_CID_MPEG_VIDEO_VIDC_MULTI_SLICE_MULTI_TILE,
+		HFI_PROP_MULTI_SLICE_MULTI_TILE,
+		CAP_FLAG_OUTPUT_PORT},
 
 	{HEADER_MODE, ENC, H264 | HEVC | HEIC,
 		V4L2_MPEG_VIDEO_HEADER_MODE_SEPARATE,
@@ -2317,6 +2322,11 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_alor
 	{EARLY_NOTIFY_FENCE_COUNT, DEC, H264 | HEVC | AV1,
 		{0},
 		msm_vidc_adjust_early_notify_fence_count,
+		msm_vidc_set_u32},
+
+	{MULTI_SLICE_MULTI_TILE_MODE, ENC, HEVC,
+		{0},
+		NULL,
 		msm_vidc_set_u32},
 
 	{HEADER_MODE, ENC, H264 | HEVC | HEIC,

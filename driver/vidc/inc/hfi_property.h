@@ -737,6 +737,8 @@ enum hfi_log_video_encode_mode {
 };
 #define HFI_PROP_LOG_VIDEO_ENCODE                               0x030001C0
 
+#define HFI_PROP_MULTI_SLICE_MULTI_TILE                         0x030001C5
+
 #define HFI_PROP_END                                            0x03FFFFFF
 
 #define HFI_SESSION_ERROR_BEGIN                                 0x04000000
