@@ -1395,9 +1395,14 @@ int venus_hfi_session_set_persist_comv(struct msm_vidc_inst *inst)
 	inst->comv_bitstream_cb = false;
 	if ((!inst->capabilities->cap[SECURE_MODE].value) &&
 		(inst->domain == MSM_VIDC_DECODER)) {
-		u32 enable_persist_comv = true;
+		u32 enable_persist_comv = false;
 
 		inst->comv_bitstream_cb = true;
+
+		if (inst->codec == MSM_VIDC_VP9 ||
+			inst->codec == MSM_VIDC_AV1) {
+			enable_persist_comv = true;
+		}
 
 		rc = hfi_create_header(inst->packet, inst->packet_size,
 				inst->session_id, core->header_id++);
@@ -1414,6 +1419,9 @@ int venus_hfi_session_set_persist_comv(struct msm_vidc_inst *inst)
 				sizeof(u32));
 		if (rc)
 			goto unlock;
+
+		d_vpr_h("%s: set persist comv flag to %d\n",
+			__func__, enable_persist_comv);
 
 		rc = __cmdq_write(inst->core, inst->packet);
 		if (rc)
