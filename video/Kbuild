@@ -23,6 +23,11 @@ include $(VIDEO_ROOT)/config/ravelin_video.conf
 LINUXINCLUDE   += -include $(VIDEO_ROOT)/config/ravelin_video.h
 endif
 
+ifeq ($(CONFIG_ARCH_BOURTZI), y)
+include $(VIDEO_ROOT)/config/bourtzi_video.conf
+LINUXINCLUDE   += -include $(VIDEO_ROOT)/config/bourtzi_video.h
+endif
+
 ifeq ($(CONFIG_ARCH_SUN), y)
 include $(VIDEO_ROOT)/config/sun_video.conf
 LINUXINCLUDE   += -include $(VIDEO_ROOT)/config/sun_video.h
@@ -78,6 +83,11 @@ endif
 
 ifeq ($(CONFIG_MSM_VIDC_RAVELIN), y)
 LINUXINCLUDE   += -I$(VIDEO_DRIVER_ABS_PATH)/platform/ravelin/inc \
+                  -I$(VIDEO_DRIVER_ABS_PATH)/variant/ar50lt/inc
+endif
+
+ifeq ($(CONFIG_MSM_VIDC_BOURTZI), y)
+LINUXINCLUDE   += -I$(VIDEO_DRIVER_ABS_PATH)/platform/bourtzi/inc \
                   -I$(VIDEO_DRIVER_ABS_PATH)/variant/ar50lt/inc
 endif
 
@@ -150,6 +160,12 @@ video-objs +=     $(VIDEO_DRIVER_REL_PATH)/platform/chora/src/chora.o \
 endif
 ifeq ($(CONFIG_MSM_VIDC_RAVELIN), y)
 video-objs +=     $(VIDEO_DRIVER_REL_PATH)/platform/ravelin/src/ravelin.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/ar50lt/src/msm_vidc_buffer_ar50lt.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/ar50lt/src/msm_vidc_power_ar50lt.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/ar50lt/src/msm_vidc_ar50lt.o
+endif
+ifeq ($(CONFIG_MSM_VIDC_BOURTZI), y)
+video-objs +=     $(VIDEO_DRIVER_REL_PATH)/platform/bourtzi/src/bourtzi.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/ar50lt/src/msm_vidc_buffer_ar50lt.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/ar50lt/src/msm_vidc_power_ar50lt.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/ar50lt/src/msm_vidc_ar50lt.o
