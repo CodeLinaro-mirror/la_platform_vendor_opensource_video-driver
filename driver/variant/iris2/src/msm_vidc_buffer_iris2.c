@@ -246,9 +246,11 @@ static u32 msm_vidc_decoder_dpb_size_iris2(struct msm_vidc_inst *inst)
 static u32 msm_vidc_encoder_output_size(struct msm_vidc_inst *inst)
 {
 	u32 frame_size;
-	u32 mbs_per_frame;
-	u32 width, height;
 	struct v4l2_format *f;
+	bool is_ten_bit = false;
+	int bitrate_mode, frame_rc;
+	u32 hfi_rc_type = HFI_RC_VBR_CFR;
+	enum msm_vidc_codec_type codec;
 
 	if (!inst) {
 		d_vpr_e("%s: invalid params\n", __func__);
@@ -256,6 +258,10 @@ static u32 msm_vidc_encoder_output_size(struct msm_vidc_inst *inst)
 	}
 
 	f = &inst->fmts[OUTPUT_PORT];
+
+	codec = v4l2_codec_to_driver(inst, f->fmt.pix_mp.pixelformat, __func__);
+	if (codec == MSM_VIDC_HEVC || codec == MSM_VIDC_HEIC)
+		is_ten_bit = true;
 	/*
 	 * Encoder output size calculation: 32 Align width/height
 	 * For heic session : YUVsize * 2
@@ -266,37 +272,19 @@ static u32 msm_vidc_encoder_output_size(struct msm_vidc_inst *inst)
 	 * Initially frame_size = YUVsize * 2;
 	 */
 
-	width = ALIGN(f->fmt.pix_mp.width, BUFFER_ALIGNMENT_SIZE(32));
-	height = ALIGN(f->fmt.pix_mp.height, BUFFER_ALIGNMENT_SIZE(32));
-	mbs_per_frame = NUM_MBS_PER_FRAME(width, height);
-	frame_size = (width * height * 3);
+	bitrate_mode = inst->capabilities[BITRATE_MODE].value;
+	frame_rc = inst->capabilities[FRAME_RC_ENABLE].value;
+	if (!frame_rc && !is_image_session(inst))
+		hfi_rc_type = HFI_RC_OFF;
+	else if (bitrate_mode == V4L2_MPEG_VIDEO_BITRATE_MODE_CQ)
+		hfi_rc_type = HFI_RC_CQ;
 
-	/* Image session: 2 x yuv size */
-	if (is_image_session(inst) ||
-		inst->capabilities[BITRATE_MODE].value == V4L2_MPEG_VIDEO_BITRATE_MODE_CQ)
-		goto skip_calc;
+	HFI_BUFFER_BITSTREAM_ENC(frame_size, f->fmt.pix_mp.width,
+		f->fmt.pix_mp.height, hfi_rc_type, is_ten_bit);
 
-	if (mbs_per_frame <= NUM_MBS_360P)
-		(void)frame_size; /* Default frame_size = YUVsize * 2 */
-	else if (mbs_per_frame <= NUM_MBS_4k)
-		frame_size = frame_size >> 2;
-	else
-		frame_size = frame_size >> 3;
+	frame_size = msm_vidc_enc_delivery_mode_based_output_buf_size(inst, frame_size);
 
-	/*if ((inst->rc_type == RATE_CONTROL_OFF) ||
-		(inst->rc_type == V4L2_MPEG_VIDEO_BITRATE_MODE_CQ))
-		frame_size = frame_size << 1;
-
-	if (inst->rc_type == RATE_CONTROL_LOSSLESS)
-		frame_size = (width * height * 9) >> 2; */
-
-skip_calc:
-	/* multiply by 10/8 (1.25) to get size for 10 bit case */
-	if (f->fmt.pix_mp.pixelformat == V4L2_PIX_FMT_HEVC ||
-	f->fmt.pix_mp.pixelformat == V4L2_PIX_FMT_VIDC_HEIC)
-		frame_size = frame_size + (frame_size >> 2);
-
-	return ALIGN(frame_size, SZ_4K);
+	return frame_size;
 }
 
 /* encoder internal buffers */
