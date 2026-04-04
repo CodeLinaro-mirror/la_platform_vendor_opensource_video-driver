@@ -40,6 +40,7 @@ def define_bengal(t,v):
         ],
         config_options = [
             "CONFIG_MSM_VIDC_KHAJE",
+            "CONFIG_MSM_VIDC_SCUBA",
             "CONFIG_MSM_VIDC_AR50LT",
         ],
     )

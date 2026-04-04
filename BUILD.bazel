@@ -46,6 +46,14 @@ ddk_headers(
 )
 
 ddk_headers(
+    name = "scuba_headers",
+    hdrs = glob([
+      "driver/platform/scuba/inc/*.h",
+    ]),
+    includes = ["driver/platform/scuba/inc"]
+)
+
+ddk_headers(
     name = "vienna_headers",
     hdrs = glob([
       "driver/platform/vienna/inc/*.h",
@@ -73,7 +81,7 @@ ddk_headers(
 
 ddk_headers(
     name = "video_driver_headers",
-    hdrs = [":uapi_headers", "blair_headers", "monaco_headers", "bengal_headers", "vienna_headers", "ar50lt_headers", "vidc_headers"]
+    hdrs = [":uapi_headers", "blair_headers", "monaco_headers", "bengal_headers", "scuba_headers", "vienna_headers", "ar50lt_headers", "vidc_headers"]
 )
 
 load(":target.bzl", "define_target_modules")
