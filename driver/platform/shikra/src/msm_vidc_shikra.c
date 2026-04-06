@@ -2089,9 +2089,9 @@ static const struct bw_table shikra_bw_table[] = {
 };
 
 /* name, hw_trigger, hw_enable */
-static struct regulator_table shikra_regulator_table[] = {
-	{ "venus", 0 },
-	{ "venus-core0", 1 },
+static struct pd_table shikra_pd_table[] = {
+	{ "venus",          0, 1 },
+	{ "venus-core0",    1, 1 },
 };
 
 /* name, clock id, scaling */
@@ -2107,7 +2107,7 @@ static const struct clk_table shikra_clk_table[] = {
 
 /* name, start, size, secure, dma_coherant, region, dma_mask */
 const struct context_bank_table shikra_context_bank_table[] = {
-	{"qcom,vidc,cb-ns",             0x25800000, 0xba800000, 0, 1,
+	{"qcom,vidc,cb-ns",             0x25800000, 0xba800000, 0, 0,
 		MSM_VIDC_NON_SECURE |
 		MSM_VIDC_NON_SECURE_PIXEL |
 		MSM_VIDC_NON_SECURE_BITSTREAM, 0 },
@@ -2206,8 +2206,8 @@ static const struct msm_vidc_platform_data shikra_data = {
 	/* resources dependent on other module */
 	.bw_tbl = shikra_bw_table,
 	.bw_tbl_size = ARRAY_SIZE(shikra_bw_table),
-	.regulator_tbl = shikra_regulator_table,
-	.regulator_tbl_size = ARRAY_SIZE(shikra_regulator_table),
+	.pd_tbl = shikra_pd_table,
+	.pd_tbl_size = ARRAY_SIZE(shikra_pd_table),
 	.clk_tbl = shikra_clk_table,
 	.clk_tbl_size = ARRAY_SIZE(shikra_clk_table),
 
@@ -2219,7 +2219,7 @@ static const struct msm_vidc_platform_data shikra_data = {
 	.reg_prst_tbl = shikra_reg_preset_table,
 	.reg_prst_tbl_size = ARRAY_SIZE(shikra_reg_preset_table),
 	.clock_source_scaling_ratio = 1,
-	.fwname = "venus_v7",
+	.fwname = "venus_5mb_v6",
 	.pas_id = 9,
 	.supports_mmrm = 0,
 

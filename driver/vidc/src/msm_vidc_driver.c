@@ -3171,6 +3171,9 @@ static int msm_vidc_queue_buffer(struct msm_vidc_inst *inst, struct msm_vidc_buf
 	/* if cache ops fails ignore the error */
 	msm_vidc_qbuf_cache_operation(inst, buf);
 
+	if (meta)
+		msm_vidc_qbuf_cache_operation(inst, meta);
+
 	if (msm_vidc_is_super_buffer(inst) && is_input_buffer(buf->type))
 		rc = venus_hfi_queue_super_buffer(inst, buf, meta);
 	else if (is_input_buffer(buf->type))
@@ -3945,7 +3948,16 @@ int msm_vidc_remove_dangling_session(struct msm_vidc_inst *inst)
 	struct msm_vidc_core *core;
 	u32 count = 0, dcount = 0;
 
+	if (!inst) {
+		d_vpr_e("%s: Invalid instance\n", __func__);
+		return -EINVAL;
+	}
+
 	core = inst->core;
+	if (!core) {
+		d_vpr_e("%s: session is probably cleaned up\n", __func__);
+		return 0;
+	}
 
 	core_lock(core, __func__);
 	list_for_each_entry_safe(i, temp, &core->dangling_instances, list) {
@@ -4620,6 +4632,12 @@ int msm_vidc_core_init(struct msm_vidc_core *core)
 	msm_vidc_change_core_sub_state(core, CORE_SUBSTATE_PM_SUSPEND, 0, __func__);
 	msm_vidc_change_core_sub_state(core, CORE_SUBSTATE_PAGE_FAULT, 0, __func__);
 
+	/* Allot session ID as 0x7FFF0000 in core-Init and increment sequentially
+	 * by 1 for every session and when it eventually crosses INT_MAX value
+	 * which is 0xFFFFFFFF, we reset again to 0x7FFF0000 during session open,
+	 * which is most unlikely.
+	 */
+	core->session_id = 0x7FFF0000;
 	rc = venus_hfi_core_init(core);
 	if (rc) {
 		msm_vidc_change_core_state(core, MSM_VIDC_CORE_ERROR, __func__);

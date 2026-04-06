@@ -226,7 +226,7 @@ module_entry(
             "driver/variant/ar50lt/src/msm_vidc_ar50lt.c",
         ],
 
-        "COiFIG_MSM_VIDC_SHIKRA" : [
+        "CONFIG_MSM_VIDC_SHIKRA" : [
             "driver/platform/shikra/src/shikra.c",
             "driver/variant/ar50lt/src/msm_vidc_buffer_ar50lt.c",
             "driver/variant/ar50lt/src/msm_vidc_power_ar50lt.c",
