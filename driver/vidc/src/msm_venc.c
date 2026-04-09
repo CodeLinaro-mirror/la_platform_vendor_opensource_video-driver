@@ -221,10 +221,11 @@ static int msm_venc_set_raw_resolution(struct msm_vidc_inst *inst,
 		return -EINVAL;
 	}
 
-	resolution = (inst->fmts[port].fmt.pix_mp.width << 16) |
-		inst->fmts[port].fmt.pix_mp.height;
+	resolution = inst->crop.width << 16 | inst->crop.height;
+
 	i_vpr_h(inst, "%s: width: %d height: %d\n", __func__,
-			inst->fmts[port].fmt.pix_mp.width, inst->fmts[port].fmt.pix_mp.height);
+			inst->crop.width, inst->crop.height);
+
 	rc = venus_hfi_session_property(inst,
 			HFI_PROP_RAW_RESOLUTION,
 			HFI_HOST_FLAGS_NONE,
