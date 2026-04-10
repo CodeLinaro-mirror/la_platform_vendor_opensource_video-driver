@@ -26,6 +26,8 @@
 #include "hfi_command.h"
 #include "venus_hfi.h"
 
+/* version: major[24:31], minor[16:23], revision[0:15] */
+#define DRIVER_VERSION          0x04000000
 #define DEFAULT_VIDEO_CONCEAL_COLOR_BLACK 0x8020010
 #define MAX_LTR_FRAME_COUNT     2
 #define MAX_BASE_LAYER_PRIORITY_ID 63
@@ -51,8 +53,8 @@
 #define HEVC    MSM_VIDC_HEVC
 #define VP9     MSM_VIDC_VP9
 #define HEIC    MSM_VIDC_HEIC
-#define CODECS_ALL     (H264|HEVC|VP9|HEIC)
-
+#define CODECS_ALL     (H264 | HEVC | VP9 | HEIC)
+#define MAXIMUM_OVERRIDE_VP9_FPS 60
 
 static struct codec_info codec_data_ravelin[] = {
 	{
@@ -248,7 +250,7 @@ static const struct msm_platform_core_capability core_data_ravelin[] = {
 	/* {type, value} */
 	{ENC_CODECS, H264|HEVC|HEIC},
 	{DEC_CODECS, H264|HEVC|VP9|HEIC},
-	{MAX_SESSION_COUNT, 16},
+	{MAX_SESSION_COUNT, 8},
 	{MAX_NUM_720P_SESSIONS, 4},
 	{MAX_NUM_1080P_SESSIONS, 2},
 	{MAX_NUM_4K_SESSIONS, 0},
@@ -279,6 +281,8 @@ static const struct msm_platform_core_capability core_data_ravelin[] = {
 	{ENC_AUTO_FRAMERATE, 0},
 	{DEVICE_CAPS, V4L2_CAP_VIDEO_CAPTURE_MPLANE | V4L2_CAP_VIDEO_OUTPUT_MPLANE |
 		V4L2_CAP_META_CAPTURE | V4L2_CAP_META_OUTPUT | V4L2_CAP_STREAMING},
+	{SUPPORTS_REQUESTS, 0},
+	{CACHE_OPS_REQUIRED, 1},
 };
 
 static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
@@ -288,14 +292,21 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 	 *      hfi_id,
 	 *      flags}
 	 */
+	{DRV_VERSION, DEC | ENC, CODECS_ALL,
+		0, INT_MAX, 1, DRIVER_VERSION,
+		V4L2_CID_MPEG_VIDC_DRIVER_VERSION},
 
 	{FRAME_WIDTH, DEC, CODECS_ALL, 96, 1920, 1, 1920},
-	{FRAME_WIDTH, ENC, H264|HEVC|HEIC, 128, 1920, 1, 1920},
+	{FRAME_WIDTH, ENC, H264|HEVC, 128, 1920, 1, 1920},
 	{LOSSLESS_FRAME_WIDTH, ENC, H264|HEVC, 128, 1920, 1, 1920},
 	{SECURE_FRAME_WIDTH, DEC, H264|HEVC|VP9, 96, 1920, 1, 1920},
 	{SECURE_FRAME_WIDTH, ENC, H264|HEVC, 128, 1920, 1, 1920},
 	{FRAME_HEIGHT, DEC, CODECS_ALL, 96, 1920, 1, 1080},
-	{FRAME_HEIGHT, ENC,  H264|HEVC|HEIC, 128, 1920, 1, 1080},
+	{FRAME_HEIGHT, ENC,  H264|HEVC, 128, 1920, 1, 1080},
+
+	/* configure image properties */
+	{FRAME_WIDTH, ENC, HEIC, 512, 8192, 2, 8192},
+	{FRAME_HEIGHT, ENC, HEIC, 512, 8192, 2, 8192},
 	{LOSSLESS_FRAME_HEIGHT, ENC, H264|HEVC, 128, 1920, 1, 1080},
 	{SECURE_FRAME_HEIGHT, DEC, H264|HEVC|VP9, 96, 1920, 1, 1080},
 	{SECURE_FRAME_HEIGHT, ENC, H264|HEVC, 128, 1920, 1, 1080},
@@ -351,8 +362,12 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_VOLATILE},
 
 	 /*  ((1920 * 1080) / 256) */
-	{MBPF, ENC, CODECS_ALL, 36, 8160, 1, 8160},
+	{MBPF, ENC, CODECS_ALL, 64, 8160, 1, 8160},
+
 	{MBPF, DEC, CODECS_ALL, 36, 8160, 1, 8160},
+
+	/* ((8192x8192)/256) */
+	{MBPF, ENC | DEC, HEIC, 1024, 262144, 1, 262144},
 
 	/*  ((1920 * 1080) / 256) */
 	{LOSSLESS_MBPF, ENC, H264|HEVC, 36, 8160, 1, 8160},
@@ -379,9 +394,22 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		1, (DEFAULT_FPS << 16),
 		V4L2_CID_MPEG_VIDC_FRAME_RATE},
 
-	{OPERATING_RATE, ENC|DEC, CODECS_ALL,
-		(MINIMUM_FPS << 16), (MAXIMUM_FPS << 16),
+	{FRAME_RATE, DEC, VP9,
+		(MINIMUM_FPS << 16), (MAXIMUM_OVERRIDE_VP9_FPS << 16),
+		1, (DEFAULT_FPS << 16),
+		V4L2_CID_MPEG_VIDC_FRAME_RATE},
+
+	{OPERATING_RATE, ENC, CODECS_ALL,
+		(MINIMUM_FPS << 16), INT_MAX,
 		1, (DEFAULT_FPS << 16)},
+
+	{OPERATING_RATE, DEC, CODECS_ALL,
+		(MINIMUM_FPS << 16), INT_MAX,
+		1, (DEFAULT_FPS << 16),
+		V4L2_CID_MPEG_VIDC_OPERATING_RATE,
+		0,
+		CAP_FLAG_OUTPUT_PORT |
+		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{SCALE_FACTOR, ENC, H264|HEVC, 1, 8, 1, 8},
 
@@ -631,8 +659,8 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		HFI_PROP_SEQ_CHANGE_AT_SYNC_FRAME,
 		CAP_FLAG_INPUT_PORT},
 
-	{LTR_COUNT, ENC, H264|HEVC,
-		0, 2, 1, 0,
+	{LTR_COUNT, ENC, H264 | HEVC,
+		0, MAX_LTR_FRAME_COUNT, 1, 0,
 		V4L2_CID_MPEG_VIDEO_LTR_COUNT,
 		HFI_PROP_LTR_COUNT,
 		CAP_FLAG_OUTPUT_PORT},
@@ -983,7 +1011,7 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		V4L2_MPEG_VIDEO_H264_PROFILE_HIGH,
 		V4L2_CID_MPEG_VIDEO_H264_PROFILE,
 		HFI_PROP_PROFILE,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{PROFILE, DEC, H264,
 		V4L2_MPEG_VIDEO_H264_PROFILE_BASELINE,
@@ -1076,7 +1104,7 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		V4L2_MPEG_VIDEO_H264_LEVEL_4_2,
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{LEVEL, DEC, HEVC|HEIC,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
@@ -1106,7 +1134,7 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1,
 		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
 		HFI_PROP_LEVEL,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	/* TODO: Bring the VP9 Level upstream GKI change, and level cap here:
 	 *	go/videogki
@@ -1266,7 +1294,7 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		HFI_PROP_CODED_FRAMES,
 		CAP_FLAG_VOLATILE},
 
-	{BIT_DEPTH, DEC, CODECS_ALL, BIT_DEPTH_8, BIT_DEPTH_8, 1, BIT_DEPTH_8,
+	{BIT_DEPTH, DEC|ENC, CODECS_ALL, BIT_DEPTH_8, BIT_DEPTH_8, 1, BIT_DEPTH_8,
 		0,
 		HFI_PROP_LUMA_CHROMA_BIT_DEPTH},
 
@@ -1603,7 +1631,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_rave
 	 */
 
 	{PIX_FMTS, ENC, H264,
-		{META_ROI_INFO, IR_PERIOD, LTR_COUNT}},
+		{META_ROI_INFO, IR_PERIOD, LTR_COUNT, BIT_DEPTH}},
 
 	{PIX_FMTS, ENC, HEVC,
 		{/* Do not change order of META_ROI_INFO, MIN_QUALITY, BLUR_TYPES
@@ -1612,9 +1640,12 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_rave
 		  * META_ROI_INFO -> MIN_QUALITY -> BLUR_TYPES
 		  */
 		PROFILE, MIN_FRAME_QP, MAX_FRAME_QP, I_FRAME_QP, P_FRAME_QP,
-			B_FRAME_QP, META_ROI_INFO, MIN_QUALITY, IR_PERIOD, LTR_COUNT}},
+			B_FRAME_QP, META_ROI_INFO, MIN_QUALITY, IR_PERIOD, LTR_COUNT, BIT_DEPTH}},
 	{PIX_FMTS, DEC, HEVC|HEIC,
 		{PROFILE}},
+	{BIT_DEPTH, ENC, CODECS_ALL,
+		{0},
+		msm_vidc_adjust_bitdepth},
 
 	{FRAME_RATE, ENC, CODECS_ALL,
 		{LEVEL},
@@ -1989,10 +2020,6 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_rave
 		{0},
 		NULL, msm_vidc_set_stage},
 
-	{STAGE, ENC, H264|HEVC,
-		{0},
-		NULL, msm_vidc_set_stage},
-
 	{RAP_FRAME, DEC, CODECS_ALL,
 		{0},
 		NULL,
@@ -2089,7 +2116,7 @@ static const struct bw_table ravelin_bw_table[] = {
 };
 
 /* name, hw_trigger, hw_enable */
-static struct regulator_table ravelin_regulator_table[] = {
+static const struct regulator_table ravelin_regulator_table[] = {
 	{ "venus", 0 },
 	{ "venus-core0", 1 },
 };
@@ -2176,7 +2203,6 @@ static const u32 ravelin_vdec_output_properties_avc[] = {
 	HFI_PROP_WORST_COMPLEXITY_FACTOR,
 	HFI_PROP_PICTURE_TYPE,
 	HFI_PROP_CABAC_SESSION,
-	HFI_PROP_FENCE_OUTPUT,
 	HFI_PROP_DPB_LIST,
 };
 
@@ -2185,7 +2211,6 @@ static const u32 ravelin_vdec_output_properties_hevc[] = {
 	HFI_PROP_WORST_COMPLEXITY_FACTOR,
 	HFI_PROP_PICTURE_TYPE,
 	HFI_PROP_CABAC_SESSION,
-	HFI_PROP_FENCE_OUTPUT,
 	HFI_PROP_DPB_LIST,
 };
 
@@ -2194,7 +2219,6 @@ static const u32 ravelin_vdec_output_properties_vp9[] = {
 	HFI_PROP_WORST_COMPLEXITY_FACTOR,
 	HFI_PROP_PICTURE_TYPE,
 	HFI_PROP_CABAC_SESSION,
-	HFI_PROP_FENCE_OUTPUT,
 	HFI_PROP_DPB_LIST,
 };
 
