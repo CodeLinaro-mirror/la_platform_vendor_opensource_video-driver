@@ -150,6 +150,7 @@ enum msm_vidc_log_encode_mode {
 #define ENC_FPS_WINDOW 3
 #define DEC_FPS_WINDOW 10
 #define INPUT_TIMER_LIST_SIZE 30
+#define PICTURE_TYPE_SIZE 30
 
 #define DEFAULT_COMPLEXITY 50
 
@@ -893,6 +894,17 @@ struct msm_vidc_hfi_frame_info {
 	bool                   av1_non_uniform_tile_spacing;
 	u64                    fence_id[MAX_FENCE_COUNT];
 	u32                    fence_count;
+};
+
+struct msm_vidc_picture_type_entry {
+	u32                    frame_num;
+	u32                    picture_type;
+};
+
+struct msm_vidc_picture_type_q {
+	struct msm_vidc_picture_type_entry entries[PICTURE_TYPE_SIZE];
+	u32                                head;
+	u32                                count;
 };
 
 struct msm_vidc_decode_vpp_delay {
