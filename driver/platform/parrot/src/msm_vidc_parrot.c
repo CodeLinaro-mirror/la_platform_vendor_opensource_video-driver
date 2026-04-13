@@ -5057,10 +5057,10 @@ static struct msm_platform_inst_capability instance_data_parrot_v3[] = {
 	{BATCH_FPS, DEC, H264|HEVC|VP9, 1, 62, 1, 62},
 	/* (2560 * 1440) / 256 */
 	{SECURE_MBPF, ENC|DEC, H264|HEVC|VP9, 64, 14400, 1, 14400},
-	/* ((2560 * 1440) / 256) * 30 fps */
-	{MBPS, ENC, CODECS_ALL, 64, 432000, 1, 432000},
-	/* ((2560 * 1440)) / 256) * 30 fps */
-	{MBPS, DEC, CODECS_ALL, 36, 432000, 1, 432000},
+	/* ((1920 * 1088) / 256) * 60 fps */
+	{MBPS, ENC, CODECS_ALL, 64, 489600, 1, 489600},
+	/* ((1920 * 1088)) / 256) * 60 fps */
+	{MBPS, DEC, CODECS_ALL, 36, 489600, 1, 489600},
 	/* ((1920 * 1088) / 256) * 30 fps */
 	{POWER_SAVE_MBPS, ENC, CODECS_ALL, 0, 244800, 1, 244800},
 
