@@ -442,7 +442,7 @@ static struct msm_platform_inst_capability instance_cap_data_nordau[] = {
 	{MBPF, DEC, HEIC, 64, 262144,  1, 262144 },
 
 	/* (1920 * 1080) / 256 */
-	{LOSSLESS_MBPF, ENC, H264|HEVC, 64, 8100, 1, 8100},
+	{LOSSLESS_MBPF, ENC, H264|HEVC, 64, 8160, 1, 8160},
 
 	/* Batch Mode Decode */
 	/* TODO: update with new values based on updated voltage corner */
