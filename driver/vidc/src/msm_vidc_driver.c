@@ -3928,7 +3928,7 @@ int msm_vidc_remove_session(struct msm_vidc_inst *inst)
 
 	core_lock(core, __func__);
 	list_for_each_entry_safe(i, temp, &core->instances, list) {
-		if (i->session_id == inst->session_id) {
+		if (i == inst) {
 			list_move_tail(&i->list, &core->dangling_instances);
 			i_vpr_h(inst, "%s: removed session %#x\n",
 				__func__, i->session_id);
@@ -3961,7 +3961,7 @@ int msm_vidc_remove_dangling_session(struct msm_vidc_inst *inst)
 
 	core_lock(core, __func__);
 	list_for_each_entry_safe(i, temp, &core->dangling_instances, list) {
-		if (i->session_id == inst->session_id) {
+		if (i == inst) {
 			list_del_init(&i->list);
 			i_vpr_h(inst, "%s: removed dangling session %#x\n",
 				__func__, i->session_id);
@@ -4632,12 +4632,6 @@ int msm_vidc_core_init(struct msm_vidc_core *core)
 	msm_vidc_change_core_sub_state(core, CORE_SUBSTATE_PM_SUSPEND, 0, __func__);
 	msm_vidc_change_core_sub_state(core, CORE_SUBSTATE_PAGE_FAULT, 0, __func__);
 
-	/* Allot session ID as 0x7FFF0000 in core-Init and increment sequentially
-	 * by 1 for every session and when it eventually crosses INT_MAX value
-	 * which is 0xFFFFFFFF, we reset again to 0x7FFF0000 during session open,
-	 * which is most unlikely.
-	 */
-	core->session_id = 0x7FFF0000;
 	rc = venus_hfi_core_init(core);
 	if (rc) {
 		msm_vidc_change_core_state(core, MSM_VIDC_CORE_ERROR, __func__);

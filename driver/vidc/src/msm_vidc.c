@@ -722,8 +722,8 @@ void *msm_vidc_open(struct msm_vidc_core *core, u32 session_type)
 	inst->core = core;
 	inst->domain = session_type;
 	core_lock(core, __func__);
-	if (!core->session_id)
-		core->session_id = 0x7FFF0000;
+	if (!core->session_id || core->session_id == UINT_MAX)
+		core->session_id = 0x1F000000;
 	inst->session_id = core->session_id++;
 	core_unlock(core, __func__);
 	msm_vidc_update_state(inst, MSM_VIDC_OPEN, __func__);

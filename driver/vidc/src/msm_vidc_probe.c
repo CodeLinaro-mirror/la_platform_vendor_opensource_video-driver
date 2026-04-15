@@ -878,6 +878,11 @@ static int msm_vidc_probe_video_device(struct platform_device *pdev)
 	}
 	g_core = core;
 
+	/* Allot session ID as 0x1F000000 here and increment sequentially
+	 * by 1 in msm_vidc_open()
+	 */
+	core->session_id = 0x1F000000;
+
 	core->hw_version = MSM_VIDC_HW_VERSION_V1;
 
 	core->pdev = pdev;
