@@ -630,12 +630,20 @@ int __resume(struct msm_vidc_core *core)
 	if (!core) {
 		d_vpr_e("%s: invalid params\n", __func__);
 		return -EINVAL;
-	} else if (is_core_sub_state(core, CORE_SUBSTATE_POWER_ENABLE)) {
-		goto exit;
 	} else if (!core_in_valid_state(core)) {
 		d_vpr_e("%s: core not in valid state\n", __func__);
 		return -EINVAL;
 	}
+
+	/*
+	 * For HW virtualization, reset PM timer during each resume
+	 * to ensure synchronization.
+	 */
+	if (core->is_hw_virt)
+		__schedule_power_collapse_work(core);
+
+	if (is_core_sub_state(core, CORE_SUBSTATE_POWER_ENABLE))
+		goto exit;
 
 	rc = __strict_check(core, __func__);
 	if (rc)
