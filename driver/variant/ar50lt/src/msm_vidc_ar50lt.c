@@ -304,6 +304,10 @@ static int __power_on_ar50lt_controller(struct msm_vidc_core *core)
 	if (rc)
 		goto fail_regulator;
 
+	rc = call_res_op(core, gdsc_sw_ctrl, core);
+	if (rc)
+		goto fail_sw_ctrl;
+
 	rc = call_res_op(core, clk_enable, core, "core_clk");
 	if (rc)
 		goto fail_clk_controller;
@@ -326,6 +330,7 @@ fail_clk_axi:
 fail_clk_ahb:
 	call_res_op(core, clk_disable, core, "core_clk");
 fail_clk_controller:
+fail_sw_ctrl:
 	call_res_op(core, gdsc_off, core, "venus");
 fail_regulator:
 	return rc;
@@ -338,6 +343,10 @@ static int __power_on_ar50lt_hardware(struct msm_vidc_core *core)
 	rc = call_res_op(core, gdsc_on, core, "venus-core0");
 	if (rc)
 		goto fail_regulator;
+
+	rc = call_res_op(core, gdsc_sw_ctrl, core);
+	if (rc)
+		goto fail_sw_ctrl;
 
 	rc = call_res_op(core, clk_enable, core, "core0_clk");
 	if (rc)
@@ -362,6 +371,7 @@ fail_clk_throttle:
 fail_clk_axi:
 	call_res_op(core, clk_disable, core, "core0_clk");
 fail_clk_controller:
+fail_sw_ctrl:
 	call_res_op(core, gdsc_off, core, "venus-core0");
 fail_regulator:
 	return rc;
@@ -505,6 +515,10 @@ static int __power_off_ar50lt(struct msm_vidc_core *core)
 	if (!is_core_sub_state(core, CORE_SUBSTATE_POWER_ENABLE))
 		return 0;
 
+	rc = call_res_op(core, gdsc_sw_ctrl, core);
+	if (rc)
+		d_vpr_e("%s: gdsc_sw_ctrl failed\n", __func__);
+
 	if (__power_off_ar50lt_hardware(core))
 		d_vpr_e("%s: failed to power off hardware\n", __func__);
 
@@ -614,6 +628,11 @@ static int __hw_ctrl_gdsc_ar50lt(struct msm_vidc_core *core)
 	return call_res_op(core, gdsc_hw_ctrl, core);
 }
 
+static int __sw_ctrl_gdsc_ar50lt(struct msm_vidc_core *core)
+{
+	return call_res_op(core, gdsc_sw_ctrl, core);
+}
+
 static struct msm_vidc_venus_ops ar50lt_ops = {
 	.boot_firmware = __boot_firmware_ar50lt,
 	.raise_interrupt = __raise_interrupt_ar50lt,
@@ -625,6 +644,7 @@ static struct msm_vidc_venus_ops ar50lt_ops = {
 	.watchdog = __watchdog_ar50lt,
 	.noc_error_info = NULL, //TODO Pavan
 	.hw_ctrl_gdsc = __hw_ctrl_gdsc_ar50lt,
+	.sw_ctrl_gdsc = __sw_ctrl_gdsc_ar50lt,
 	.scm_mem_protect = msm_vidc_mem_protect_video_regions_v1,
 };
 
