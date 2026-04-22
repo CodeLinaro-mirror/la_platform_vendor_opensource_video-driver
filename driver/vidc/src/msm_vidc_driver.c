@@ -6001,9 +6001,11 @@ u32 msm_vidc_get_max_bitrate(struct msm_vidc_inst *inst)
 		max_bitrate = min(max_bitrate,
 			(u32)inst->capabilities[LOWLATENCY_MAX_BITRATE].max);
 
-	if (inst->capabilities[ALL_INTRA].value)
+	if (inst->capabilities[ALL_INTRA].value) {
 		max_bitrate = min(max_bitrate,
 			(u32)inst->capabilities[ALLINTRA_MAX_BITRATE].max);
+		goto exit;
+	}
 
 	if (inst->codec == MSM_VIDC_HEVC) {
 		max_bitrate = min(max_bitrate,
@@ -6020,6 +6022,8 @@ u32 msm_vidc_get_max_bitrate(struct msm_vidc_inst *inst)
 		max_bitrate = min_t(u32, max_bitrate,
 			inst->capabilities[BIT_RATE].max);
 	}
+
+exit:
 	if (max_bitrate == 0x7fffffff || !max_bitrate)
 		max_bitrate = min(max_bitrate, (u32)inst->capabilities[BIT_RATE].max);
 
