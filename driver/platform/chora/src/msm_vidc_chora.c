@@ -287,11 +287,11 @@ static const struct msm_platform_core_capability core_data_chora_v0[] = {
 	{ENC_CODECS, H264 | HEVC | HEIC},
 	{DEC_CODECS, H264 | HEVC | VP9 | HEIC},
 	{MAX_SESSION_COUNT, 16},
-	{MAX_NUM_720P_SESSIONS, 8},
-	{MAX_NUM_1080P_SESSIONS, 4},
+	{MAX_NUM_720P_SESSIONS, 16},
+	{MAX_NUM_1080P_SESSIONS, 8},
 	{MAX_NUM_4K_SESSIONS, 2},
 	{MAX_SECURE_SESSION_COUNT, 3},
-	{MAX_RT_MBPF, 69362}, /* ((4096x2176)/256) x 2 */
+	{MAX_RT_MBPF, 69632}, /* ((4096x2176)/256) x 2 */
 	{MAX_MBPF, 77522}, /* ((4096x2176)/256) x 2 + (1920x1088)/256 */
 	/* Concurrency: UHD@30 decode + 1080p@30 encode */
 	{MAX_MBPS, 2088960}, /* max_load 4096x2176@60fps */
@@ -340,7 +340,7 @@ static const struct msm_platform_core_capability core_data_chora_v1[] = {
 	{MAX_NUM_1080P_SESSIONS, 4},
 	{MAX_NUM_4K_SESSIONS, 2},
 	{MAX_SECURE_SESSION_COUNT, 3},
-	{MAX_RT_MBPF, 69362}, /* ((4096x2176)/256) x 2 */
+	{MAX_RT_MBPF, 69632}, /* ((4096x2176)/256) x 2 */
 	{MAX_MBPF, 69632}, /* ((4096x2176)/256) x 2  */
 	/* max_load 4096x2176@30fps */
 	{MAX_MBPS, 1224000}, /* Concurrency: UHD@30 decode + 1080p@30 encode */
