@@ -4335,6 +4335,7 @@ int msm_vidc_get_platform_data_canoe(struct msm_vidc_core *core)
 		core->platform->data.dec_output_prop_apv = NULL;
 		core->platform->data.dec_output_prop_size_apv = 0;
 		core->platform->data.supports_mmrm = 0;
+		core->platform->data.vpu_ver = VPU_VERSION_IRIS4_1P;
 	}
 
 	if (of_device_is_compatible(dev->of_node, "qcom,canoe-vidc-v2")) {
