@@ -876,7 +876,11 @@ int msm_v4l2_op_s_ctrl(struct v4l2_ctrl *ctrl)
 		rc = msm_vidc_update_buffer_count_if_needed(inst, ctrl);
 		if (rc)
 			return rc;
-
+		if (ctrl->id == V4L2_CID_MPEG_VIDC_ENC_ALLOC_INTERNAL && ctrl->val) {
+			rc = msm_venc_process_allocation_job(inst);
+			if (rc)
+				return rc;
+		}
 		return 0;
 	}
 
