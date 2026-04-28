@@ -35,6 +35,9 @@ module_entry(
         "CONFIG_MSM_VIDC_VIENNA"  : [
             "driver/platform/vienna/src/msm_vidc_vienna.c",
         ],
+        "CONFIG_MSM_VIDC_KHAJE"  : [
+            "driver/platform/khaje/src/msm_vidc_khaje.c",
+        ],
         "CONFIG_MSM_VIDC_AR50LT" : [
             "driver/variant/ar50lt/src/msm_vidc_power_ar50lt.c",
             "driver/variant/ar50lt/src/msm_vidc_buffer_ar50lt.c",
