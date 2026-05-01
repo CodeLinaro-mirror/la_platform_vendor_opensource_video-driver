@@ -105,7 +105,7 @@ static struct msm_platform_inst_capability instance_data_neo[] = {
 	 */
 
 	{FRAME_WIDTH, DEC, CODECS_ALL, 96, 3840, 1, 1920},
-	{FRAME_WIDTH, ENC, CODECS_ALL, 128, 3840, 1, 1920},
+	{FRAME_WIDTH, ENC, CODECS_ALL, 128, 4096, 1, 1920},
 	{LOSSLESS_FRAME_WIDTH, ENC, H264|HEVC, 128, 4000, 1, 1920},
 	{SECURE_FRAME_WIDTH, DEC, H264|HEVC|VP9, 96, 3840, 1, 1920},
 	{SECURE_FRAME_WIDTH, ENC, H264|HEVC, 128, 3840, 1, 1920},
@@ -182,7 +182,7 @@ static struct msm_platform_inst_capability instance_data_neo[] = {
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT},
 
 	/* (3840 * 2176) / 256 */
-	{MBPF, ENC, CODECS_ALL, 64, 32640, 1, 32640},
+	{MBPF, ENC, CODECS_ALL, 64, 49152, 1, 32640},
 	{MBPF, DEC, CODECS_ALL, 36, 32640, 1, 32640},
 	/* (4000 * 3840) / 256 */
 	{LOSSLESS_MBPF, ENC, H264|HEVC, 64, 60000, 1, 60000},
