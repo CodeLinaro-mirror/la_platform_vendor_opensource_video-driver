@@ -229,6 +229,11 @@ static const struct msm_vidc_compat_handle compat_handle[] = {
 		.init_iris                  = msm_vidc_init_iris35,
 	},
 	{
+		.compat                     = "qcom,sm8750-vidc-v3",
+		.init_platform              = msm_vidc_init_platform_sun,
+		.init_iris                  = msm_vidc_init_iris35,
+	},
+	{
 		.compat                     = "qcom,tuna-vidc",
 		.init_platform              = msm_vidc_init_platform_tuna,
 		.init_iris                  = msm_vidc_init_iris33,
