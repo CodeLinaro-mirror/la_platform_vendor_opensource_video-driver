@@ -1202,6 +1202,7 @@ int msm_vidc_qbuf_cache_operation(struct msm_vidc_inst *inst,
 	int rc = 0;
 	struct msm_vidc_core *core;
 	enum msm_memory_cache_op_type cache_op_type;
+	u32 offset, data_size;
 
 	if (!inst || !buf) {
 		d_vpr_e("%s: Invalid params\n", __func__);
@@ -1217,6 +1218,8 @@ int msm_vidc_qbuf_cache_operation(struct msm_vidc_inst *inst,
 		switch (buf->type) {
 		case MSM_VIDC_BUF_INPUT:
 		case MSM_VIDC_BUF_INPUT_META:
+			cache_op_type = MSM_MEM_CACHE_CLEAN_INVALIDATE;
+			break;
 		case MSM_VIDC_BUF_OUTPUT_META:
 			cache_op_type = MSM_MEM_CACHE_CLEAN_INVALIDATE;
 			break;
@@ -1235,6 +1238,8 @@ int msm_vidc_qbuf_cache_operation(struct msm_vidc_inst *inst,
 			cache_op_type = MSM_MEM_CACHE_CLEAN_INVALIDATE;
 			break;
 		case MSM_VIDC_BUF_OUTPUT:
+			cache_op_type = MSM_MEM_CACHE_INVALIDATE;
+			break;
 		case MSM_VIDC_BUF_OUTPUT_META:
 			cache_op_type = MSM_MEM_CACHE_INVALIDATE;
 			break;
@@ -1248,7 +1253,11 @@ int msm_vidc_qbuf_cache_operation(struct msm_vidc_inst *inst,
 		return -EINVAL;
 	}
 
-	rc = call_mem_op(core, memory_cache_ops, inst, buf->dmabuf, cache_op_type);
+	offset = buf->data_offset;
+	data_size = buf->buffer_size - buf->data_offset;
+
+	rc = call_mem_op(core, memory_cache, inst, buf->dmabuf, cache_op_type,
+				offset, data_size);
 	if (rc)
 		print_vidc_buffer(VIDC_ERR, "err ", "qbuf cache ops failed", inst, buf);
 
@@ -1262,6 +1271,7 @@ int msm_vidc_dqbuf_cache_operation(struct msm_vidc_inst *inst,
 	enum msm_memory_cache_op_type cache_op_type = MSM_MEM_CACHE_INVALIDATE;
 	bool skip = false;
 	struct msm_vidc_core *core;
+	u32 offset, data_size;
 
 	if (!inst || !buf) {
 		d_vpr_e("%s: Invalid params\n", __func__);
@@ -1297,7 +1307,11 @@ int msm_vidc_dqbuf_cache_operation(struct msm_vidc_inst *inst,
 	if (skip)
 		return 0;
 
-	rc = call_mem_op(core, memory_cache_ops, inst, buf->dmabuf, cache_op_type);
+	offset = buf->data_offset;
+	data_size = buf->buffer_size - buf->data_offset;
+
+	rc = call_mem_op(core, memory_cache, inst, buf->dmabuf, cache_op_type,
+				offset, data_size);
 	if (rc)
 		print_vidc_buffer(VIDC_ERR, "err ", "dqbuf cache ops failed", inst, buf);
 
