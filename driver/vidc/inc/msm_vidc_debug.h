@@ -44,6 +44,7 @@ extern int msm_vidc_llc_bw;
 extern bool msm_vidc_fw_dump;
 extern unsigned int msm_vidc_enable_bugon;
 extern unsigned int msm_vidc_apv_bitrate;
+extern bool msm_vidc_fw_unload;
 
 /* do not modify the log message as it is used in test scripts */
 #define FMT_STRING_SET_CTRL \

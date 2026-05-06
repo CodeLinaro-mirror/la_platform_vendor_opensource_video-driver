@@ -336,21 +336,11 @@ skip_aon_mvp_noc:
 		return rc;
 
 disable_power:
-	/* power down process */
-	if (!core) {
-		d_vpr_e("%s: invalid params\n", __func__);
-		return -EINVAL;
-	}
-
+	/* power down process - core already validated at function entry */
 	rc = call_res_op(core, clk_disable, core, "vcodec_clk");
 	if (rc) {
 		d_vpr_e("%s: disable unprepare vcodec_clk failed\n", __func__);
 		rc = 0;
-	}
-
-	if (!core) {
-		d_vpr_e("%s: invalid params\n", __func__);
-		return -EINVAL;
 	}
 
 	rc = call_res_op(core, gdsc_off, core, "vcodec");
@@ -435,11 +425,6 @@ skip_aon_mvp_noc:
 
 	/* Disable VIDEO_CC_VENUS_AHB_CLK clock */
 	if (core->platform->data.vpu_ver == VPU_VERSION_IRIS2_1P) {
-		if (!core) {
-			d_vpr_e("%s: invalid params\n", __func__);
-			return -EINVAL;
-		}
-
 		rc = call_res_op(core, clk_disable, core, "iface_clk");
 		if (rc) {
 			d_vpr_e("%s: disable unprepare iface_clk failed\n", __func__);
@@ -447,20 +432,10 @@ skip_aon_mvp_noc:
 		}
 	}
 
-	if (!core) {
-		d_vpr_e("%s: invalid params\n", __func__);
-		return -EINVAL;
-	}
-
 	rc = call_res_op(core, clk_disable, core, "core_clk");
 	if (rc) {
 		d_vpr_e("%s: disable unprepare core_clk failed\n", __func__);
 		rc = 0;
-	}
-
-	if (!core) {
-		d_vpr_e("%s: invalid params\n", __func__);
-		return -EINVAL;
 	}
 
 	rc = call_res_op(core, clk_disable, core, "video_ctl_axi_clk");
@@ -473,11 +448,6 @@ skip_aon_mvp_noc:
 	if (rc) {
 		d_vpr_e("%s: reset ahb2axi bridge failed\n", __func__);
 		rc = 0;
-	}
-
-	if (!core) {
-		d_vpr_e("%s: invalid params\n", __func__);
-		return -EINVAL;
 	}
 
 	rc = call_res_op(core, gdsc_off, core, "iris-ctl");
@@ -590,7 +560,7 @@ static int __power_on_iris2_hardware(struct msm_vidc_core *core)
 {
 	int rc = 0;
 
-	if (!core) {
+	if (!core || !core->platform) {
 		d_vpr_e("%s: invalid params\n", __func__);
 		rc = -EINVAL;
 		goto fail_regulator;
@@ -600,13 +570,7 @@ static int __power_on_iris2_hardware(struct msm_vidc_core *core)
 	if (rc)
 		goto fail_regulator;
 
-	if (core->platform->data.vpu_ver == VPU_VERSION_IRIS2_1P) {
-
-		if (!core || !core->platform) {
-			d_vpr_e("%s: invalid params\n", __func__);
-			rc = -EINVAL;
-			goto fail_clk_axi;
-		}
+	if (core->platform && core->platform->data.vpu_ver == VPU_VERSION_IRIS2_1P) {
 
 		rc = call_res_op(core, gdsc_sw_ctrl, core);
 		if (rc)
@@ -1129,6 +1093,7 @@ static struct msm_vidc_session_ops msm_session_ops = {
 	.decide_work_route = msm_vidc_decide_work_route_iris2,
 	.decide_work_mode = msm_vidc_decide_work_mode_iris2,
 	.decide_quality_mode = msm_vidc_decide_quality_mode_iris2,
+	.decide_slice_max_mb = msm_vidc_encoder_decide_slice_max_mb_iris2,
 };
 
 int msm_vidc_init_iris2(struct msm_vidc_core *core)

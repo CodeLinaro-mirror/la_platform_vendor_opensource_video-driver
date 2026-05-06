@@ -70,6 +70,8 @@ def define_target_variant_modules(target, variant, registry, modules, config_opt
         "//build/qcom_build_extensions:qtisocrepo_true": [
             "//soc-repo:all_headers",
             "//soc-repo:{}/drivers/firmware/qcom/qcom-scm".format(kernel_build),
+            "//soc-repo:{}/drivers/firmware/qcom/qcom_scm_smci".format(kernel_build),
+            "//soc-repo:{}/drivers/firmware/qcom/si_core/si_core_module".format(kernel_build),
             "//soc-repo:{}/drivers/clk/qcom/clk-qcom".format(kernel_build),
             "//soc-repo:{}/drivers/soc/qcom/mdt_loader".format(kernel_build),
             "//soc-repo:{}/drivers/soc/qcom/llcc-qcom".format(kernel_build),
@@ -139,6 +141,8 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
         "//build/qcom_build_extensions:qtisocrepo_true": [
             "//soc-repo:all_headers",
             "//soc-repo:{}/drivers/firmware/qcom/qcom-scm".format(kernel_build),
+            "//soc-repo:{}/drivers/firmware/qcom/qcom_scm_smci".format(kernel_build),
+            "//soc-repo:{}/drivers/firmware/qcom/si_core/si_core_module".format(kernel_build),
             "//soc-repo:{}/drivers/clk/qcom/clk-qcom".format(kernel_build),
             "//soc-repo:{}/drivers/soc/qcom/mdt_loader".format(kernel_build),
             "//soc-repo:{}/drivers/soc/qcom/llcc-qcom".format(kernel_build),

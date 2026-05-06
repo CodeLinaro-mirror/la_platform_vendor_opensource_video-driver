@@ -2365,5 +2365,7 @@ int msm_vidc_init_platform_malabar(struct msm_vidc_core *core)
 		return -EINVAL;
 	}
 
+	msm_vidc_fw_unload = 1;
+
 	return 0;
 }
