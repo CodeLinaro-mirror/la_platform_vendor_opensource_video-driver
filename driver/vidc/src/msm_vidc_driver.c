@@ -5550,6 +5550,7 @@ void msm_vidc_destroy_buffers(struct msm_vidc_inst *inst)
 		MSM_VIDC_BUF_LINE,
 		MSM_VIDC_BUF_DPB,
 		MSM_VIDC_BUF_PERSIST,
+		MSM_VIDC_BUF_PERSIST_COMV,
 		MSM_VIDC_BUF_VPSS,
 		MSM_VIDC_BUF_PARTIAL_DATA,
 	};
