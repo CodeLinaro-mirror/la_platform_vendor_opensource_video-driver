@@ -51,8 +51,11 @@ u32 msm_vidc_output_min_count(struct msm_vidc_inst *inst)
 	if (!is_decode_session(inst) && !is_encode_session(inst))
 		return 0;
 
-	if (is_thumbnail_session(inst))
-		return 1;
+	if (is_thumbnail_session(inst)) {
+		i_vpr_h(inst, "%s: thumbnail session fw_min_count %d\n",
+			__func__, inst->fw_min_count);
+		return inst->fw_min_count;
+	}
 
 	if (is_encode_session(inst))
 		return MIN_ENC_OUTPUT_BUFFERS;
