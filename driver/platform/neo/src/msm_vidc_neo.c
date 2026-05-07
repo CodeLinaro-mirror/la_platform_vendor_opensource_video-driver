@@ -1746,12 +1746,12 @@ static struct msm_platform_inst_capability instance_data_neo[] = {
 	}
 
 #ifdef CONFIG_MSM_VIDC_NEO_12M_HEVC_ENC
-	/* Google b/441264140: Support 4096x3040 HEVC encode while still
+	/* Google b/441264140: Support 4096x3040 or 3040x4096 HEVC encode while still
 	 * staying under the global limits for MAX_MBPF & MAX_MBPS.
 	 */
 	,
 	{FRAME_WIDTH, ENC, HEVC, 128, 4096, 1, 4096},
-	{FRAME_HEIGHT, ENC, HEVC, 128, 3040, 1, 3040},
+	{FRAME_HEIGHT, ENC, HEVC, 128, 4096, 1, 4096},
 	{MBPF, ENC, HEVC, 36, 48640, 1, 48640} /* ((4096x3040)/256) */
 #endif
 };
