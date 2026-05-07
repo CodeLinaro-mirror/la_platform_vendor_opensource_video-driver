@@ -27,6 +27,9 @@
 #if defined(CONFIG_MSM_VIDC_KHAJE)
 #include "msm_vidc_khaje.h"
 #endif
+#if defined(CONFIG_MSM_VIDC_SCUBA)
+#include "msm_vidc_scuba.h"
+#endif
 #if defined(CONFIG_MSM_VIDC_MONACO)
 #include "msm_vidc_monaco.h"
 #endif
@@ -239,6 +242,15 @@ static int msm_vidc_deinit_platform_variant(struct msm_vidc_core *core, struct d
 	}
 #endif
 
+#if defined(CONFIG_MSM_VIDC_SCUBA)
+	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-scuba")) {
+		rc = msm_vidc_deinit_platform_scuba(core, dev);
+		if (rc)
+			d_vpr_e("%s: failed with %d\n", __func__, rc);
+		return rc;
+	}
+#endif
+
 #if defined(CONFIG_MSM_VIDC_MONACO)
 	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-monaco")) {
 		rc = msm_vidc_deinit_platform_monaco(core, dev);
@@ -393,6 +405,16 @@ static int msm_vidc_init_platform_variant(struct msm_vidc_core *core, struct dev
 			d_vpr_e("%s: failed msm-vidc-neo with %d\n",
 				__func__, rc);
 		return rc;
+	}
+#endif
+#if defined(CONFIG_MSM_VIDC_SCUBA)
+	if (of_device_is_compatible(dev->of_node, "qcom,msm-vidc-scuba")) {
+		rc = msm_vidc_init_platform_scuba(core, dev);
+		if (rc) {
+			d_vpr_e("%s: failed msm-vidc-scuba with %d\n",
+				__func__, rc);
+			return rc;
+		}
 	}
 #endif
 

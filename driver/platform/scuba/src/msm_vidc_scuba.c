@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include <linux/of.h>
 
-#include "msm_vidc_khaje.h"
+#include "msm_vidc_scuba.h"
 #include "msm_vidc_platform.h"
 #include "msm_vidc_debug.h"
 #include "msm_vidc_internal.h"
@@ -17,8 +17,8 @@
 #define DEFAULT_VIDEO_CONCEAL_COLOR_BLACK 0x8020010
 #define MAX_LTR_FRAME_COUNT     2
 #define MAX_BASE_LAYER_PRIORITY_ID 63
-#define MAX_BITRATE             60000000
-#define DEFAULT_BITRATE         20000000
+#define MAX_BITRATE             20000000
+#define DEFAULT_BITRATE         10000000
 #define MINIMUM_FPS             1
 #define MAXIMUM_FPS             120
 #define MIN_QP_10BIT            -12
@@ -42,7 +42,7 @@
 #define CODECS_ALL     (H264|HEVC|VP9|HEIC)
 #define MAXIMUM_OVERRIDE_VP9_FPS 120
 
-static struct msm_platform_core_capability core_data_khaje[] = {
+static struct msm_platform_core_capability core_data_scuba[] = {
 	/* {type, value} */
 	{ENC_CODECS, H264|HEVC|HEIC},
 	{DEC_CODECS, H264|HEVC|VP9|HEIC},
@@ -81,11 +81,11 @@ static struct msm_platform_core_capability core_data_khaje[] = {
 	{STATS_TIMEOUT_MS, 2000},
 	{AV_SYNC_WINDOW_SIZE, 40},
 	{NON_FATAL_FAULTS, 1},
-	{ENC_AUTO_FRAMERATE, 1},
+	{ENC_AUTO_FRAMERATE, 0},
 	{MMRM, 0},
 };
 
-static struct msm_platform_inst_capability instance_data_khaje[] = {
+static struct msm_platform_inst_capability instance_data_scuba[] = {
 	/* {cap, domain, codec,
 	 *      min, max, step_or_mask, value,
 	 *      v4l2_id,
@@ -763,7 +763,7 @@ static struct msm_platform_inst_capability instance_data_khaje[] = {
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED,
 		{BITRATE_MODE, META_EVA_STATS},
-		{GOP_SIZE, B_FRAME, BIT_RATE, MIN_QUALITY},
+		{GOP_SIZE, B_FRAME, BIT_RATE, MIN_QUALITY, LEVEL},
 		msm_vidc_adjust_layer_count, msm_vidc_set_layer_count_and_type},
 
 	{ENH_LAYER_COUNT, ENC, H264,
@@ -773,7 +773,7 @@ static struct msm_platform_inst_capability instance_data_khaje[] = {
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED,
 		{BITRATE_MODE, META_EVA_STATS},
-		{GOP_SIZE, B_FRAME, BIT_RATE, MIN_QUALITY, LEVEL},
+		{GOP_SIZE, B_FRAME, BIT_RATE, MIN_QUALITY},
 		msm_vidc_adjust_layer_count, msm_vidc_set_layer_count_and_type},
 
 	/*
@@ -982,17 +982,15 @@ static struct msm_platform_inst_capability instance_data_khaje[] = {
 
 	{LEVEL, DEC, VP9,
 		V4L2_MPEG_VIDEO_VP9_LEVEL_1_0,
-		V4L2_MPEG_VIDEO_VP9_LEVEL_5_0,
+		V4L2_MPEG_VIDEO_VP9_LEVEL_4_0,
 		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_1_0)|
 		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_1_1)|
 		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_2_0)|
 		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_2_1)|
 		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_3_0)|
 		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_3_1)|
-		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_4_0)|
-		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_4_1)|
-		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_5_0),
-		V4L2_MPEG_VIDEO_VP9_LEVEL_5_0,
+		BIT(V4L2_MPEG_VIDEO_VP9_LEVEL_4_0),
+		V4L2_MPEG_VIDEO_VP9_LEVEL_4_0,
 		V4L2_CID_MPEG_VIDEO_VP9_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
@@ -1002,7 +1000,7 @@ static struct msm_platform_inst_capability instance_data_khaje[] = {
 
 	{LEVEL, DEC, H264,
 		V4L2_MPEG_VIDEO_H264_LEVEL_1_0,
-		V4L2_MPEG_VIDEO_H264_LEVEL_4_2,
+		V4L2_MPEG_VIDEO_H264_LEVEL_5_0,
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_0)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1B)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_1)|
@@ -1015,9 +1013,8 @@ static struct msm_platform_inst_capability instance_data_khaje[] = {
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_1)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_2)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_0)|
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_1)|
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_2),
-		V4L2_MPEG_VIDEO_H264_LEVEL_4_2,
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_0),
+		V4L2_MPEG_VIDEO_H264_LEVEL_5_0,
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
@@ -1040,8 +1037,6 @@ static struct msm_platform_inst_capability instance_data_khaje[] = {
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_1)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_3_2)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_0)|
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_1)|
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_2)|
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_0),
 		V4L2_MPEG_VIDEO_H264_LEVEL_5_0,
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
@@ -1051,28 +1046,25 @@ static struct msm_platform_inst_capability instance_data_khaje[] = {
 		{0},
 		msm_vidc_adjust_level_tier, msm_vidc_set_level},
 
-	{LEVEL, DEC, HEVC|HEIC,
+	{LEVEL, DEC, HEVC,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
-		V4L2_MPEG_VIDEO_HEVC_LEVEL_5,
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_4,
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_1)|
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_2)|
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_2_1)|
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_3)|
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_3_1)|
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4)|
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1)|
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5),
-		V4L2_MPEG_VIDEO_HEVC_LEVEL_5,
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4),
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_4,
 		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
 		{0},
 		{0},
 		NULL, msm_vidc_set_u32_enum},
-
-	{LEVEL, ENC, HEVC|HEIC,
+	{LEVEL, DEC, HEIC,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
-		V4L2_MPEG_VIDEO_HEVC_LEVEL_5,
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_6,
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_1)|
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_2)|
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_2_1)|
@@ -1080,8 +1072,44 @@ static struct msm_platform_inst_capability instance_data_khaje[] = {
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_3_1)|
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4)|
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1)|
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5),
-		V4L2_MPEG_VIDEO_HEVC_LEVEL_5,
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_6),
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_6,
+		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
+		HFI_PROP_LEVEL,
+		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
+		{0},
+		{0},
+		NULL, msm_vidc_set_u32_enum},
+	{LEVEL, ENC, HEVC,
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_4,
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_1)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_2)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_2_1)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_3)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_3_1)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4),
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_4,
+		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
+		HFI_PROP_LEVEL,
+		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
+		{BIT_RATE},
+		{0},
+		msm_vidc_adjust_level_tier, msm_vidc_set_level},
+	{LEVEL, ENC, HEIC,
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_6,
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_1)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_2)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_2_1)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_3)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_3_1)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5)|
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_6),
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_6,
 		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_ROOT | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU,
@@ -1573,7 +1601,8 @@ static struct msm_platform_inst_capability instance_data_khaje[] = {
 		V4L2_CID_MPEG_VIDC_METADATA_MAX_NUM_REORDER_FRAMES,
 		HFI_PROP_MAX_NUM_REORDER_FRAMES},
 };
-static u32 msm_vidc_get_buffer_region_khaje(struct msm_vidc_inst *inst,
+
+static u32 msm_vidc_get_buffer_region_scuba(struct msm_vidc_inst *inst,
 	enum msm_vidc_buffer_type buffer_type, const char *func)
 {
 	u32 region = MSM_VIDC_NON_SECURE;
@@ -1646,11 +1675,11 @@ static u32 bus_bw_nrt[] = {
 	5000000,
 };
 
-static const struct msm_vidc_platform_data khaje_data = {
-	.core_data = core_data_khaje,
-	.core_data_size = ARRAY_SIZE(core_data_khaje),
-	.instance_data = instance_data_khaje,
-	.instance_data_size = ARRAY_SIZE(instance_data_khaje),
+static const struct msm_vidc_platform_data scuba_data = {
+	.core_data = core_data_scuba,
+	.core_data_size = ARRAY_SIZE(core_data_scuba),
+	.instance_data = instance_data_scuba,
+	.instance_data_size = ARRAY_SIZE(instance_data_scuba),
 	.csc_data.vpe_csc_custom_bias_coeff = vpe_csc_custom_bias_coeff,
 	.csc_data.vpe_csc_custom_matrix_coeff = vpe_csc_custom_matrix_coeff,
 	.csc_data.vpe_csc_custom_limit_coeff = vpe_csc_custom_limit_coeff,
@@ -1658,9 +1687,11 @@ static const struct msm_vidc_platform_data khaje_data = {
 	.bus_bw_nrt = bus_bw_nrt,
 	.vpu_ver = VENUS_VERSION_AR50LT_V1,
 };
-static struct msm_vidc_platform_ops khaje_platform_ops = {
-	.buffer_region = msm_vidc_get_buffer_region_khaje,
+
+static struct msm_vidc_platform_ops scuba_platform_ops = {
+	.buffer_region = msm_vidc_get_buffer_region_scuba,
 };
+
 static int msm_vidc_init_data(struct msm_vidc_core *core)
 {
 	int rc = 0;
@@ -1669,15 +1700,15 @@ static int msm_vidc_init_data(struct msm_vidc_core *core)
 		d_vpr_e("%s: invalid params\n", __func__);
 		return -EINVAL;
 	}
-	d_vpr_h("%s: initialize khaje data\n", __func__);
+	d_vpr_h("%s: initialize scuba data\n", __func__);
 
-	core->platform->data = khaje_data;
-	core->platform_ops = &khaje_platform_ops;
+	core->platform->data = scuba_data;
+	core->platform_ops = &scuba_platform_ops;
 
 	return rc;
 }
 
-int msm_vidc_init_platform_khaje(struct msm_vidc_core *core, struct device *dev)
+int msm_vidc_init_platform_scuba(struct msm_vidc_core *core, struct device *dev)
 {
 	int rc = 0;
 
@@ -1688,7 +1719,7 @@ int msm_vidc_init_platform_khaje(struct msm_vidc_core *core, struct device *dev)
 	return 0;
 }
 
-int msm_vidc_deinit_platform_khaje(struct msm_vidc_core *core, struct device *dev)
+int msm_vidc_deinit_platform_scuba(struct msm_vidc_core *core, struct device *dev)
 {
 	/* do nothing */
 	return 0;
