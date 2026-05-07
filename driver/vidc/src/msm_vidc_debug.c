@@ -175,9 +175,56 @@ static const struct kernel_param_ops msm_vidc_fw_dump_fops = {
 	.get = fw_dump_get,
 };
 
+static int fw_unload_set(const char *val,
+	const struct kernel_param *kp)
+{
+	unsigned int dvalue;
+	int ret;
+	struct msm_vidc_core *core = NULL;
+
+	if (!kp || !kp->arg || !val) {
+		d_vpr_e("%s: Invalid params\n", __func__);
+		return -EINVAL;
+	}
+
+	ret = kstrtouint(val, 0, &dvalue);
+	if (ret)
+		return ret;
+
+	msm_vidc_fw_unload = dvalue;
+	core = *(struct msm_vidc_core **)kp->arg;
+
+	if (!core) {
+		d_vpr_e("%s: Invalid core/capabilities\n", __func__);
+		return 0;
+	}
+
+	if (!dvalue) {
+		if (core->capabilities[FW_UNLOAD].value) {
+			d_vpr_h("Disable fw unload feature\n");
+			core->capabilities[FW_UNLOAD].value = 0;
+		}
+	}
+
+	d_vpr_h("fw unload %s\n", msm_vidc_fw_unload ? "Enabled" : "Disabled");
+
+	return 0;
+}
+
+static int fw_unload_get(char *buffer, const struct kernel_param *kp)
+{
+	return scnprintf(buffer, PAGE_SIZE, "%#x", msm_vidc_fw_unload);
+}
+
+static const struct kernel_param_ops msm_vidc_fw_unload_fops = {
+	.set = fw_unload_set,
+	.get = fw_unload_get,
+};
+
 module_param_cb(msm_vidc_debug, &msm_vidc_debug_fops, &g_core, 0644);
 module_param_cb(msm_fw_debug, &msm_fw_debug_fops, &g_core, 0644);
 module_param_cb(msm_vidc_fw_dump, &msm_vidc_fw_dump_fops, &g_core, 0644);
+module_param_cb(msm_vidc_fw_unload, &msm_vidc_fw_unload_fops, &g_core, 0644);
 
 bool msm_vidc_lossless_encode = !true;
 EXPORT_SYMBOL(msm_vidc_lossless_encode);
@@ -196,6 +243,9 @@ unsigned int msm_vidc_apv_bitrate = !1;
 
 bool msm_vidc_fw_dump = !true;
 EXPORT_SYMBOL(msm_vidc_fw_dump);
+
+bool msm_vidc_fw_unload = !true;
+EXPORT_SYMBOL(msm_vidc_fw_unload);
 
 unsigned int msm_vidc_enable_bugon = !1;
 EXPORT_SYMBOL(msm_vidc_enable_bugon);
@@ -534,6 +584,8 @@ struct dentry *msm_vidc_debugfs_init_drv(void)
 			&msm_vidc_enable_bugon);
 	debugfs_create_u32("apv_bitrate", 0644, dir,
 			&msm_vidc_apv_bitrate);
+	debugfs_create_bool("fw_unload", 0644, dir,
+			&msm_vidc_fw_unload);
 	return dir;
 
 failed_create_dir:
