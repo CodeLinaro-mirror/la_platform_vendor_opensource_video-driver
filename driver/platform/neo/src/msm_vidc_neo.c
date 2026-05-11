@@ -1751,8 +1751,8 @@ static struct msm_platform_inst_capability instance_data_neo[] = {
 	 * staying under the global limits for MAX_MBPF & MAX_MBPS.
 	 */
 	,
-	{FRAME_WIDTH, ENC, HEVC, 128, 4096, 1, 4096},
-	{FRAME_HEIGHT, ENC, HEVC, 128, 4096, 1, 4096},
+	{FRAME_WIDTH, ENC, HEVC | H264, 128, 4096, 1, 4096},
+	{FRAME_HEIGHT, ENC, HEVC | H264, 128, 4096, 1, 4096},
 	{MBPF, ENC, HEVC, 36, 48640, 1, 48640} /* ((4096x3040)/256) */
 #endif
 };
