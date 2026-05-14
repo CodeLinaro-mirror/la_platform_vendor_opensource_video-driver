@@ -69,6 +69,7 @@ def define_vienna_le(t,v):
         config_options = [
             "CONFIG_MSM_VIDC_VIENNA",
             "CONFIG_MSM_VIDC_AR50LT",
+            "CONFIG_MSM_VIDC_VIENNA_LE",
         ],
     )
 
