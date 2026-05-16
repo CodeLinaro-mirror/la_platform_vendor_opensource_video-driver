@@ -1,10 +1,11 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
+
 #include <dt-bindings/clock/qcom,sm4450-gcc.h>
-#include <dt-bindings/clock/qcom,sm4450-gpucc.h>
+#include <dt-bindings/clock/qcom,malabar-gpucc.h>
 
 #include <linux/soc/qcom/llcc-qcom.h>
 #include <soc/qcom/of_common.h>
@@ -13,7 +14,7 @@
 #include <media/v4l2_vidc_extensions.h>
 #include <media/videobuf2-core.h>
 #include "msm_vidc_ar50lt.h"
-#include "msm_vidc_ravelin.h"
+#include "msm_vidc_bourtzi.h"
 #include "msm_vidc_inst.h"
 #include "msm_vidc_platform.h"
 #include "msm_vidc_debug.h"
@@ -33,12 +34,12 @@
 #define DEFAULT_BITRATE         20000000
 #define MINIMUM_FPS             1
 #define MAXIMUM_FPS             120
-#define MIN_QP_10BIT_RAVELIN	-12
-#define MIN_QP_8BIT_RAVELIN	0
+#define MIN_QP_10BIT_BOURTZI	-12
+#define MIN_QP_8BIT_BOURTZI	0
 #define MAX_QP                  51
 #define DEFAULT_QP              20
 #define MAX_CONSTANT_QUALITY    100
-#define MAX_BITRATE_BOOST_RAVELIN  15
+#define MAX_BITRATE_BOOST_BOURTZI  15
 #define MIN_SLICE_BYTE_SIZE     512
 #define MAX_SLICE_BYTE_SIZE       \
 		((MAX_BITRATE) >> 3)
@@ -54,7 +55,7 @@
 #define CODECS_ALL     (H264|HEVC|VP9|HEIC)
 
 
-static struct codec_info codec_data_ravelin[] = {
+static struct codec_info codec_data_bourtzi[] = {
 	{
 		.v4l2_codec  = V4L2_PIX_FMT_H264,
 		.vidc_codec  = MSM_VIDC_H264,
@@ -77,7 +78,7 @@ static struct codec_info codec_data_ravelin[] = {
 	},
 };
 
-static struct color_format_info color_format_data_ravelin[] = {
+static struct color_format_info color_format_data_bourtzi[] = {
 	{
 		.v4l2_color_format = V4L2_PIX_FMT_NV12,
 		.vidc_color_format = MSM_VIDC_FMT_NV12,
@@ -95,7 +96,7 @@ static struct color_format_info color_format_data_ravelin[] = {
 	},
 };
 
-static struct color_primaries_info color_primaries_data_ravelin[] = {
+static struct color_primaries_info color_primaries_data_bourtzi[] = {
 	{
 		.v4l2_color_primaries  = V4L2_COLORSPACE_DEFAULT,
 		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_RESERVED,
@@ -142,7 +143,7 @@ static struct color_primaries_info color_primaries_data_ravelin[] = {
 	},
 };
 
-static struct transfer_char_info transfer_char_data_ravelin[] = {
+static struct transfer_char_info transfer_char_data_bourtzi[] = {
 	{
 		.v4l2_transfer_char  = V4L2_XFER_FUNC_DEFAULT,
 		.vidc_transfer_char  = MSM_VIDC_TRANSFER_RESERVED,
@@ -201,7 +202,7 @@ static struct transfer_char_info transfer_char_data_ravelin[] = {
 	},
 };
 
-static struct matrix_coeff_info matrix_coeff_data_ravelin[] = {
+static struct matrix_coeff_info matrix_coeff_data_bourtzi[] = {
 	{
 		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_DEFAULT,
 		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_RESERVED,
@@ -244,7 +245,7 @@ static struct matrix_coeff_info matrix_coeff_data_ravelin[] = {
 	},
 };
 
-static const struct msm_platform_core_capability core_data_ravelin[] = {
+static const struct msm_platform_core_capability core_data_bourtzi[] = {
 	/* {type, value} */
 	{ENC_CODECS, H264|HEVC|HEIC},
 	{DEC_CODECS, H264|HEVC|VP9|HEIC},
@@ -281,7 +282,7 @@ static const struct msm_platform_core_capability core_data_ravelin[] = {
 		V4L2_CAP_META_CAPTURE | V4L2_CAP_META_OUTPUT | V4L2_CAP_STREAMING},
 };
 
-static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
+static struct msm_platform_inst_capability instance_cap_data_bourtzi[] = {
 	/* {cap, domain, codec,
 	 *      min, max, step_or_mask, value,
 	 *      v4l2_id,
@@ -688,8 +689,8 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		CAP_FLAG_OUTPUT_PORT},
 
 	{BITRATE_BOOST, ENC, H264|HEVC,
-		0, MAX_BITRATE_BOOST_RAVELIN,
-		MAX_BITRATE_BOOST_RAVELIN, 0,
+		0, MAX_BITRATE_BOOST_BOURTZI,
+		MAX_BITRATE_BOOST_BOURTZI, 0,
 		V4L2_CID_MPEG_VIDC_QUALITY_BITRATE_BOOST,
 		HFI_PROP_BITRATE_BOOST,
 		CAP_FLAG_OUTPUT_PORT},
@@ -712,114 +713,114 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{MIN_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MIN_QP_8BIT_RAVELIN,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MIN_QP_8BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_H264_MIN_QP,
 		HFI_PROP_MIN_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT},
 
 	{MIN_FRAME_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MIN_QP_10BIT_RAVELIN,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MIN_QP_10BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_HEVC_MIN_QP,
 		HFI_PROP_MIN_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT},
 
 	{I_FRAME_MIN_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MIN_QP_8BIT_RAVELIN,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MIN_QP_8BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_H264_I_FRAME_MIN_QP},
 
 	{I_FRAME_MIN_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MIN_QP_10BIT_RAVELIN,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MIN_QP_10BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_HEVC_I_FRAME_MIN_QP},
 
 	{P_FRAME_MIN_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MIN_QP_8BIT_RAVELIN,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MIN_QP_8BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_H264_P_FRAME_MIN_QP},
 
 	{P_FRAME_MIN_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MIN_QP_10BIT_RAVELIN,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MIN_QP_10BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_HEVC_P_FRAME_MIN_QP},
 
 	{B_FRAME_MIN_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MIN_QP_8BIT_RAVELIN,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MIN_QP_8BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_H264_B_FRAME_MIN_QP},
 
 	{B_FRAME_MIN_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MIN_QP_10BIT_RAVELIN,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MIN_QP_10BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_HEVC_B_FRAME_MIN_QP},
 
 	{MAX_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_H264_MAX_QP,
 		HFI_PROP_MAX_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT},
 
 	{MAX_FRAME_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_MAX_QP,
 		HFI_PROP_MAX_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT},
 
 	{I_FRAME_MAX_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_H264_I_FRAME_MAX_QP},
 
 	{I_FRAME_MAX_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_I_FRAME_MAX_QP},
 
 	{P_FRAME_MAX_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_H264_P_FRAME_MAX_QP},
 
 	{P_FRAME_MAX_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_P_FRAME_MAX_QP},
 
 	{B_FRAME_MAX_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_H264_B_FRAME_MAX_QP},
 
 	{B_FRAME_MAX_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_B_FRAME_MAX_QP},
 
 	{I_FRAME_QP, ENC, HEVC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_I_FRAME_QP,
 		HFI_PROP_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{I_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_H264_I_FRAME_QP,
 		HFI_PROP_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{P_FRAME_QP, ENC, HEVC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_P_FRAME_QP,
 		HFI_PROP_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{P_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_H264_P_FRAME_QP,
 		HFI_PROP_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{B_FRAME_QP, ENC, HEVC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_B_FRAME_QP,
 		HFI_PROP_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{B_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_H264_B_FRAME_QP,
 		HFI_PROP_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
@@ -1076,7 +1077,7 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		V4L2_MPEG_VIDEO_H264_LEVEL_4_2,
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
-		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{LEVEL, DEC, HEVC|HEIC,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
@@ -1106,7 +1107,7 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1,
 		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
 		HFI_PROP_LEVEL,
-		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	/* TODO: Bring the VP9 Level upstream GKI change, and level cap here:
 	 *	go/videogki
@@ -1596,7 +1597,7 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 };
 
 
-static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_ravelin[] = {
+static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_bourtzi[] = {
 	/* {cap, domain, codec,
 	 *      children,
 	 *      adjust, set}
@@ -2060,33 +2061,33 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_rave
 		NULL, msm_vidc_set_q16},
 };
 
-static struct msm_vidc_format_capability format_data_ravelin = {
-	.codec_info = codec_data_ravelin,
-	.codec_info_size = ARRAY_SIZE(codec_data_ravelin),
-	.color_format_info = color_format_data_ravelin,
-	.color_format_info_size = ARRAY_SIZE(color_format_data_ravelin),
-	.color_prim_info = color_primaries_data_ravelin,
-	.color_prim_info_size = ARRAY_SIZE(color_primaries_data_ravelin),
-	.transfer_char_info = transfer_char_data_ravelin,
-	.transfer_char_info_size = ARRAY_SIZE(transfer_char_data_ravelin),
-	.matrix_coeff_info = matrix_coeff_data_ravelin,
-	.matrix_coeff_info_size = ARRAY_SIZE(matrix_coeff_data_ravelin),
+static struct msm_vidc_format_capability format_data_bourtzi = {
+	.codec_info = codec_data_bourtzi,
+	.codec_info_size = ARRAY_SIZE(codec_data_bourtzi),
+	.color_format_info = color_format_data_bourtzi,
+	.color_format_info_size = ARRAY_SIZE(color_format_data_bourtzi),
+	.color_prim_info = color_primaries_data_bourtzi,
+	.color_prim_info_size = ARRAY_SIZE(color_primaries_data_bourtzi),
+	.transfer_char_info = transfer_char_data_bourtzi,
+	.transfer_char_info_size = ARRAY_SIZE(transfer_char_data_bourtzi),
+	.matrix_coeff_info = matrix_coeff_data_bourtzi,
+	.matrix_coeff_info_size = ARRAY_SIZE(matrix_coeff_data_bourtzi),
 };
 
 /* name, min_kbps, max_kbps */
-static const struct bw_table ravelin_bw_table[] = {
+static const struct bw_table bourtzi_bw_table[] = {
 	{ "venus-cnoc",  1000, 1000     },
 	{ "venus-ddr",   1000, 6500000 },
 };
 
 /* name, hw_trigger, hw_enable */
-static struct regulator_table ravelin_regulator_table[] = {
+static struct regulator_table bourtzi_regulator_table[] = {
 	{ "venus", 0 },
 	{ "venus-core0", 1 },
 };
 
 /* name, clock id, scaling */
-static const struct clk_table ravelin_clk_table[] = {
+static const struct clk_table bourtzi_clk_table[] = {
 	{ "core_clk",        GCC_VIDEO_VENUS_CTL_CLK,         0},
 	{ "bus_clk",         GCC_VENUS_CTL_AXI_CLK,           0},
 	{ "core0_clk",       GCC_VIDEO_VCODEC0_SYS_CLK,       0},
@@ -2097,7 +2098,7 @@ static const struct clk_table ravelin_clk_table[] = {
 };
 
 /* name, start, size, secure, dma_coherant, region, dma_mask */
-const struct context_bank_table ravelin_context_bank_table[] = {
+const struct context_bank_table bourtzi_context_bank_table[] = {
 	{"qcom,vidc,cb-ns",             0x25800000, 0xba800000, 0, 1,
 		MSM_VIDC_NON_SECURE |
 		MSM_VIDC_NON_SECURE_PIXEL |
@@ -2111,12 +2112,12 @@ const struct context_bank_table ravelin_context_bank_table[] = {
 };
 
 /* register, value, mask */
-static const struct reg_preset_table ravelin_reg_preset_table[] = {
+static const struct reg_preset_table bourtzi_reg_preset_table[] = {
 	{ 0xB0080, 0x0, 0x03},
 };
 
 /* decoder properties */
-static const u32 ravelin_vdec_psc_avc[] = {
+static const u32 bourtzi_vdec_psc_avc[] = {
 	HFI_PROP_BITSTREAM_RESOLUTION,
 	HFI_PROP_CROP_OFFSETS,
 	HFI_PROP_CODED_FRAMES,
@@ -2127,7 +2128,7 @@ static const u32 ravelin_vdec_psc_avc[] = {
 	HFI_PROP_SIGNAL_COLOR_INFO,
 };
 
-static const u32 ravelin_vdec_psc_hevc[] = {
+static const u32 bourtzi_vdec_psc_hevc[] = {
 	HFI_PROP_BITSTREAM_RESOLUTION,
 	HFI_PROP_CROP_OFFSETS,
 	HFI_PROP_LUMA_CHROMA_BIT_DEPTH,
@@ -2138,7 +2139,7 @@ static const u32 ravelin_vdec_psc_hevc[] = {
 	HFI_PROP_SIGNAL_COLOR_INFO,
 };
 
-static const u32 ravelin_vdec_psc_vp9[] = {
+static const u32 bourtzi_vdec_psc_vp9[] = {
 	HFI_PROP_BITSTREAM_RESOLUTION,
 	HFI_PROP_CROP_OFFSETS,
 	HFI_PROP_LUMA_CHROMA_BIT_DEPTH,
@@ -2147,22 +2148,22 @@ static const u32 ravelin_vdec_psc_vp9[] = {
 	HFI_PROP_LEVEL,
 };
 
-static const u32 ravelin_vdec_input_properties_avc[] = {
+static const u32 bourtzi_vdec_input_properties_avc[] = {
 	HFI_PROP_NO_OUTPUT,
 	HFI_PROP_SUBFRAME_INPUT,
 };
 
-static const u32 ravelin_vdec_input_properties_hevc[] = {
+static const u32 bourtzi_vdec_input_properties_hevc[] = {
 	HFI_PROP_NO_OUTPUT,
 	HFI_PROP_SUBFRAME_INPUT,
 };
 
-static const u32 ravelin_vdec_input_properties_vp9[] = {
+static const u32 bourtzi_vdec_input_properties_vp9[] = {
 	HFI_PROP_NO_OUTPUT,
 	HFI_PROP_SUBFRAME_INPUT,
 };
 
-static const u32 ravelin_vdec_output_properties_avc[] = {
+static const u32 bourtzi_vdec_output_properties_avc[] = {
 	HFI_PROP_WORST_COMPRESSION_RATIO,
 	HFI_PROP_WORST_COMPLEXITY_FACTOR,
 	HFI_PROP_PICTURE_TYPE,
@@ -2171,7 +2172,7 @@ static const u32 ravelin_vdec_output_properties_avc[] = {
 	HFI_PROP_DPB_LIST,
 };
 
-static const u32 ravelin_vdec_output_properties_hevc[] = {
+static const u32 bourtzi_vdec_output_properties_hevc[] = {
 	HFI_PROP_WORST_COMPRESSION_RATIO,
 	HFI_PROP_WORST_COMPLEXITY_FACTOR,
 	HFI_PROP_PICTURE_TYPE,
@@ -2180,7 +2181,7 @@ static const u32 ravelin_vdec_output_properties_hevc[] = {
 	HFI_PROP_DPB_LIST,
 };
 
-static const u32 ravelin_vdec_output_properties_vp9[] = {
+static const u32 bourtzi_vdec_output_properties_vp9[] = {
 	HFI_PROP_WORST_COMPRESSION_RATIO,
 	HFI_PROP_WORST_COMPLEXITY_FACTOR,
 	HFI_PROP_PICTURE_TYPE,
@@ -2189,96 +2190,96 @@ static const u32 ravelin_vdec_output_properties_vp9[] = {
 	HFI_PROP_DPB_LIST,
 };
 
-static const u32 ravelin_venc_input_prop[] = {
-       HFI_PROP_COLOR_FORMAT,
-       HFI_PROP_RAW_RESOLUTION,
-       HFI_PROP_LINEAR_STRIDE_SCANLINE,
-       HFI_PROP_SIGNAL_COLOR_INFO,
+static const u32 bourtzi_venc_input_prop[] = {
+	HFI_PROP_COLOR_FORMAT,
+	HFI_PROP_RAW_RESOLUTION,
+	HFI_PROP_LINEAR_STRIDE_SCANLINE,
+	HFI_PROP_SIGNAL_COLOR_INFO,
 };
 
-static const u32 ravelin_venc_output_prop[] = {
-       HFI_PROP_BITSTREAM_RESOLUTION,
-       HFI_PROP_CROP_OFFSETS,
+static const u32 bourtzi_venc_output_prop[] = {
+	HFI_PROP_BITSTREAM_RESOLUTION,
+	HFI_PROP_CROP_OFFSETS,
 };
 
-static const u32 ravelin_msm_vidc_ssr_type[] = {
+static const u32 bourtzi_msm_vidc_ssr_type[] = {
 	HFI_SSR_TYPE_SW_ERR_FATAL,
 };
 
-static const struct msm_vidc_platform_data ravelin_data = {
+static const struct msm_vidc_platform_data bourtzi_data = {
 	/* resources dependent on other module */
-	.bw_tbl = ravelin_bw_table,
-	.bw_tbl_size = ARRAY_SIZE(ravelin_bw_table),
-	.regulator_tbl = ravelin_regulator_table,
-	.regulator_tbl_size = ARRAY_SIZE(ravelin_regulator_table),
-	.clk_tbl = ravelin_clk_table,
-	.clk_tbl_size = ARRAY_SIZE(ravelin_clk_table),
+	.bw_tbl = bourtzi_bw_table,
+	.bw_tbl_size = ARRAY_SIZE(bourtzi_bw_table),
+	.regulator_tbl = bourtzi_regulator_table,
+	.regulator_tbl_size = ARRAY_SIZE(bourtzi_regulator_table),
+	.clk_tbl = bourtzi_clk_table,
+	.clk_tbl_size = ARRAY_SIZE(bourtzi_clk_table),
 
 	/* populate context bank */
-	.context_bank_tbl = ravelin_context_bank_table,
-	.context_bank_tbl_size = ARRAY_SIZE(ravelin_context_bank_table),
+	.context_bank_tbl = bourtzi_context_bank_table,
+	.context_bank_tbl_size = ARRAY_SIZE(bourtzi_context_bank_table),
 
 	/* platform specific resources */
-	.reg_prst_tbl = ravelin_reg_preset_table,
-	.reg_prst_tbl_size = ARRAY_SIZE(ravelin_reg_preset_table),
+	.reg_prst_tbl = bourtzi_reg_preset_table,
+	.reg_prst_tbl_size = ARRAY_SIZE(bourtzi_reg_preset_table),
 	.clock_source_scaling_ratio = 1,
-	.fwname = "venus_v7.mbn",
+	.fwname = "venus_v7",
 	.pas_id = 9,
 	.supports_mmrm = 0,
 
 	/* caps related resorces */
-	.core_data = core_data_ravelin,
-	.core_data_size = ARRAY_SIZE(core_data_ravelin),
-	.inst_cap_data = instance_cap_data_ravelin,
-	.inst_cap_data_size = ARRAY_SIZE(instance_cap_data_ravelin),
-	.inst_cap_dependency_data = instance_cap_dependency_data_ravelin,
-	.inst_cap_dependency_data_size = ARRAY_SIZE(instance_cap_dependency_data_ravelin),
+	.core_data = core_data_bourtzi,
+	.core_data_size = ARRAY_SIZE(core_data_bourtzi),
+	.inst_cap_data = instance_cap_data_bourtzi,
+	.inst_cap_data_size = ARRAY_SIZE(instance_cap_data_bourtzi),
+	.inst_cap_dependency_data = instance_cap_dependency_data_bourtzi,
+	.inst_cap_dependency_data_size = ARRAY_SIZE(instance_cap_dependency_data_bourtzi),
 	.csc_data.vpe_csc_custom_bias_coeff = vpe_csc_custom_bias_coeff,
 	.csc_data.vpe_csc_custom_matrix_coeff = vpe_csc_custom_matrix_coeff,
 	.csc_data.vpe_csc_custom_limit_coeff = vpe_csc_custom_limit_coeff,
 	.ubwc_config = NULL,
-	.format_data = &format_data_ravelin,
+	.format_data = &format_data_bourtzi,
 
 	/* decoder properties related*/
-	.psc_avc_tbl = ravelin_vdec_psc_avc,
-	.psc_avc_tbl_size = ARRAY_SIZE(ravelin_vdec_psc_avc),
-	.psc_hevc_tbl = ravelin_vdec_psc_hevc,
-	.psc_hevc_tbl_size = ARRAY_SIZE(ravelin_vdec_psc_hevc),
-	.psc_vp9_tbl = ravelin_vdec_psc_vp9,
-	.psc_vp9_tbl_size = ARRAY_SIZE(ravelin_vdec_psc_vp9),
+	.psc_avc_tbl = bourtzi_vdec_psc_avc,
+	.psc_avc_tbl_size = ARRAY_SIZE(bourtzi_vdec_psc_avc),
+	.psc_hevc_tbl = bourtzi_vdec_psc_hevc,
+	.psc_hevc_tbl_size = ARRAY_SIZE(bourtzi_vdec_psc_hevc),
+	.psc_vp9_tbl = bourtzi_vdec_psc_vp9,
+	.psc_vp9_tbl_size = ARRAY_SIZE(bourtzi_vdec_psc_vp9),
 
-	.dec_input_prop_avc =  ravelin_vdec_input_properties_avc,
-	.dec_input_prop_hevc = ravelin_vdec_input_properties_hevc,
-	.dec_input_prop_vp9 =  ravelin_vdec_input_properties_vp9,
-	.dec_input_prop_size_avc = ARRAY_SIZE(ravelin_vdec_input_properties_avc),
-	.dec_input_prop_size_hevc = ARRAY_SIZE(ravelin_vdec_input_properties_hevc),
-	.dec_input_prop_size_vp9 = ARRAY_SIZE(ravelin_vdec_input_properties_vp9),
-	.dec_output_prop_avc = ravelin_vdec_output_properties_avc,
-	.dec_output_prop_hevc = ravelin_vdec_output_properties_hevc,
-	.dec_output_prop_vp9 = ravelin_vdec_output_properties_vp9,
-	.dec_output_prop_size_avc = ARRAY_SIZE(ravelin_vdec_output_properties_avc),
-	.dec_output_prop_size_hevc = ARRAY_SIZE(ravelin_vdec_output_properties_hevc),
-	.dec_output_prop_size_vp9 = ARRAY_SIZE(ravelin_vdec_output_properties_vp9),
-	.enc_input_prop = ravelin_venc_input_prop,
-	.enc_input_prop_size = ARRAY_SIZE(ravelin_venc_input_prop),
-	.enc_output_prop = ravelin_venc_output_prop,
-	.enc_output_prop_size = ARRAY_SIZE(ravelin_venc_output_prop),
+	.dec_input_prop_avc =  bourtzi_vdec_input_properties_avc,
+	.dec_input_prop_hevc = bourtzi_vdec_input_properties_hevc,
+	.dec_input_prop_vp9 =  bourtzi_vdec_input_properties_vp9,
+	.dec_input_prop_size_avc = ARRAY_SIZE(bourtzi_vdec_input_properties_avc),
+	.dec_input_prop_size_hevc = ARRAY_SIZE(bourtzi_vdec_input_properties_hevc),
+	.dec_input_prop_size_vp9 = ARRAY_SIZE(bourtzi_vdec_input_properties_vp9),
+	.dec_output_prop_avc = bourtzi_vdec_output_properties_avc,
+	.dec_output_prop_hevc = bourtzi_vdec_output_properties_hevc,
+	.dec_output_prop_vp9 = bourtzi_vdec_output_properties_vp9,
+	.dec_output_prop_size_avc = ARRAY_SIZE(bourtzi_vdec_output_properties_avc),
+	.dec_output_prop_size_hevc = ARRAY_SIZE(bourtzi_vdec_output_properties_hevc),
+	.dec_output_prop_size_vp9 = ARRAY_SIZE(bourtzi_vdec_output_properties_vp9),
+	.enc_input_prop = bourtzi_venc_input_prop,
+	.enc_input_prop_size = ARRAY_SIZE(bourtzi_venc_input_prop),
+	.enc_output_prop = bourtzi_venc_output_prop,
+	.enc_output_prop_size = ARRAY_SIZE(bourtzi_venc_output_prop),
 
-	.msm_vidc_ssr_type = ravelin_msm_vidc_ssr_type,
-	.msm_vidc_ssr_type_size = ARRAY_SIZE(ravelin_msm_vidc_ssr_type),
+	.msm_vidc_ssr_type = bourtzi_msm_vidc_ssr_type,
+	.msm_vidc_ssr_type_size = ARRAY_SIZE(bourtzi_msm_vidc_ssr_type),
 	.vpu_ver = VENUS_VERSION_AR50LT_V2,
 };
 
-int msm_vidc_get_platform_data_ravelin(struct msm_vidc_core *core)
+int msm_vidc_get_platform_data_bourtzi(struct msm_vidc_core *core)
 {
 
-	d_vpr_h("%s: initialize ravelin data\n", __func__);
-	core->platform->data = ravelin_data;
+	d_vpr_h("%s: initialize bourtzi data\n", __func__);
+	core->platform->data = bourtzi_data;
 
 	return 0;
 }
 
-int msm_vidc_init_platform_ravelin(struct msm_vidc_core *core)
+int msm_vidc_init_platform_bourtzi(struct msm_vidc_core *core)
 {
 	d_vpr_h("%s: initialize bourtzi ops\n", __func__);
 	return 0;
