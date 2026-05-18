@@ -2432,6 +2432,8 @@ int msm_vidc_adjust_roi_info(void *instance, struct v4l2_ctrl *ctrl)
 {
 	s32 adjusted_value;
 	struct msm_vidc_inst *inst = (struct msm_vidc_inst *)instance;
+	struct msm_vidc_core *core;
+	core = inst->core;
 	s64 rc_type = -1, pix_fmt = -1;
 
 	adjusted_value = ctrl ? ctrl->val : inst->capabilities[META_ROI_INFO].value;
@@ -2445,9 +2447,16 @@ int msm_vidc_adjust_roi_info(void *instance, struct v4l2_ctrl *ctrl)
 		return -EINVAL;
 
 	if ((rc_type != HFI_RC_VBR_CFR && rc_type != HFI_RC_CBR_CFR &&
-	     rc_type != HFI_RC_CBR_VFR) || !is_8bit_colorformat(pix_fmt) ||
-	     is_scaling_enabled(inst) || is_rotation_90_or_270(inst))
+	     rc_type != HFI_RC_CBR_VFR) || is_scaling_enabled(inst) ||
+	     is_rotation_90_or_270(inst))
 		adjusted_value = 0;
+
+	// Verify if 10-bit ROI is supported.
+	if (adjusted_value && is_10bit_colorformat(pix_fmt))
+		if (!core->capabilities[SUPPORTS_10BIT_ROI].value) {
+			i_vpr_h(inst, "%s: ROI not supported for 10-bit format\n", __func__);
+			adjusted_value = 0;
+		}
 
 	msm_vidc_update_cap_value(inst, META_ROI_INFO, adjusted_value, __func__);
 
