@@ -154,45 +154,45 @@ DECLARE_EVENT_CLASS(msm_v4l2_vidc_buffer_events,
 	TP_ARGS(inst, str, buf_type, vbuf, inode, ref_count),
 
 	TP_STRUCT__entry(
-		__string(debug_str, inst ? inst->debug_str : (u8 *)"")
-		__string(str, str)
-		__string(buf_type, buf_type)
-		__field(u32, index)
-		__field(int, fd)
-		__field(u32, data_offset)
 		__field(u64, device_addr)
 		__field(unsigned long, inode)
 		__field(long, ref_count)
-		__field(u32, buffer_size)
-		__field(u32, data_size)
-		__field(u32, flags)
 		__field(u64, timestamp)
-		__field(int, attr)
 		__field(u64, etb)
 		__field(u64, ebd)
 		__field(u64, ftb)
 		__field(u64, fbd)
+		__field(u32, index)
+		__field(int, fd)
+		__field(u32, data_offset)
+		__field(u32, buffer_size)
+		__field(u32, data_size)
+		__field(u32, flags)
+		__field(int, attr)
+		__string(debug_str, inst ? inst->debug_str : (u8 *)"")
+		__string(str, str)
+		__string(buf_type, buf_type)
 	),
 
 	TP_fast_assign(
-		__assign_str(debug_str, inst ? inst->debug_str : (u8 *)"");
-		__assign_str(str, str);
-		__assign_str(buf_type, buf_type);
-		__entry->index = vbuf ? vbuf->index : -1;
-		__entry->fd = vbuf ? vbuf->fd : 0;
-		__entry->data_offset = vbuf ? vbuf->data_offset : 0;
 		__entry->device_addr = vbuf ? vbuf->device_addr : 0;
 		__entry->inode = inode;
 		__entry->ref_count = ref_count;
-		__entry->buffer_size = vbuf ? vbuf->buffer_size : 0;
-		__entry->data_size = vbuf ? vbuf->data_size : 0;
-		__entry->flags = vbuf ? vbuf->flags : 0;
 		__entry->timestamp = vbuf ? vbuf->timestamp : 0;
-		__entry->attr = vbuf ? vbuf->attr : 0;
 		__entry->etb = inst ? inst->debug_count.etb : 0;
 		__entry->ebd = inst ? inst->debug_count.ebd : 0;
 		__entry->ftb = inst ? inst->debug_count.ftb : 0;
 		__entry->fbd = inst ? inst->debug_count.fbd : 0;
+		__entry->index = vbuf ? vbuf->index : -1;
+		__entry->fd = vbuf ? vbuf->fd : 0;
+		__entry->data_offset = vbuf ? vbuf->data_offset : 0;
+		__entry->buffer_size = vbuf ? vbuf->buffer_size : 0;
+		__entry->data_size = vbuf ? vbuf->data_size : 0;
+		__entry->flags = vbuf ? vbuf->flags : 0;
+		__entry->attr = vbuf ? vbuf->attr : 0;
+		__assign_str(debug_str, inst ? inst->debug_str : (u8 *)"");
+		__assign_str(str, str);
+		__assign_str(buf_type, buf_type);
 	),
 
 	TP_printk(
@@ -219,25 +219,25 @@ DECLARE_EVENT_CLASS(msm_vidc_perf,
 	TP_ARGS(inst, clk_freq, bw_ddr, bw_llcc),
 
 	TP_STRUCT__entry(
-		__string(debug_str, inst ? inst->debug_str : (u8 *)"")
 		__field(u64, curr_freq)
-		__field(u32, ddr_bw)
-		__field(u32, sys_cache_bw)
-		__field(u32, dcvs_flags)
 		__field(u64, clk_freq)
 		__field(u64, bw_ddr)
 		__field(u64, bw_llcc)
+		__field(u32, ddr_bw)
+		__field(u32, sys_cache_bw)
+		__field(u32, dcvs_flags)
+		__string(debug_str, inst ? inst->debug_str : (u8 *)"")
 	),
 
 	TP_fast_assign(
-		__assign_str(debug_str, inst ? inst->debug_str : (u8 *)"");
 		__entry->curr_freq = inst ? inst->power.curr_freq : 0;
-		__entry->ddr_bw = inst ? inst->power.ddr_bw : 0;
-		__entry->sys_cache_bw = inst ? inst->power.sys_cache_bw : 0;
-		__entry->dcvs_flags = inst ? inst->power.dcvs_flags : 0;
 		__entry->clk_freq = clk_freq;
 		__entry->bw_ddr = bw_ddr;
 		__entry->bw_llcc = bw_llcc;
+		__entry->ddr_bw = inst ? inst->power.ddr_bw : 0;
+		__entry->sys_cache_bw = inst ? inst->power.sys_cache_bw : 0;
+		__entry->dcvs_flags = inst ? inst->power.dcvs_flags : 0;
+		__assign_str(debug_str, inst ? inst->debug_str : (u8 *)"");
 	),
 
 	TP_printk("%s: power: inst: clk %lld ddr %d llcc %d dcvs flags %#x, core: clk %lld ddr %lld llcc %lld\n",
@@ -260,23 +260,23 @@ DECLARE_EVENT_CLASS(msm_vidc_buffer_dma_ops,
 	TP_ARGS(buffer_op, dmabuf, size, kvaddr, buf_name, secure, region),
 
 	TP_STRUCT__entry(
-		__string(buffer_op, buffer_op)
 		__field(void *, dmabuf)
-		__field(u32, size)
 		__field(void *, kvaddr)
+		__field(u32, size)
+		__field(u32, region)
+		__string(buffer_op, buffer_op)
 		__string(buf_name, buf_name)
 		__field(u8, secure)
-		__field(u32, region)
 	),
 
 	TP_fast_assign(
-		__assign_str(buffer_op, buffer_op);
 		__entry->dmabuf = dmabuf;
-		__entry->size = size;
 		__entry->kvaddr = kvaddr;
+		__entry->size = size;
+		__entry->region = region;
+		__assign_str(buffer_op, buffer_op);
 		__assign_str(buf_name, buf_name);
 		__entry->secure = secure;
-		__entry->region = region;
 	),
 
 	TP_printk(
