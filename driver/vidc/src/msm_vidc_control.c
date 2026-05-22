@@ -989,7 +989,7 @@ int msm_vidc_adjust_bitrate_mode(void *instance, struct v4l2_ctrl *ctrl)
 		goto update;
 	}
 
-	if (!frame_rc && !is_image_session(inst)) {
+	if (!frame_rc) {
 		hfi_value = HFI_RC_OFF;
 		goto update;
 	}
@@ -1866,6 +1866,40 @@ int msm_vidc_adjust_peak_bitrate(void *instance, struct v4l2_ctrl *ctrl)
 	return 0;
 }
 
+int msm_vidc_adjust_avc_min_qp(void *instance, struct v4l2_ctrl *ctrl)
+{
+	int rc = 0;
+	struct msm_vidc_inst *inst = (struct msm_vidc_inst *) instance;
+
+	if (!inst || !inst->capabilities) {
+		d_vpr_e("%s: invalid params\n", __func__);
+		return -EINVAL;
+	}
+
+	if (ctrl)
+		msm_vidc_update_cap_value(inst, MIN_FRAME_QP,
+			ctrl->val, __func__);
+
+	return rc;
+}
+
+int msm_vidc_adjust_avc_max_qp(void *instance, struct v4l2_ctrl *ctrl)
+{
+	int rc = 0;
+	struct msm_vidc_inst *inst = (struct msm_vidc_inst *) instance;
+
+	if (!inst || !inst->capabilities) {
+		d_vpr_e("%s: invalid params\n", __func__);
+		return -EINVAL;
+	}
+
+	if (ctrl)
+		msm_vidc_update_cap_value(inst, MAX_FRAME_QP,
+			ctrl->val, __func__);
+
+	return rc;
+}
+
 int msm_vidc_adjust_hevc_min_qp(void *instance, struct v4l2_ctrl *ctrl)
 {
 	int rc = 0;
@@ -2033,7 +2067,6 @@ int msm_vidc_adjust_all_intra(void *instance, struct v4l2_ctrl *ctrl)
 	struct msm_vidc_inst *inst = (struct msm_vidc_inst *) instance;
 	s32 gop_size = -1, bframe = -1;
 	u32 width, height, fps, mbps, max_mbps;
-	s32 bitrate_mode = -1;
 
 	if (!inst || !inst->capabilities || !inst->core) {
 		d_vpr_e("%s: invalid params\n", __func__);
@@ -2065,16 +2098,6 @@ int msm_vidc_adjust_all_intra(void *instance, struct v4l2_ctrl *ctrl)
 
 	if (!gop_size && !bframe)
 		adjusted_value = 1;
-
-	if (!msm_vidc_get_parent_value(inst, ALL_INTRA,
-		BITRATE_MODE, &bitrate_mode, __func__)) {
-		if (adjusted_value && bitrate_mode == V4L2_MPEG_VIDEO_BITRATE_MODE_CBR) {
-			adjusted_value = 0;
-			i_vpr_e(inst, "%s: all intra is not supported with CBR mode\n",
-			__func__);
-			return -EINVAL;
-		}
-	}
 
 exit:
 	msm_vidc_update_cap_value(inst, ALL_INTRA,
