@@ -4258,9 +4258,10 @@ int msm_vidc_session_open(struct msm_vidc_inst *inst)
 	if (core->is_hw_virt) {
 #ifdef MSM_VIDC_HW_VIRT
 		core_lock(core, __func__);
-		rc = virtio_video_msm_cmd_open_gvm_session(&inst->device_id, &inst->session_id);
+		__resume(core);
+		rc = virtio_video_msm_cmd_open_gvm_session(&inst->device_id,
+			&inst->session_id);
 		if (!rc) {
-			__resume(core);
 			call_venus_op(core, enable_intr, core);
 		}
 		core_unlock(core, __func__);
@@ -4813,6 +4814,27 @@ int msm_vidc_core_deinit_locked(struct msm_vidc_core *core, bool force)
 	/* unlink all sessions from core, if any */
 	list_for_each_entry_safe(inst, dummy, &core->instances, list) {
 		msm_vidc_change_state(inst, MSM_VIDC_ERROR, __func__);
+		if (core->is_hw_virt) {
+			/*
+			 * Flush VB2 queues before moving the instance to the dangling
+			 * list. In the hw-virt (GVM) path, msm_vidc_stop_streaming()
+			 * uses get_inst_ref() to look up the instance, but
+			 * get_inst_ref() only searches core->instances. Once the
+			 * instance is moved to core->dangling_instances here,
+			 * get_inst_ref() returns NULL and stop_streaming returns early
+			 * without flushing active buffers. __vb2_queue_cancel() then
+			 * detects buffers still in VB2_BUF_STATE_ACTIVE and fires a
+			 * WARN_ON. Flushing here — while the instance is still in
+			 * core->instances — ensures all active VB2 buffers are
+			 * returned to the framework with VB2_BUF_STATE_ERROR before
+			 * the close path runs.
+			 */
+			inst_lock(inst, __func__);
+			msm_vidc_flush_buffers(inst, MSM_VIDC_BUF_INPUT);
+			msm_vidc_flush_buffers(inst, MSM_VIDC_BUF_OUTPUT);
+			msm_vidc_flush_read_only_buffers(inst, MSM_VIDC_BUF_OUTPUT);
+			inst_unlock(inst, __func__);
+		}
 		list_move_tail(&inst->list, &core->dangling_instances);
 	}
 	msm_vidc_change_core_state(core, MSM_VIDC_CORE_DEINIT, __func__);
@@ -4953,10 +4975,7 @@ int msm_vidc_core_init(struct msm_vidc_core *core)
 		/* set up core state and substate */
 		msm_vidc_change_core_state(core, MSM_VIDC_CORE_INIT,
 			__func__);
-		msm_vidc_change_core_sub_state(core, 0,
-			CORE_SUBSTATE_POWER_ENABLE, __func__);
 		call_venus_op(core, enable_intr, core);
-		call_venus_op(g_core, read_tz_ver, g_core);
 
 	}
 
@@ -5552,6 +5571,7 @@ void msm_vidc_destroy_buffers(struct msm_vidc_inst *inst)
 		MSM_VIDC_BUF_LINE,
 		MSM_VIDC_BUF_DPB,
 		MSM_VIDC_BUF_PERSIST,
+		MSM_VIDC_BUF_PERSIST_COMV,
 		MSM_VIDC_BUF_VPSS,
 		MSM_VIDC_BUF_PARTIAL_DATA,
 	};
