@@ -2258,18 +2258,6 @@ static const u32 malabar_vdec_output_properties_vp9[] = {
 	HFI_PROP_DPB_LIST,
 };
 
-static const u32 malabar_venc_input_prop[] = {
-       HFI_PROP_COLOR_FORMAT,
-       HFI_PROP_RAW_RESOLUTION,
-       HFI_PROP_LINEAR_STRIDE_SCANLINE,
-       HFI_PROP_SIGNAL_COLOR_INFO,
-};
-
-static const u32 malabar_venc_output_prop[] = {
-       HFI_PROP_BITSTREAM_RESOLUTION,
-       HFI_PROP_CROP_OFFSETS,
-};
-
 static const u32 malabar_msm_vidc_ssr_type[] = {
 	HFI_SSR_TYPE_SW_ERR_FATAL,
 };
@@ -2327,10 +2315,6 @@ static const struct msm_vidc_platform_data malabar_data = {
 	.dec_output_prop_size_avc = ARRAY_SIZE(malabar_vdec_output_properties_avc),
 	.dec_output_prop_size_hevc = ARRAY_SIZE(malabar_vdec_output_properties_hevc),
 	.dec_output_prop_size_vp9 = ARRAY_SIZE(malabar_vdec_output_properties_vp9),
-	.enc_input_prop = malabar_venc_input_prop,
-	.enc_input_prop_size = ARRAY_SIZE(malabar_venc_input_prop),
-	.enc_output_prop = malabar_venc_output_prop,
-	.enc_output_prop_size = ARRAY_SIZE(malabar_venc_output_prop),
 
 	.msm_vidc_ssr_type = malabar_msm_vidc_ssr_type,
 	.msm_vidc_ssr_type_size = ARRAY_SIZE(malabar_msm_vidc_ssr_type),
