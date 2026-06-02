@@ -422,6 +422,8 @@ static struct msm_platform_inst_capability instance_cap_data_volcano_v0[] = {
 
 	{FRAME_WIDTH, ENC, CODECS_ALL, 128, 4096, 1, 1920},
 
+	{FRAME_WIDTH, ENC, HEVC, 96, 4096, 1, 1920},
+
 	{FRAME_WIDTH, ENC, HEIC, 128, 16384, 1, 16384},
 
 	{LOSSLESS_FRAME_WIDTH, ENC, H264 | HEVC, 128, 4096, 1, 1920},
@@ -430,9 +432,13 @@ static struct msm_platform_inst_capability instance_cap_data_volcano_v0[] = {
 
 	{SECURE_FRAME_WIDTH, ENC, CODECS_ALL, 128, 4096, 1, 1920},
 
+	{SECURE_FRAME_WIDTH, ENC, HEVC, 96, 4096, 1, 1920},
+
 	{FRAME_HEIGHT, DEC, CODECS_ALL, 96, 4096, 1, 1080},
 
 	{FRAME_HEIGHT, ENC, CODECS_ALL, 128, 4096, 1, 1080},
+
+	{FRAME_HEIGHT, ENC, HEVC, 96, 4096, 1, 1080},
 
 	{FRAME_HEIGHT, ENC, HEIC, 128, 16384, 1, 16384},
 
@@ -441,6 +447,8 @@ static struct msm_platform_inst_capability instance_cap_data_volcano_v0[] = {
 	{SECURE_FRAME_HEIGHT, DEC, CODECS_ALL, 96, 4096, 1, 1080},
 
 	{SECURE_FRAME_HEIGHT, ENC, CODECS_ALL, 128, 4096, 1, 1080},
+
+	{SECURE_FRAME_HEIGHT, ENC, HEVC, 96, 4096, 1, 1080},
 
 	{PIX_FMTS, ENC | DEC, H264,
 		MSM_VIDC_FMT_NV12,
@@ -1908,6 +1916,8 @@ static struct msm_platform_inst_capability instance_cap_data_volcano_v1[] = {
 
 	{FRAME_WIDTH, ENC, CODECS_ALL, 128, 4096, 1, 1920},
 
+	{FRAME_WIDTH, ENC, HEVC, 96, 4096, 1, 1920},
+
 	{FRAME_WIDTH, ENC, HEIC, 128, 16384, 1, 16384},
 
 	{LOSSLESS_FRAME_WIDTH, ENC, H264 | HEVC, 128, 4096, 1, 1920},
@@ -1916,9 +1926,13 @@ static struct msm_platform_inst_capability instance_cap_data_volcano_v1[] = {
 
 	{SECURE_FRAME_WIDTH, ENC, CODECS_ALL, 128, 4096, 1, 1920},
 
+	{SECURE_FRAME_WIDTH, ENC, HEVC, 96, 4096, 1, 1920},
+
 	{FRAME_HEIGHT, DEC, CODECS_ALL, 96, 4096, 1, 1080},
 
 	{FRAME_HEIGHT, ENC, CODECS_ALL, 128, 4096, 1, 1080},
+
+	{FRAME_HEIGHT, ENC, HEVC, 96, 4096, 1, 1080},
 
 	{FRAME_HEIGHT, ENC, HEIC, 128, 16384, 1, 16384},
 
@@ -1927,6 +1941,8 @@ static struct msm_platform_inst_capability instance_cap_data_volcano_v1[] = {
 	{SECURE_FRAME_HEIGHT, DEC, CODECS_ALL, 96, 4096, 1, 1080},
 
 	{SECURE_FRAME_HEIGHT, ENC, CODECS_ALL, 128, 4096, 1, 1080},
+
+	{SECURE_FRAME_HEIGHT, ENC, HEVC, 96, 4096, 1, 1080},
 
 	{PIX_FMTS, ENC | DEC, H264,
 		MSM_VIDC_FMT_NV12,
@@ -3387,6 +3403,8 @@ static struct msm_platform_inst_capability instance_cap_data_volcano_v2[] = {
 
 	{FRAME_WIDTH, ENC, CODECS_ALL, 128, 1920, 1, 1920},
 
+	{FRAME_WIDTH, ENC, HEVC, 96, 1920, 1, 1920},
+
 	{FRAME_WIDTH, ENC, HEIC, 128, 16384, 1, 16384},
 
 	{LOSSLESS_FRAME_WIDTH, ENC, H264 | HEVC, 128, 1920, 1, 1920},
@@ -3395,9 +3413,13 @@ static struct msm_platform_inst_capability instance_cap_data_volcano_v2[] = {
 
 	{SECURE_FRAME_WIDTH, ENC, CODECS_ALL, 128, 1920, 1, 1920},
 
+	{SECURE_FRAME_WIDTH, ENC, HEVC, 96, 1920, 1, 1920},
+
 	{FRAME_HEIGHT, DEC, CODECS_ALL, 96, 1920, 1, 1080},
 
 	{FRAME_HEIGHT, ENC, CODECS_ALL, 128, 1920, 1, 1080},
+
+	{FRAME_HEIGHT, ENC, HEVC, 96, 1920, 1, 1080},
 
 	{FRAME_HEIGHT, ENC, HEIC, 128, 16384, 1, 16384},
 
@@ -3406,6 +3428,8 @@ static struct msm_platform_inst_capability instance_cap_data_volcano_v2[] = {
 	{SECURE_FRAME_HEIGHT, DEC, CODECS_ALL, 96, 1920, 1, 1080},
 
 	{SECURE_FRAME_HEIGHT, ENC, CODECS_ALL, 128, 1920, 1, 1080},
+
+	{SECURE_FRAME_HEIGHT, ENC, HEVC, 96, 1920, 1, 1080},
 
 	{PIX_FMTS, ENC | DEC, H264,
 		MSM_VIDC_FMT_NV12,
