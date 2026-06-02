@@ -6582,7 +6582,7 @@ void msm_comm_print_inst_info(struct msm_vidc_inst *inst)
 	mutex_lock(&inst->registeredbufs.lock);
 	s_vpr_h(inst->sid, "registered buffer list:\n");
 	list_for_each_entry(mbuf, &inst->registeredbufs.list, list)
-		print_vidc_buffer(VIDC_ERR, "buf", inst, mbuf);
+		print_vidc_buffer(VIDC_HIGH, "buf", inst, mbuf);
 	mutex_unlock(&inst->registeredbufs.lock);
 
 	mutex_lock(&inst->scratchbufs.lock);
@@ -6746,14 +6746,14 @@ void print_vb2_buffer(const char *str, struct msm_vidc_inst *inst,
 		return;
 
 	if (vb2->num_planes == 1)
-		s_vpr_e(inst->sid,
+		s_vpr_h(inst->sid,
 			"%s: %s: idx %2d fd %d off %d size %d filled %d\n",
 			str, vb2->type == INPUT_MPLANE ? "OUTPUT" : "CAPTURE",
 			vb2->index, vb2->planes[0].m.fd,
 			vb2->planes[0].data_offset, vb2->planes[0].length,
 			vb2->planes[0].bytesused);
 	else
-		s_vpr_e(inst->sid,
+		s_vpr_h(inst->sid,
 			"%s: %s: idx %2d fd %d off %d size %d filled %d, extradata: fd %d off %d size %d filled %d\n",
 			str, vb2->type == INPUT_MPLANE ? "OUTPUT" : "CAPTURE",
 			vb2->index, vb2->planes[0].m.fd,
