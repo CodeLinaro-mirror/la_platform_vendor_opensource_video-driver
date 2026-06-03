@@ -63,6 +63,7 @@ static inline bool is_video_device(struct device *dev)
 		of_device_is_compatible(dev->of_node, "qcom,sa8775p-iris") ||
 		of_device_is_compatible(dev->of_node, "qcom,chora-vidc") ||
 		of_device_is_compatible(dev->of_node, "qcom,msm-vidc-ravelin") ||
+		of_device_is_compatible(dev->of_node, "qcom,msm-vidc-bourtzi") ||
 		of_device_is_compatible(dev->of_node, "qcom,malabar-vidc") ||
 		of_device_is_compatible(dev->of_node, "qcom,msm-vidc-shikra"));
 }
@@ -164,6 +165,7 @@ static const struct of_device_id msm_vidc_dt_match[] = {
 	{.compatible = "qcom,x1e80100-vidc"},
 	{.compatible = "qcom,sa8775p-iris"},
 	{.compatible = "qcom,msm-vidc-ravelin"},
+	{.compatible = "qcom,msm-vidc-bourtzi"},
 	{.compatible = "qcom,malabar-vidc"},
 	{.compatible = "qcom,msm-vidc-shikra"},
 	{.compatible = "qcom,vidc,cb-ns-pxl"},
@@ -877,6 +879,11 @@ static int msm_vidc_probe_video_device(struct platform_device *pdev)
 		return -ENOMEM;
 	}
 	g_core = core;
+
+	/* Allot session ID as 0x1F000000 here and increment sequentially
+	 * by 1 in msm_vidc_open()
+	 */
+	core->session_id = 0x1F000000;
 
 	core->hw_version = MSM_VIDC_HW_VERSION_V1;
 

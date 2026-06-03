@@ -67,6 +67,10 @@
 #include "msm_vidc_ravelin.h"
 #include "msm_vidc_ar50lt.h"
 #endif
+#if defined(CONFIG_MSM_VIDC_BOURTZI)
+#include "msm_vidc_bourtzi.h"
+#include "msm_vidc_ar50lt.h"
+#endif
 #if defined(CONFIG_MSM_VIDC_MALABAR)
 #include "msm_vidc_malabar.h"
 #include "msm_vidc_ar50lt.h"
@@ -439,6 +443,14 @@ static const struct msm_vidc_compat_handle compat_handle[] = {
 		.compat                     = "qcom,msm-vidc-ravelin",
 		.get_platform_data          = msm_vidc_get_platform_data_ravelin,
 		.init_platform              = msm_vidc_init_platform_ravelin,
+		.init_vpu                   = msm_vidc_init_ar50lt,
+	},
+#endif
+#if defined(CONFIG_MSM_VIDC_BOURTZI)
+	{
+		.compat                     = "qcom,msm-vidc-bourtzi",
+		.get_platform_data          = msm_vidc_get_platform_data_bourtzi,
+		.init_platform              = msm_vidc_init_platform_bourtzi,
 		.init_vpu                   = msm_vidc_init_ar50lt,
 	},
 #endif

@@ -1524,7 +1524,11 @@ static int msm_vdec_read_input_subcr_params(struct msm_vidc_inst *inst)
 		extra_count, inst, MSM_VIDC_BUF_OUTPUT);
 	inst->buffers.output_meta.min_count = inst->buffers.output.min_count;
 	inst->buffers.output_meta.extra_count = inst->buffers.output.extra_count;
-	if (is_thumbnail_session(inst) && inst->codec != MSM_VIDC_VP9) {
+	/*
+	 * ignore the thumbnail min count check for VP9 and interlace cases
+	 */
+	if (is_thumbnail_session(inst) && inst->codec != MSM_VIDC_VP9 &&
+	    !(inst->capabilities[CODED_FRAMES].value && CODED_FRAMES_INTERLACE)) {
 		if (inst->buffers.output.min_count != 1) {
 			i_vpr_e(inst, "%s: invalid min count %d in thumbnail case\n",
 				__func__, inst->buffers.output.min_count);
