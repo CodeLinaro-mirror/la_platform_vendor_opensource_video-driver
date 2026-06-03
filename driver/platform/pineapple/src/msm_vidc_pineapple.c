@@ -322,6 +322,7 @@ static struct msm_platform_core_capability core_data_pineapple[] = {
 	{DEVICE_CAPS, V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_META_CAPTURE |
 		V4L2_CAP_STREAMING},
 	{SUPPORTS_REQUESTS, 0},
+	{SUPPORTS_10BIT_ROI, 0},
 };
 
 static int msm_vidc_set_ring_buffer_count_pineapple(void *instance,

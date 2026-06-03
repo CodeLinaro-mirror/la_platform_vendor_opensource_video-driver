@@ -329,6 +329,7 @@ static const struct msm_platform_core_capability core_data_sun[] = {
 	// TODO gdoddabe Enable when Synx changes are available
 	//{SUPPORTS_SYNX_FENCE, 1},
 	{SUPPORTS_REQUESTS, 0},
+	{SUPPORTS_10BIT_ROI, 1},
 };
 
 static int msm_vidc_set_ring_buffer_count_sun(void *instance,
