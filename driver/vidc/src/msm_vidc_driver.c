@@ -6567,7 +6567,8 @@ static int msm_vidc_check_max_sessions(struct msm_vidc_inst *inst)
 		return -ENOMEM;
 	}
 
-	if (num_1080p_sessions > core->capabilities[MAX_NUM_1080P_SESSIONS].value) {
+	if (num_1080p_sessions > core->capabilities[MAX_NUM_1080P_SESSIONS].value &&
+		num_4k_sessions == 0) {
 		i_vpr_e(inst, "%s: total 1080p sessions %d, exceeded max limit %d\n",
 			__func__, num_1080p_sessions,
 			core->capabilities[MAX_NUM_1080P_SESSIONS].value);
