@@ -648,7 +648,7 @@ static struct msm_vidc_venus_ops ar50lt_ops = {
 	.scm_mem_protect = msm_vidc_mem_protect_video_regions_v1,
 };
 
-int msm_vidc_decide_work_mode_ar50lt(struct msm_vidc_inst  *inst)
+static int msm_vidc_decide_work_mode_ar50lt(struct msm_vidc_inst  *inst)
 {
 	u32 work_mode;
 	struct v4l2_format *inp_f;
