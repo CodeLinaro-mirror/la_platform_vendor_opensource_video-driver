@@ -1,10 +1,10 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
 #include <dt-bindings/clock/qcom,sm4450-gcc.h>
-#include <dt-bindings/clock/qcom,sm4450-gpucc.h>
+#include <dt-bindings/clock/qcom,malabar-gpucc.h>
 
 #include <linux/soc/qcom/llcc-qcom.h>
 #include <soc/qcom/of_common.h>
@@ -13,7 +13,7 @@
 #include <media/v4l2_vidc_extensions.h>
 #include <media/videobuf2-core.h>
 #include "msm_vidc_ar50lt.h"
-#include "msm_vidc_ravelin.h"
+#include "msm_vidc_bourtzi.h"
 #include "msm_vidc_inst.h"
 #include "msm_vidc_platform.h"
 #include "msm_vidc_debug.h"
@@ -26,6 +26,8 @@
 #include "hfi_command.h"
 #include "venus_hfi.h"
 
+/* version: major[24:31], minor[16:23], revision[0:15] */
+#define DRIVER_VERSION          0x04000000
 #define DEFAULT_VIDEO_CONCEAL_COLOR_BLACK 0x8020010
 #define MAX_LTR_FRAME_COUNT     2
 #define MAX_BASE_LAYER_PRIORITY_ID 63
@@ -33,12 +35,12 @@
 #define DEFAULT_BITRATE         20000000
 #define MINIMUM_FPS             1
 #define MAXIMUM_FPS             120
-#define MIN_QP_10BIT_RAVELIN	-12
-#define MIN_QP_8BIT_RAVELIN	0
+#define MIN_QP_10BIT_BOURTZI	-12
+#define MIN_QP_8BIT_BOURTZI	0
 #define MAX_QP                  51
 #define DEFAULT_QP              20
 #define MAX_CONSTANT_QUALITY    100
-#define MAX_BITRATE_BOOST_RAVELIN  15
+#define MAX_BITRATE_BOOST_BOURTZI  15
 #define MIN_SLICE_BYTE_SIZE     512
 #define MAX_SLICE_BYTE_SIZE       \
 		((MAX_BITRATE) >> 3)
@@ -51,10 +53,10 @@
 #define HEVC    MSM_VIDC_HEVC
 #define VP9     MSM_VIDC_VP9
 #define HEIC    MSM_VIDC_HEIC
-#define CODECS_ALL     (H264|HEVC|VP9|HEIC)
+#define CODECS_ALL     (H264 | HEVC | VP9 | HEIC)
+#define MAXIMUM_OVERRIDE_VP9_FPS 60
 
-
-static struct codec_info codec_data_ravelin[] = {
+static struct codec_info codec_data_bourtzi[] = {
 	{
 		.v4l2_codec  = V4L2_PIX_FMT_H264,
 		.vidc_codec  = MSM_VIDC_H264,
@@ -77,7 +79,7 @@ static struct codec_info codec_data_ravelin[] = {
 	},
 };
 
-static struct color_format_info color_format_data_ravelin[] = {
+static struct color_format_info color_format_data_bourtzi[] = {
 	{
 		.v4l2_color_format = V4L2_PIX_FMT_NV12,
 		.vidc_color_format = MSM_VIDC_FMT_NV12,
@@ -95,7 +97,7 @@ static struct color_format_info color_format_data_ravelin[] = {
 	},
 };
 
-static struct color_primaries_info color_primaries_data_ravelin[] = {
+static struct color_primaries_info color_primaries_data_bourtzi[] = {
 	{
 		.v4l2_color_primaries  = V4L2_COLORSPACE_DEFAULT,
 		.vidc_color_primaries  = MSM_VIDC_PRIMARIES_RESERVED,
@@ -142,7 +144,7 @@ static struct color_primaries_info color_primaries_data_ravelin[] = {
 	},
 };
 
-static struct transfer_char_info transfer_char_data_ravelin[] = {
+static struct transfer_char_info transfer_char_data_bourtzi[] = {
 	{
 		.v4l2_transfer_char  = V4L2_XFER_FUNC_DEFAULT,
 		.vidc_transfer_char  = MSM_VIDC_TRANSFER_RESERVED,
@@ -201,7 +203,7 @@ static struct transfer_char_info transfer_char_data_ravelin[] = {
 	},
 };
 
-static struct matrix_coeff_info matrix_coeff_data_ravelin[] = {
+static struct matrix_coeff_info matrix_coeff_data_bourtzi[] = {
 	{
 		.v4l2_matrix_coeff  = V4L2_YCBCR_ENC_DEFAULT,
 		.vidc_matrix_coeff  = MSM_VIDC_MATRIX_COEFF_RESERVED,
@@ -244,7 +246,7 @@ static struct matrix_coeff_info matrix_coeff_data_ravelin[] = {
 	},
 };
 
-static const struct msm_platform_core_capability core_data_ravelin[] = {
+static const struct msm_platform_core_capability core_data_bourtzi[] = {
 	/* {type, value} */
 	{ENC_CODECS, H264|HEVC|HEIC},
 	{DEC_CODECS, H264|HEVC|VP9|HEIC},
@@ -270,6 +272,8 @@ static const struct msm_platform_core_capability core_data_ravelin[] = {
 	{HW_RESPONSE_TIMEOUT, HW_RESPONSE_TIMEOUT_VALUE}, /* 1000 ms */
 	{SW_PC_DELAY,         SW_PC_DELAY_VALUE        }, /* 1500 ms (>HW_RESPONSE_TIMEOUT)*/
 	{FW_UNLOAD_DELAY,     FW_UNLOAD_DELAY_VALUE    }, /* 3000 ms (>SW_PC_DELAY)*/
+	{PAGEFAULT_NON_FATAL, 1},
+	{PAGETABLE_CACHING, 0},
 	{DCVS, 1},
 	{DECODE_BATCH, 0},
 	{DECODE_BATCH_TIMEOUT, 200},
@@ -279,23 +283,32 @@ static const struct msm_platform_core_capability core_data_ravelin[] = {
 	{ENC_AUTO_FRAMERATE, 0},
 	{DEVICE_CAPS, V4L2_CAP_VIDEO_CAPTURE_MPLANE | V4L2_CAP_VIDEO_OUTPUT_MPLANE |
 		V4L2_CAP_META_CAPTURE | V4L2_CAP_META_OUTPUT | V4L2_CAP_STREAMING},
+	{SUPPORTS_REQUESTS, 0},
+	{CACHE_OPS_REQUIRED, 1},
 };
 
-static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
+static struct msm_platform_inst_capability instance_cap_data_bourtzi[] = {
 	/* {cap, domain, codec,
 	 *      min, max, step_or_mask, value,
 	 *      v4l2_id,
 	 *      hfi_id,
 	 *      flags}
 	 */
+	{DRV_VERSION, DEC | ENC, CODECS_ALL,
+		0, INT_MAX, 1, DRIVER_VERSION,
+		V4L2_CID_MPEG_VIDC_DRIVER_VERSION},
 
 	{FRAME_WIDTH, DEC, CODECS_ALL, 96, 1920, 1, 1920},
-	{FRAME_WIDTH, ENC, H264|HEVC|HEIC, 128, 1920, 1, 1920},
+	{FRAME_WIDTH, ENC, H264|HEVC, 128, 1920, 1, 1920},
 	{LOSSLESS_FRAME_WIDTH, ENC, H264|HEVC, 128, 1920, 1, 1920},
 	{SECURE_FRAME_WIDTH, DEC, H264|HEVC|VP9, 96, 1920, 1, 1920},
 	{SECURE_FRAME_WIDTH, ENC, H264|HEVC, 128, 1920, 1, 1920},
 	{FRAME_HEIGHT, DEC, CODECS_ALL, 96, 1920, 1, 1080},
-	{FRAME_HEIGHT, ENC,  H264|HEVC|HEIC, 128, 1920, 1, 1080},
+	{FRAME_HEIGHT, ENC,  H264|HEVC, 128, 1920, 1, 1080},
+
+	/* configure image properties */
+	{FRAME_WIDTH, ENC, HEIC, 512, 8192, 2, 8192},
+	{FRAME_HEIGHT, ENC, HEIC, 512, 8192, 2, 8192},
 	{LOSSLESS_FRAME_HEIGHT, ENC, H264|HEVC, 128, 1920, 1, 1080},
 	{SECURE_FRAME_HEIGHT, DEC, H264|HEVC|VP9, 96, 1920, 1, 1080},
 	{SECURE_FRAME_HEIGHT, ENC, H264|HEVC, 128, 1920, 1, 1080},
@@ -351,8 +364,12 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_VOLATILE},
 
 	 /*  ((1920 * 1080) / 256) */
-	{MBPF, ENC, CODECS_ALL, 36, 8160, 1, 8160},
+	{MBPF, ENC, CODECS_ALL, 64, 8160, 1, 8160},
+
 	{MBPF, DEC, CODECS_ALL, 36, 8160, 1, 8160},
+
+	/* ((8192x8192)/256) */
+	{MBPF, ENC | DEC, HEIC, 1024, 262144, 1, 262144},
 
 	/*  ((1920 * 1080) / 256) */
 	{LOSSLESS_MBPF, ENC, H264|HEVC, 36, 8160, 1, 8160},
@@ -377,10 +394,37 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 	{FRAME_RATE, DEC, CODECS_ALL,
 		(MINIMUM_FPS << 16), (MAXIMUM_FPS << 16),
 		1, (DEFAULT_FPS << 16),
-		V4L2_CID_MPEG_VIDC_FRAME_RATE},
+		V4L2_CID_MPEG_VIDC_FRAME_RATE,
+		0,
+		CAP_FLAG_OUTPUT_PORT |
+		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
 
-	{OPERATING_RATE, ENC|DEC, CODECS_ALL,
-		(MINIMUM_FPS << 16), (MAXIMUM_FPS << 16),
+	{FRAME_RATE, DEC, VP9,
+		(MINIMUM_FPS << 16), (MAXIMUM_OVERRIDE_VP9_FPS << 16),
+		1, (DEFAULT_FPS << 16),
+		V4L2_CID_MPEG_VIDC_FRAME_RATE,
+		0,
+		CAP_FLAG_OUTPUT_PORT |
+		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
+
+	{OPERATING_RATE, ENC, CODECS_ALL,
+		(MINIMUM_FPS << 16), INT_MAX,
+		1, (DEFAULT_FPS << 16)},
+
+	{OPERATING_RATE, DEC, CODECS_ALL,
+		(MINIMUM_FPS << 16), INT_MAX,
+		1, (DEFAULT_FPS << 16),
+		V4L2_CID_MPEG_VIDC_OPERATING_RATE,
+		0,
+		CAP_FLAG_OUTPUT_PORT |
+		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
+
+	{INPUT_RATE, ENC | DEC, CODECS_ALL,
+		(MINIMUM_FPS << 16), INT_MAX,
+		1, (DEFAULT_FPS << 16)},
+
+	{TIMESTAMP_RATE, ENC | DEC, CODECS_ALL,
+		(MINIMUM_FPS << 16), INT_MAX,
 		1, (DEFAULT_FPS << 16)},
 
 	{SCALE_FACTOR, ENC, H264|HEVC, 1, 8, 1, 8},
@@ -543,6 +587,21 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		HFI_PROP_RATE_CONTROL,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
+	{CABAC_MAX_BITRATE, ENC, H264 | HEVC, 0,
+		MAX_BITRATE, 1, MAX_BITRATE},
+
+	{CAVLC_MAX_BITRATE, ENC, H264, 0,
+		MAX_BITRATE, 1, MAX_BITRATE},
+
+	{ALLINTRA_MAX_BITRATE, ENC, H264 | HEVC, 0,
+		MAX_BITRATE, 1, MAX_BITRATE},
+
+	{LOWLATENCY_MAX_BITRATE, ENC, H264 | HEVC, 0,
+		MAX_BITRATE, 1, MAX_BITRATE},
+
+	{NUM_COMV, DEC, H264 | HEVC | VP9 | HEIC,
+		0, INT_MAX, 1, 0},
+
 	{LOSSLESS, ENC, HEVC,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
 		1, V4L2_MPEG_MSM_VIDC_DISABLE,
@@ -631,8 +690,8 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		HFI_PROP_SEQ_CHANGE_AT_SYNC_FRAME,
 		CAP_FLAG_INPUT_PORT},
 
-	{LTR_COUNT, ENC, H264|HEVC,
-		0, 2, 1, 0,
+	{LTR_COUNT, ENC, H264 | HEVC,
+		0, MAX_LTR_FRAME_COUNT, 1, 0,
 		V4L2_CID_MPEG_VIDEO_LTR_COUNT,
 		HFI_PROP_LTR_COUNT,
 		CAP_FLAG_OUTPUT_PORT},
@@ -658,6 +717,16 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		V4L2_CID_MPEG_VIDEO_BASELAYER_PRIORITY_ID,
 		HFI_PROP_BASELAYER_PRIORITYID,
 		CAP_FLAG_OUTPUT_PORT},
+
+	{IR_TYPE, ENC, H264 | HEVC,
+		V4L2_CID_MPEG_VIDEO_INTRA_REFRESH_PERIOD_TYPE_RANDOM,
+		V4L2_CID_MPEG_VIDEO_INTRA_REFRESH_PERIOD_TYPE_RANDOM,
+		BIT(V4L2_CID_MPEG_VIDEO_INTRA_REFRESH_PERIOD_TYPE_RANDOM) |
+		BIT(V4L2_CID_MPEG_VIDEO_INTRA_REFRESH_PERIOD_TYPE_RANDOM),
+		V4L2_CID_MPEG_VIDEO_INTRA_REFRESH_PERIOD_TYPE_RANDOM,
+		V4L2_CID_MPEG_VIDEO_INTRA_REFRESH_PERIOD_TYPE,
+		0,
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{IR_PERIOD, ENC, H264|HEVC,
 		0, INT_MAX, 1, 0,
@@ -688,8 +757,8 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		CAP_FLAG_OUTPUT_PORT},
 
 	{BITRATE_BOOST, ENC, H264|HEVC,
-		0, MAX_BITRATE_BOOST_RAVELIN,
-		MAX_BITRATE_BOOST_RAVELIN, 0,
+		0, MAX_BITRATE_BOOST_BOURTZI,
+		MAX_BITRATE_BOOST_BOURTZI, 0,
 		V4L2_CID_MPEG_VIDC_QUALITY_BITRATE_BOOST,
 		HFI_PROP_BITRATE_BOOST,
 		CAP_FLAG_OUTPUT_PORT},
@@ -712,114 +781,114 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{MIN_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MIN_QP_8BIT_RAVELIN,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MIN_QP_8BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_H264_MIN_QP,
 		HFI_PROP_MIN_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT},
 
 	{MIN_FRAME_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MIN_QP_10BIT_RAVELIN,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MIN_QP_10BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_HEVC_MIN_QP,
 		HFI_PROP_MIN_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT},
 
 	{I_FRAME_MIN_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MIN_QP_8BIT_RAVELIN,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MIN_QP_8BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_H264_I_FRAME_MIN_QP},
 
 	{I_FRAME_MIN_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MIN_QP_10BIT_RAVELIN,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MIN_QP_10BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_HEVC_I_FRAME_MIN_QP},
 
 	{P_FRAME_MIN_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MIN_QP_8BIT_RAVELIN,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MIN_QP_8BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_H264_P_FRAME_MIN_QP},
 
 	{P_FRAME_MIN_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MIN_QP_10BIT_RAVELIN,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MIN_QP_10BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_HEVC_P_FRAME_MIN_QP},
 
 	{B_FRAME_MIN_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MIN_QP_8BIT_RAVELIN,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MIN_QP_8BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_H264_B_FRAME_MIN_QP},
 
 	{B_FRAME_MIN_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MIN_QP_10BIT_RAVELIN,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MIN_QP_10BIT_BOURTZI,
 		V4L2_CID_MPEG_VIDEO_HEVC_B_FRAME_MIN_QP},
 
 	{MAX_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_H264_MAX_QP,
 		HFI_PROP_MAX_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT},
 
 	{MAX_FRAME_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_MAX_QP,
 		HFI_PROP_MAX_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT},
 
 	{I_FRAME_MAX_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_H264_I_FRAME_MAX_QP},
 
 	{I_FRAME_MAX_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_I_FRAME_MAX_QP},
 
 	{P_FRAME_MAX_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_H264_P_FRAME_MAX_QP},
 
 	{P_FRAME_MAX_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_P_FRAME_MAX_QP},
 
 	{B_FRAME_MAX_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_H264_B_FRAME_MAX_QP},
 
 	{B_FRAME_MAX_QP, ENC, HEVC|HEIC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, MAX_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, MAX_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_B_FRAME_MAX_QP},
 
 	{I_FRAME_QP, ENC, HEVC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_I_FRAME_QP,
 		HFI_PROP_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{I_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_H264_I_FRAME_QP,
 		HFI_PROP_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{P_FRAME_QP, ENC, HEVC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_P_FRAME_QP,
 		HFI_PROP_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{P_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_H264_P_FRAME_QP,
 		HFI_PROP_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{B_FRAME_QP, ENC, HEVC,
-		MIN_QP_10BIT_RAVELIN, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_10BIT_BOURTZI, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_HEVC_B_FRAME_QP,
 		HFI_PROP_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
 			CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{B_FRAME_QP, ENC, H264,
-		MIN_QP_8BIT_RAVELIN, MAX_QP, 1, DEFAULT_QP,
+		MIN_QP_8BIT_BOURTZI, MAX_QP, 1, DEFAULT_QP,
 		V4L2_CID_MPEG_VIDEO_H264_B_FRAME_QP,
 		HFI_PROP_QP_PACKED,
 		CAP_FLAG_OUTPUT_PORT|CAP_FLAG_INPUT_PORT|
@@ -848,6 +917,12 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		1, V4L2_MPEG_MSM_VIDC_DISABLE,
 		V4L2_CID_MPEG_VIDEO_H264_HIERARCHICAL_CODING,
 		HFI_PROP_LAYER_ENCODING_TYPE,
+		CAP_FLAG_OUTPUT_PORT},
+
+	{LAYER_ENABLE, ENC, HEVC,
+		0, 1, 1, 0,
+		0,
+		0,
 		CAP_FLAG_OUTPUT_PORT},
 
 	{ENH_LAYER_COUNT, ENC, HEVC,
@@ -983,7 +1058,7 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		V4L2_MPEG_VIDEO_H264_PROFILE_HIGH,
 		V4L2_CID_MPEG_VIDEO_H264_PROFILE,
 		HFI_PROP_PROFILE,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{PROFILE, DEC, H264,
 		V4L2_MPEG_VIDEO_H264_PROFILE_BASELINE,
@@ -1266,7 +1341,7 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		HFI_PROP_CODED_FRAMES,
 		CAP_FLAG_VOLATILE},
 
-	{BIT_DEPTH, DEC, CODECS_ALL, BIT_DEPTH_8, BIT_DEPTH_8, 1, BIT_DEPTH_8,
+	{BIT_DEPTH, DEC|ENC, CODECS_ALL, BIT_DEPTH_8, BIT_DEPTH_8, 1, BIT_DEPTH_8,
 		0,
 		HFI_PROP_LUMA_CHROMA_BIT_DEPTH},
 
@@ -1310,11 +1385,26 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		HFI_PROP_SESSION_PRIORITY,
 		CAP_FLAG_DYNAMIC_ALLOWED},
 
+	{FIRMWARE_PRIORITY_OFFSET, DEC | ENC, H264 | HEVC | VP9 | HEIC,
+		1, 1, 1, 1},
+
+	{CRITICAL_PRIORITY, ENC, H264 | HEVC | VP9 | HEIC,
+		0, 1, 1, 0,
+		V4L2_CID_MPEG_VIDC_CRITICAL_PRIORITY},
+
 	{ENC_IP_CR, ENC, CODECS_ALL,
 		0, S32_MAX, 1, 0,
 		V4L2_CID_MPEG_VIDC_COMPRESSION_RATIO,
 		0, CAP_FLAG_DYNAMIC_ALLOWED},
 
+	{INPUT_EXTRA_METADATA_OFFSET, DEC, H264 | HEVC | VP9 | HEIC,
+		0, INT_MAX, 1, 0,
+		V4L2_CID_MPEG_VIDC_INPUT_EXTRA_METADATA_OFFSET,
+		0, CAP_FLAG_DYNAMIC_ALLOWED},
+
+	{LAST_FLAG_EVENT_ENABLE, DEC | ENC, H264 | HEVC | VP9 | HEIC,
+		0, 1, 1, 0,
+		V4L2_CID_MPEG_VIDC_LAST_FLAG_EVENT_ENABLE},
 
 	{ALL_INTRA, ENC, H264|HEVC,
 		V4L2_MPEG_MSM_VIDC_DISABLE, V4L2_MPEG_MSM_VIDC_ENABLE,
@@ -1366,6 +1456,55 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		V4L2_CID_MPEG_VIDC_METADATA_CONCEALED_MB_COUNT,
 		HFI_PROP_CONEALED_MB_COUNT,
 		CAP_FLAG_BITMASK | CAP_FLAG_META},
+
+	{META_HIST_INFO, DEC, HEVC | VP9,
+		MSM_VIDC_META_DISABLE,
+		MSM_VIDC_META_DISABLE | MSM_VIDC_META_RX_OUTPUT,
+		1, MSM_VIDC_META_DISABLE,
+		V4L2_CID_MPEG_VIDC_METADATA_HISTOGRAM_INFO,
+		0,
+		CAP_FLAG_BITMASK | CAP_FLAG_META},
+
+	{META_HIST_INFO, ENC, HEVC,
+		MSM_VIDC_META_DISABLE,
+		MSM_VIDC_META_DISABLE | MSM_VIDC_META_RX_OUTPUT,
+		1, MSM_VIDC_META_DISABLE,
+		V4L2_CID_MPEG_VIDC_METADATA_HISTOGRAM_INFO,
+		0,
+		CAP_FLAG_BITMASK | CAP_FLAG_META},
+
+	{META_HDR10_MAX_RGB_INFO, ENC, HEVC,
+		MSM_VIDC_META_DISABLE,
+		MSM_VIDC_META_DISABLE | MSM_VIDC_META_RX_OUTPUT,
+		0, MSM_VIDC_META_DISABLE,
+		V4L2_CID_MPEG_VIDC_METADATA_HDR10_MAX_RGB_INFO,
+		0,
+		CAP_FLAG_BITMASK | CAP_FLAG_META},
+
+	{META_TRANSCODING_STAT_INFO, DEC, HEVC | H264,
+		MSM_VIDC_META_DISABLE,
+		MSM_VIDC_META_DISABLE | MSM_VIDC_META_RX_OUTPUT,
+		0, MSM_VIDC_META_DISABLE,
+		V4L2_CID_MPEG_VIDC_METADATA_TRANSCODE_STAT_INFO,
+		0,
+		CAP_FLAG_BITMASK | CAP_FLAG_META},
+
+	{META_TRANSCODING_STAT_INFO, ENC, HEVC | H264,
+		MSM_VIDC_META_DISABLE,
+		MSM_VIDC_META_DISABLE | MSM_VIDC_META_TX_INPUT,
+		0, MSM_VIDC_META_DISABLE,
+		V4L2_CID_MPEG_VIDC_METADATA_TRANSCODE_STAT_INFO,
+		0,
+		CAP_FLAG_BITMASK | CAP_FLAG_META},
+
+	{META_PICTURE_TYPE, DEC, H264 | HEVC | VP9 | HEIC,
+		MSM_VIDC_META_DISABLE,
+		MSM_VIDC_META_ENABLE | MSM_VIDC_META_TX_INPUT |
+		MSM_VIDC_META_RX_INPUT,
+		0, MSM_VIDC_META_DISABLE,
+		V4L2_CID_MPEG_VIDC_METADATA_PICTURE_TYPE,
+		HFI_PROP_PICTURE_TYPE,
+		CAP_FLAG_BITMASK | CAP_FLAG_META | CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{META_SEI_MASTERING_DISP, ENC, HEVC | HEIC,
 		MSM_VIDC_META_DISABLE,
@@ -1455,6 +1594,22 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 		1, V4L2_MPEG_MSM_VIDC_DISABLE,
 		V4L2_CID_MPEG_VIDC_METADATA_DPB_TAG_LIST,
 		HFI_PROP_DPB_TAG_LIST},
+
+	{META_SUBFRAME_OUTPUT, ENC, HEIC | H264 | HEVC,
+		MSM_VIDC_META_DISABLE,
+		MSM_VIDC_META_ENABLE | MSM_VIDC_META_RX_OUTPUT,
+		0, MSM_VIDC_META_DISABLE,
+		V4L2_CID_MPEG_VIDC_METADATA_SUBFRAME_OUTPUT,
+		HFI_PROP_SUBFRAME_OUTPUT,
+		CAP_FLAG_BITMASK | CAP_FLAG_META},
+
+	{META_SUBFRAME_OUTPUT, DEC, H264 | HEVC | HEIC | VP9,
+		MSM_VIDC_META_DISABLE,
+		MSM_VIDC_META_ENABLE | MSM_VIDC_META_RX_OUTPUT,
+		0, MSM_VIDC_META_DISABLE,
+		V4L2_CID_MPEG_VIDC_METADATA_SUBFRAME_OUTPUT,
+		HFI_PROP_SUBFRAME_OUTPUT,
+		CAP_FLAG_BITMASK | CAP_FLAG_META},
 
 	{META_ENC_QP_METADATA, ENC, CODECS_ALL,
 		MSM_VIDC_META_DISABLE,
@@ -1596,7 +1751,7 @@ static struct msm_platform_inst_capability instance_cap_data_ravelin[] = {
 };
 
 
-static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_ravelin[] = {
+static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_bourtzi[] = {
 	/* {cap, domain, codec,
 	 *      children,
 	 *      adjust, set}
@@ -1613,12 +1768,28 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_rave
 		  */
 		PROFILE, MIN_FRAME_QP, MAX_FRAME_QP, I_FRAME_QP, P_FRAME_QP,
 			B_FRAME_QP, META_ROI_INFO, MIN_QUALITY, IR_PERIOD, LTR_COUNT}},
+
+	{PIX_FMTS, ENC, HEIC,
+		{PROFILE, CSC, BIT_DEPTH}},
+
 	{PIX_FMTS, DEC, HEVC|HEIC,
 		{PROFILE}},
+
+	{BIT_DEPTH, ENC, CODECS_ALL,
+		{0},
+		msm_vidc_adjust_bitdepth},
 
 	{FRAME_RATE, ENC, CODECS_ALL,
 		{LEVEL},
 		NULL, msm_vidc_set_q16},
+
+	{FRAME_RATE, DEC, CODECS_ALL,
+		{0},
+		msm_vidc_adjust_dec_frame_rate},
+
+	{OPERATING_RATE, DEC, CODECS_ALL,
+		{0},
+		msm_vidc_adjust_dec_operating_rate},
 
 	{SECURE_MODE, ENC|DEC, H264|HEVC|VP9,
 		{0},
@@ -1703,6 +1874,11 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_rave
 		{0},
 		NULL, NULL},
 
+	{CSC, ENC, H264 | HEVC | HEIC,
+		{CSC_CUSTOM_MATRIX},
+		msm_vidc_adjust_csc,
+		msm_vidc_set_u32},
+
 	{CSC_CUSTOM_MATRIX, ENC, CODECS_ALL,
 		{0},
 		NULL, NULL},
@@ -1710,6 +1886,16 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_rave
 	{LOWLATENCY_MODE, ENC, H264|HEVC,
 		{STAGE},
 		msm_vidc_adjust_enc_lowlatency_mode, NULL},
+
+	{LOWLATENCY_MODE, DEC, H264 | HEVC,
+		{STAGE},
+		NULL,
+		NULL},
+
+	{LOWLATENCY_MODE, DEC, VP9,
+		{STAGE},
+		NULL,
+		NULL},
 
 	{LTR_COUNT, ENC, H264|HEVC,
 		{0},
@@ -1723,9 +1909,18 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_rave
 		{0},
 		msm_vidc_adjust_mark_ltr, msm_vidc_set_use_and_mark_ltr},
 
+	{IR_PERIOD, ENC, H264|HEVC,
+		{0},
+		msm_vidc_adjust_ir_period, msm_vidc_set_u32},
+
 	{AU_DELIMITER, ENC, H264|HEVC,
 		{0},
 		NULL, msm_vidc_set_u32},
+
+	{BASELAYER_PRIORITY, ENC, H264,
+		{0},
+		NULL,
+		msm_vidc_set_u32},
 
 	{TIME_DELTA_BASED_RC, ENC, CODECS_ALL,
 		{0},
@@ -1734,6 +1929,11 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_rave
 	{CONTENT_ADAPTIVE_CODING, ENC, H264|HEVC,
 		{0},
 		NULL, NULL},
+
+	{REQUEST_PREPROCESS, ENC, H264 | HEVC,
+		{0},
+		msm_vidc_adjust_preprocess,
+		msm_vidc_set_preprocess},
 
 	{BITRATE_BOOST, ENC, H264|HEVC,
 		{LEVEL},
@@ -1795,6 +1995,9 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_rave
 		NULL, msm_vidc_set_frame_qp},
 
 	{LAYER_TYPE, ENC, H264, {LEVEL, LTR_COUNT}},
+
+	{LAYER_TYPE, ENC, HEVC,
+		{CONTENT_ADAPTIVE_CODING, LTR_COUNT, OPEN_GOP}},
 
 	{LAYER_ENABLE, ENC, H264, {LEVEL}},
 
@@ -1989,6 +2192,11 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_rave
 		{0},
 		NULL, msm_vidc_set_stage},
 
+	{PIPE, DEC | ENC, H264 | HEVC | VP9 | HEIC,
+		{0},
+		NULL,
+		msm_vidc_set_pipe},
+
 	{RAP_FRAME, DEC, CODECS_ALL,
 		{0},
 		NULL,
@@ -1997,6 +2205,16 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_rave
 	{PRIORITY, DEC|ENC, CODECS_ALL,
 		{0},
 		msm_vidc_adjust_session_priority, msm_vidc_set_session_priority},
+
+	{FIRMWARE_PRIORITY_OFFSET, DEC | ENC, H264 | HEVC | VP9 | HEIC,
+		{0},
+		NULL,
+		NULL},
+
+	{CRITICAL_PRIORITY, ENC, H264 | HEVC | VP9 | HEIC,
+		{0},
+		NULL,
+		NULL},
 
 	{ALL_INTRA, ENC, H264|HEVC,
 		{LTR_COUNT, IR_PERIOD, SLICE_MODE},
@@ -2058,35 +2276,70 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_rave
 	{FRAME_RATE, ENC, HEIC,
 		{0},
 		NULL, msm_vidc_set_q16},
+
+	{SIGNAL_COLOR_INFO, ENC, CODECS_ALL,
+		{0},
+		NULL,
+		msm_vidc_set_signal_color_info},
+
+	{META_SEI_MASTERING_DISP, ENC, HEVC | HEIC,
+		{0},
+		msm_vidc_adjust_sei_mastering_disp,
+		NULL},
+
+	{META_SEI_CLL, ENC, HEVC | HEIC,
+		{0},
+		msm_vidc_adjust_sei_cll,
+		NULL},
+
+	{META_HDR10PLUS, ENC, HEVC | HEIC,
+	{0},
+	msm_vidc_adjust_hdr10plus,
+	NULL},
+
+	{META_TRANSCODING_STAT_INFO, ENC, HEVC | H264,
+		{0},
+		msm_vidc_adjust_transcoding_stats,
+		NULL},
+
+	{META_HIST_INFO, ENC, HEVC,
+		{0},
+		msm_vidc_adjust_histogram_info,
+		NULL},
+
+	{META_HDR10_MAX_RGB_INFO, ENC, HEVC,
+	{0},
+	msm_vidc_adjust_hdr10_max_rgb_info,
+	NULL},
 };
 
-static struct msm_vidc_format_capability format_data_ravelin = {
-	.codec_info = codec_data_ravelin,
-	.codec_info_size = ARRAY_SIZE(codec_data_ravelin),
-	.color_format_info = color_format_data_ravelin,
-	.color_format_info_size = ARRAY_SIZE(color_format_data_ravelin),
-	.color_prim_info = color_primaries_data_ravelin,
-	.color_prim_info_size = ARRAY_SIZE(color_primaries_data_ravelin),
-	.transfer_char_info = transfer_char_data_ravelin,
-	.transfer_char_info_size = ARRAY_SIZE(transfer_char_data_ravelin),
-	.matrix_coeff_info = matrix_coeff_data_ravelin,
-	.matrix_coeff_info_size = ARRAY_SIZE(matrix_coeff_data_ravelin),
+static struct msm_vidc_format_capability format_data_bourtzi = {
+	.codec_info = codec_data_bourtzi,
+	.codec_info_size = ARRAY_SIZE(codec_data_bourtzi),
+	.color_format_info = color_format_data_bourtzi,
+	.color_format_info_size = ARRAY_SIZE(color_format_data_bourtzi),
+	.color_prim_info = color_primaries_data_bourtzi,
+	.color_prim_info_size = ARRAY_SIZE(color_primaries_data_bourtzi),
+	.transfer_char_info = transfer_char_data_bourtzi,
+	.transfer_char_info_size = ARRAY_SIZE(transfer_char_data_bourtzi),
+	.matrix_coeff_info = matrix_coeff_data_bourtzi,
+	.matrix_coeff_info_size = ARRAY_SIZE(matrix_coeff_data_bourtzi),
 };
 
 /* name, min_kbps, max_kbps */
-static const struct bw_table ravelin_bw_table[] = {
+static const struct bw_table bourtzi_bw_table[] = {
 	{ "venus-cnoc",  1000, 1000     },
 	{ "venus-ddr",   1000, 6500000 },
 };
 
 /* name, hw_trigger, hw_enable */
-static struct regulator_table ravelin_regulator_table[] = {
+static struct regulator_table bourtzi_regulator_table[] = {
 	{ "venus", 0 },
 	{ "venus-core0", 1 },
 };
 
 /* name, clock id, scaling */
-static const struct clk_table ravelin_clk_table[] = {
+static const struct clk_table bourtzi_clk_table[] = {
 	{ "core_clk",        GCC_VIDEO_VENUS_CTL_CLK,         0},
 	{ "bus_clk",         GCC_VENUS_CTL_AXI_CLK,           0},
 	{ "core0_clk",       GCC_VIDEO_VCODEC0_SYS_CLK,       0},
@@ -2097,7 +2350,7 @@ static const struct clk_table ravelin_clk_table[] = {
 };
 
 /* name, start, size, secure, dma_coherant, region, dma_mask */
-const struct context_bank_table ravelin_context_bank_table[] = {
+const struct context_bank_table bourtzi_context_bank_table[] = {
 	{"qcom,vidc,cb-ns",             0x25800000, 0xba800000, 0, 1,
 		MSM_VIDC_NON_SECURE |
 		MSM_VIDC_NON_SECURE_PIXEL |
@@ -2111,12 +2364,12 @@ const struct context_bank_table ravelin_context_bank_table[] = {
 };
 
 /* register, value, mask */
-static const struct reg_preset_table ravelin_reg_preset_table[] = {
+static const struct reg_preset_table bourtzi_reg_preset_table[] = {
 	{ 0xB0080, 0x0, 0x03},
 };
 
 /* decoder properties */
-static const u32 ravelin_vdec_psc_avc[] = {
+static const u32 bourtzi_vdec_psc_avc[] = {
 	HFI_PROP_BITSTREAM_RESOLUTION,
 	HFI_PROP_CROP_OFFSETS,
 	HFI_PROP_CODED_FRAMES,
@@ -2127,7 +2380,7 @@ static const u32 ravelin_vdec_psc_avc[] = {
 	HFI_PROP_SIGNAL_COLOR_INFO,
 };
 
-static const u32 ravelin_vdec_psc_hevc[] = {
+static const u32 bourtzi_vdec_psc_hevc[] = {
 	HFI_PROP_BITSTREAM_RESOLUTION,
 	HFI_PROP_CROP_OFFSETS,
 	HFI_PROP_LUMA_CHROMA_BIT_DEPTH,
@@ -2138,7 +2391,7 @@ static const u32 ravelin_vdec_psc_hevc[] = {
 	HFI_PROP_SIGNAL_COLOR_INFO,
 };
 
-static const u32 ravelin_vdec_psc_vp9[] = {
+static const u32 bourtzi_vdec_psc_vp9[] = {
 	HFI_PROP_BITSTREAM_RESOLUTION,
 	HFI_PROP_CROP_OFFSETS,
 	HFI_PROP_LUMA_CHROMA_BIT_DEPTH,
@@ -2147,22 +2400,22 @@ static const u32 ravelin_vdec_psc_vp9[] = {
 	HFI_PROP_LEVEL,
 };
 
-static const u32 ravelin_vdec_input_properties_avc[] = {
+static const u32 bourtzi_vdec_input_properties_avc[] = {
 	HFI_PROP_NO_OUTPUT,
 	HFI_PROP_SUBFRAME_INPUT,
 };
 
-static const u32 ravelin_vdec_input_properties_hevc[] = {
+static const u32 bourtzi_vdec_input_properties_hevc[] = {
 	HFI_PROP_NO_OUTPUT,
 	HFI_PROP_SUBFRAME_INPUT,
 };
 
-static const u32 ravelin_vdec_input_properties_vp9[] = {
+static const u32 bourtzi_vdec_input_properties_vp9[] = {
 	HFI_PROP_NO_OUTPUT,
 	HFI_PROP_SUBFRAME_INPUT,
 };
 
-static const u32 ravelin_vdec_output_properties_avc[] = {
+static const u32 bourtzi_vdec_output_properties_avc[] = {
 	HFI_PROP_WORST_COMPRESSION_RATIO,
 	HFI_PROP_WORST_COMPLEXITY_FACTOR,
 	HFI_PROP_PICTURE_TYPE,
@@ -2171,7 +2424,7 @@ static const u32 ravelin_vdec_output_properties_avc[] = {
 	HFI_PROP_DPB_LIST,
 };
 
-static const u32 ravelin_vdec_output_properties_hevc[] = {
+static const u32 bourtzi_vdec_output_properties_hevc[] = {
 	HFI_PROP_WORST_COMPRESSION_RATIO,
 	HFI_PROP_WORST_COMPLEXITY_FACTOR,
 	HFI_PROP_PICTURE_TYPE,
@@ -2180,7 +2433,7 @@ static const u32 ravelin_vdec_output_properties_hevc[] = {
 	HFI_PROP_DPB_LIST,
 };
 
-static const u32 ravelin_vdec_output_properties_vp9[] = {
+static const u32 bourtzi_vdec_output_properties_vp9[] = {
 	HFI_PROP_WORST_COMPRESSION_RATIO,
 	HFI_PROP_WORST_COMPLEXITY_FACTOR,
 	HFI_PROP_PICTURE_TYPE,
@@ -2189,97 +2442,116 @@ static const u32 ravelin_vdec_output_properties_vp9[] = {
 	HFI_PROP_DPB_LIST,
 };
 
-static const u32 ravelin_venc_input_prop[] = {
-       HFI_PROP_COLOR_FORMAT,
-       HFI_PROP_RAW_RESOLUTION,
-       HFI_PROP_LINEAR_STRIDE_SCANLINE,
-       HFI_PROP_SIGNAL_COLOR_INFO,
+static const u32 bourtzi_venc_input_prop[] = {
+	HFI_PROP_COLOR_FORMAT,
+	HFI_PROP_RAW_RESOLUTION,
+	HFI_PROP_LINEAR_STRIDE_SCANLINE,
+	HFI_PROP_SIGNAL_COLOR_INFO,
 };
 
-static const u32 ravelin_venc_output_prop[] = {
-       HFI_PROP_BITSTREAM_RESOLUTION,
-       HFI_PROP_CROP_OFFSETS,
+static const u32 bourtzi_venc_output_prop[] = {
+	HFI_PROP_BITSTREAM_RESOLUTION,
+	HFI_PROP_CROP_OFFSETS,
 };
 
-static const u32 ravelin_msm_vidc_ssr_type[] = {
+static const u32 bourtzi_msm_vidc_ssr_type[] = {
 	HFI_SSR_TYPE_SW_ERR_FATAL,
 };
 
-static const struct msm_vidc_platform_data ravelin_data = {
+static const struct msm_vidc_platform_data bourtzi_data = {
 	/* resources dependent on other module */
-	.bw_tbl = ravelin_bw_table,
-	.bw_tbl_size = ARRAY_SIZE(ravelin_bw_table),
-	.regulator_tbl = ravelin_regulator_table,
-	.regulator_tbl_size = ARRAY_SIZE(ravelin_regulator_table),
-	.clk_tbl = ravelin_clk_table,
-	.clk_tbl_size = ARRAY_SIZE(ravelin_clk_table),
+	.bw_tbl = bourtzi_bw_table,
+	.bw_tbl_size = ARRAY_SIZE(bourtzi_bw_table),
+	.regulator_tbl = bourtzi_regulator_table,
+	.regulator_tbl_size = ARRAY_SIZE(bourtzi_regulator_table),
+	.clk_tbl = bourtzi_clk_table,
+	.clk_tbl_size = ARRAY_SIZE(bourtzi_clk_table),
 
 	/* populate context bank */
-	.context_bank_tbl = ravelin_context_bank_table,
-	.context_bank_tbl_size = ARRAY_SIZE(ravelin_context_bank_table),
+	.context_bank_tbl = bourtzi_context_bank_table,
+	.context_bank_tbl_size = ARRAY_SIZE(bourtzi_context_bank_table),
 
 	/* platform specific resources */
-	.reg_prst_tbl = ravelin_reg_preset_table,
-	.reg_prst_tbl_size = ARRAY_SIZE(ravelin_reg_preset_table),
+	.reg_prst_tbl = bourtzi_reg_preset_table,
+	.reg_prst_tbl_size = ARRAY_SIZE(bourtzi_reg_preset_table),
 	.clock_source_scaling_ratio = 1,
-	.fwname = "venus_v7.mbn",
+	.fwname = "venus_v7",
 	.pas_id = 9,
 	.supports_mmrm = 0,
 
 	/* caps related resorces */
-	.core_data = core_data_ravelin,
-	.core_data_size = ARRAY_SIZE(core_data_ravelin),
-	.inst_cap_data = instance_cap_data_ravelin,
-	.inst_cap_data_size = ARRAY_SIZE(instance_cap_data_ravelin),
-	.inst_cap_dependency_data = instance_cap_dependency_data_ravelin,
-	.inst_cap_dependency_data_size = ARRAY_SIZE(instance_cap_dependency_data_ravelin),
+	.core_data = core_data_bourtzi,
+	.core_data_size = ARRAY_SIZE(core_data_bourtzi),
+	.inst_cap_data = instance_cap_data_bourtzi,
+	.inst_cap_data_size = ARRAY_SIZE(instance_cap_data_bourtzi),
+	.inst_cap_dependency_data = instance_cap_dependency_data_bourtzi,
+	.inst_cap_dependency_data_size = ARRAY_SIZE(instance_cap_dependency_data_bourtzi),
 	.csc_data.vpe_csc_custom_bias_coeff = vpe_csc_custom_bias_coeff,
 	.csc_data.vpe_csc_custom_matrix_coeff = vpe_csc_custom_matrix_coeff,
 	.csc_data.vpe_csc_custom_limit_coeff = vpe_csc_custom_limit_coeff,
 	.ubwc_config = NULL,
-	.format_data = &format_data_ravelin,
+	.format_data = &format_data_bourtzi,
 
 	/* decoder properties related*/
-	.psc_avc_tbl = ravelin_vdec_psc_avc,
-	.psc_avc_tbl_size = ARRAY_SIZE(ravelin_vdec_psc_avc),
-	.psc_hevc_tbl = ravelin_vdec_psc_hevc,
-	.psc_hevc_tbl_size = ARRAY_SIZE(ravelin_vdec_psc_hevc),
-	.psc_vp9_tbl = ravelin_vdec_psc_vp9,
-	.psc_vp9_tbl_size = ARRAY_SIZE(ravelin_vdec_psc_vp9),
+	.psc_avc_tbl = bourtzi_vdec_psc_avc,
+	.psc_avc_tbl_size = ARRAY_SIZE(bourtzi_vdec_psc_avc),
+	.psc_hevc_tbl = bourtzi_vdec_psc_hevc,
+	.psc_hevc_tbl_size = ARRAY_SIZE(bourtzi_vdec_psc_hevc),
+	.psc_vp9_tbl = bourtzi_vdec_psc_vp9,
+	.psc_vp9_tbl_size = ARRAY_SIZE(bourtzi_vdec_psc_vp9),
 
-	.dec_input_prop_avc =  ravelin_vdec_input_properties_avc,
-	.dec_input_prop_hevc = ravelin_vdec_input_properties_hevc,
-	.dec_input_prop_vp9 =  ravelin_vdec_input_properties_vp9,
-	.dec_input_prop_size_avc = ARRAY_SIZE(ravelin_vdec_input_properties_avc),
-	.dec_input_prop_size_hevc = ARRAY_SIZE(ravelin_vdec_input_properties_hevc),
-	.dec_input_prop_size_vp9 = ARRAY_SIZE(ravelin_vdec_input_properties_vp9),
-	.dec_output_prop_avc = ravelin_vdec_output_properties_avc,
-	.dec_output_prop_hevc = ravelin_vdec_output_properties_hevc,
-	.dec_output_prop_vp9 = ravelin_vdec_output_properties_vp9,
-	.dec_output_prop_size_avc = ARRAY_SIZE(ravelin_vdec_output_properties_avc),
-	.dec_output_prop_size_hevc = ARRAY_SIZE(ravelin_vdec_output_properties_hevc),
-	.dec_output_prop_size_vp9 = ARRAY_SIZE(ravelin_vdec_output_properties_vp9),
-	.enc_input_prop = ravelin_venc_input_prop,
-	.enc_input_prop_size = ARRAY_SIZE(ravelin_venc_input_prop),
-	.enc_output_prop = ravelin_venc_output_prop,
-	.enc_output_prop_size = ARRAY_SIZE(ravelin_venc_output_prop),
+	.dec_input_prop_avc =  bourtzi_vdec_input_properties_avc,
+	.dec_input_prop_hevc = bourtzi_vdec_input_properties_hevc,
+	.dec_input_prop_vp9 =  bourtzi_vdec_input_properties_vp9,
+	.dec_input_prop_size_avc = ARRAY_SIZE(bourtzi_vdec_input_properties_avc),
+	.dec_input_prop_size_hevc = ARRAY_SIZE(bourtzi_vdec_input_properties_hevc),
+	.dec_input_prop_size_vp9 = ARRAY_SIZE(bourtzi_vdec_input_properties_vp9),
+	.dec_output_prop_avc = bourtzi_vdec_output_properties_avc,
+	.dec_output_prop_hevc = bourtzi_vdec_output_properties_hevc,
+	.dec_output_prop_vp9 = bourtzi_vdec_output_properties_vp9,
+	.dec_output_prop_size_avc = ARRAY_SIZE(bourtzi_vdec_output_properties_avc),
+	.dec_output_prop_size_hevc = ARRAY_SIZE(bourtzi_vdec_output_properties_hevc),
+	.dec_output_prop_size_vp9 = ARRAY_SIZE(bourtzi_vdec_output_properties_vp9),
+	.enc_input_prop = bourtzi_venc_input_prop,
+	.enc_input_prop_size = ARRAY_SIZE(bourtzi_venc_input_prop),
+	.enc_output_prop = bourtzi_venc_output_prop,
+	.enc_output_prop_size = ARRAY_SIZE(bourtzi_venc_output_prop),
 
-	.msm_vidc_ssr_type = ravelin_msm_vidc_ssr_type,
-	.msm_vidc_ssr_type_size = ARRAY_SIZE(ravelin_msm_vidc_ssr_type),
+	.msm_vidc_ssr_type = bourtzi_msm_vidc_ssr_type,
+	.msm_vidc_ssr_type_size = ARRAY_SIZE(bourtzi_msm_vidc_ssr_type),
 	.vpu_ver = VENUS_VERSION_AR50LT_V2,
 };
 
-int msm_vidc_get_platform_data_ravelin(struct msm_vidc_core *core)
+int msm_vidc_get_platform_data_bourtzi(struct msm_vidc_core *core)
 {
 
-	d_vpr_h("%s: initialize ravelin data\n", __func__);
-	core->platform->data = ravelin_data;
+	d_vpr_h("%s: initialize bourtzi data\n", __func__);
+	core->platform->data = bourtzi_data;
 
 	return 0;
 }
 
-int msm_vidc_init_platform_ravelin(struct msm_vidc_core *core)
+int msm_vidc_init_platform_bourtzi(struct msm_vidc_core *core)
 {
+	int rc = 0;
+	static struct msm_vidc_memory_ops mem_ops_ext_ar50lt;
+
 	d_vpr_h("%s: initialize bourtzi ops\n", __func__);
-	return 0;
+	core->mem_ops = get_mem_ops_ext();
+
+	memcpy(&mem_ops_ext_ar50lt, core->mem_ops, sizeof(struct msm_vidc_memory_ops));
+	mem_ops_ext_ar50lt.buffer_region = msm_vidc_buffer_region_ext_ar50lt;
+	core->mem_ops = &mem_ops_ext_ar50lt;
+
+	if (!core->mem_ops) {
+		d_vpr_e("%s: invalid memory ext ops\n", __func__);
+		return -EINVAL;
+	}
+	core->res_ops = get_res_ops_ext(core);
+	if (!core->res_ops) {
+		d_vpr_e("%s: invalid resource ext ops\n", __func__);
+		return -EINVAL;
+	}
+
+	return rc;
 }

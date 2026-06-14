@@ -9,7 +9,7 @@
 #include "msm_vidc_core.h"
 
 #if defined(CONFIG_MSM_VIDC_RAVELIN) || defined(CONFIG_MSM_VIDC_MALABAR) || \
-	defined(CONFIG_MSM_VIDC_SHIKRA)
+	defined(CONFIG_MSM_VIDC_SHIKRA) || defined(CONFIG_MSM_VIDC_BOURTZI)
 int msm_vidc_init_ar50lt(struct msm_vidc_core *core);
 int msm_vidc_deinit_ar50lt(struct msm_vidc_core *core);
 u32 msm_vidc_buffer_region_ext_ar50lt(struct msm_vidc_inst *inst,
