@@ -2396,6 +2396,21 @@ int msm_vdec_process_cmd(struct msm_vidc_inst *inst, u32 cmd)
 		msm_vidc_allow_dcvs(inst);
 		msm_vidc_power_data_reset(inst);
 
+		rc = msm_vdec_get_input_internal_buffers(inst);
+		if (rc)
+			return rc;
+
+		rc = msm_vdec_release_input_internal_buffers(inst);
+		if (rc)
+			return rc;
+
+		rc = msm_vdec_create_input_internal_buffers(inst);
+		if (rc)
+			return rc;
+
+		rc = msm_vdec_queue_input_internal_buffers(inst);
+		if (rc)
+			return rc;
 		/* allocate and queue extra dpb buffers */
 		rc = msm_vdec_alloc_and_queue_additional_dpb_buffers(inst);
 		if (rc)
