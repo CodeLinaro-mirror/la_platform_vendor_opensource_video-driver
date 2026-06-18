@@ -378,10 +378,13 @@ u32 msm_vidc_encoder_output_size(struct msm_vidc_inst *inst)
 		frame_size = frame_size >> 3;
 
 	/*if ((inst->rc_type == RATE_CONTROL_OFF) ||
-		(inst->rc_type == V4L2_MPEG_VIDEO_BITRATE_MODE_CQ))
+		(inst->rc_type == V4L2_MPEG_VIDEO_BITRATE_MODE_CQ))*/
+	if (!inst->capabilities[FRAME_RC_ENABLE].value) {
 		frame_size = frame_size << 1;
+		i_vpr_h(inst, "RC_OFF: Doubling output buffer size to %u\n", frame_size);
+	}
 
-	if (inst->rc_type == RATE_CONTROL_LOSSLESS)
+	/*if (inst->rc_type == RATE_CONTROL_LOSSLESS)
 		frame_size = (width * height * 9) >> 2;
 	 */
 
