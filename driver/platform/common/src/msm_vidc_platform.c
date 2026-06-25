@@ -42,6 +42,10 @@
 #include "msm_vidc_hamoa.h"
 #include "msm_vidc_iris3.h"
 #endif
+#if defined(CONFIG_MSM_VIDC_MAHUA)
+#include "msm_vidc_mahua.h"
+#include "msm_vidc_iris33.h"
+#endif
 #if defined(CONFIG_MSM_VIDC_LEMANS)
 #include "msm_vidc_lemans.h"
 #include "msm_vidc_iris3.h"
@@ -471,6 +475,14 @@ static const struct msm_vidc_compat_handle compat_handle[] = {
 	},
 #endif
 
+#if defined(CONFIG_MSM_VIDC_MAHUA)
+	{
+		.compat                     = "qcom,mahua-vidc",
+		.get_platform_data          = msm_vidc_get_platform_data_mahua,
+		.init_platform              = msm_vidc_init_platform_mahua,
+		.init_vpu                   = msm_vidc_init_iris33,
+	},
+#endif
 };
 
 static int msm_vidc_init_ops(struct msm_vidc_core *core)
