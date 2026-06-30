@@ -4001,10 +4001,6 @@ int msm_vidc_set_stage(void *instance,
 	}
 
 	stage = inst->capabilities->cap[STAGE].value;
-#if defined(CONFIG_MSM_VIDC_NORDAU)
-	if (inst->codec == MSM_VIDC_HEIC)
-		stage = MSM_VIDC_STAGE_1;
-#endif
 
 	rc = msm_vidc_packetize_control(inst, cap_id, HFI_PAYLOAD_U32,
 		&stage, sizeof(u32), __func__);
