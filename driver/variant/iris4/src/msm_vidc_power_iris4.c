@@ -393,6 +393,12 @@ static int msm_vidc_init_codec_input_bus(struct msm_vidc_inst *inst, struct vidc
 	if (inst->capabilities[LOOKAHEAD_ENCODE_ENABLE].value)
 		codec_input->video_adv_feature = FEATURE_LOOKAHEAD_ENCODE;
 
+	if ((codec_input->codec == CODEC_APV) &&
+			(inst->capabilities[ROTATION].value ||
+			inst->capabilities[HFLIP].value ||
+			inst->capabilities[VFLIP].value))
+		codec_input->video_adv_feature = FEATURE_APV_ROTATION;
+
 	/* Dump all the variables for easier debugging */
 	if (msm_vidc_debug & VIDC_BUS) {
 		struct dump dump[] = {
