@@ -1987,7 +1987,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_bour
 		NULL, msm_vidc_set_deblock_mode},
 
 	{SLICE_MODE, ENC, H264|HEVC|HEIC,
-		{0},
+		{STAGE},
 		msm_vidc_adjust_slice_count, msm_vidc_set_slice_count},
 
 	{TRANSFORM_8X8, ENC, H264,
