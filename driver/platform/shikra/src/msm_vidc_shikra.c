@@ -26,6 +26,8 @@
 #include "hfi_command.h"
 #include "venus_hfi.h"
 
+/* version: major[24:31], minor[16:23], revision[0:15] */
+#define DRIVER_VERSION          0x04000000
 #define DEFAULT_VIDEO_CONCEAL_COLOR_BLACK 0x8020010
 #define MAX_LTR_FRAME_COUNT     2
 #define MAX_BASE_LAYER_PRIORITY_ID 63
@@ -277,6 +279,7 @@ static const struct msm_platform_core_capability core_data_shikra[] = {
 	{AV_SYNC_WINDOW_SIZE, 40},
 	{NON_FATAL_FAULTS, 1},
 	{ENC_AUTO_FRAMERATE, 0},
+	{SUPPORTS_REQUESTS, 0},
 	{CACHE_OPS_REQUIRED, 1},
 	{DEVICE_CAPS, V4L2_CAP_VIDEO_CAPTURE_MPLANE | V4L2_CAP_VIDEO_OUTPUT_MPLANE |
 		V4L2_CAP_META_CAPTURE | V4L2_CAP_META_OUTPUT | V4L2_CAP_STREAMING},
@@ -289,17 +292,25 @@ static struct msm_platform_inst_capability instance_cap_data_shikra[] = {
 	 *      hfi_id,
 	 *      flags}
 	 */
+	{DRV_VERSION, DEC | ENC, CODECS_ALL,
+		0, INT_MAX, 1, DRIVER_VERSION,
+		V4L2_CID_MPEG_VIDC_DRIVER_VERSION},
 
 	{FRAME_WIDTH, DEC, CODECS_ALL, 96, 1920, 1, 1920},
-	{FRAME_WIDTH, ENC, H264|HEVC|HEIC, 128, 1920, 1, 1920},
+	{FRAME_WIDTH, ENC, H264|HEVC, 128, 1920, 1, 1920},
 	{LOSSLESS_FRAME_WIDTH, ENC, H264|HEVC, 128, 1920, 1, 1920},
 	{SECURE_FRAME_WIDTH, DEC, H264|HEVC|VP9, 96, 1920, 1, 1920},
 	{SECURE_FRAME_WIDTH, ENC, H264|HEVC, 128, 1920, 1, 1920},
 	{FRAME_HEIGHT, DEC, CODECS_ALL, 96, 1920, 1, 1080},
-	{FRAME_HEIGHT, ENC,  H264|HEVC|HEIC, 128, 1920, 1, 1080},
+	{FRAME_HEIGHT, ENC,  H264|HEVC, 128, 1920, 1, 1080},
 	{LOSSLESS_FRAME_HEIGHT, ENC, H264|HEVC, 128, 1920, 1, 1080},
 	{SECURE_FRAME_HEIGHT, DEC, H264|HEVC|VP9, 96, 1920, 1, 1080},
 	{SECURE_FRAME_HEIGHT, ENC, H264|HEVC, 128, 1920, 1, 1080},
+
+	/* configure image properties */
+	{FRAME_WIDTH, ENC, HEIC, 512, 8192, 2, 8192},
+	{FRAME_HEIGHT, ENC, HEIC, 512, 8192, 2, 8192},
+
 	{PIX_FMTS, ENC, H264,
 		MSM_VIDC_FMT_NV12,
 		MSM_VIDC_FMT_NV21,
@@ -352,7 +363,7 @@ static struct msm_platform_inst_capability instance_cap_data_shikra[] = {
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_VOLATILE},
 
 	 /*  ((1920 * 1080) / 256) */
-	{MBPF, ENC, CODECS_ALL, 36, 8160, 1, 8160},
+	{MBPF, ENC, CODECS_ALL, 64, 8160, 1, 8160},
 	{MBPF, DEC, CODECS_ALL, 36, 8160, 1, 8160},
 
 	/*  ((1920 * 1080) / 256) */
@@ -633,7 +644,7 @@ static struct msm_platform_inst_capability instance_cap_data_shikra[] = {
 		CAP_FLAG_INPUT_PORT},
 
 	{LTR_COUNT, ENC, H264|HEVC,
-		0, 2, 1, 0,
+		0, MAX_LTR_FRAME_COUNT, 1, 0,
 		V4L2_CID_MPEG_VIDEO_LTR_COUNT,
 		HFI_PROP_LTR_COUNT,
 		CAP_FLAG_OUTPUT_PORT},
@@ -659,6 +670,15 @@ static struct msm_platform_inst_capability instance_cap_data_shikra[] = {
 		V4L2_CID_MPEG_VIDEO_BASELAYER_PRIORITY_ID,
 		HFI_PROP_BASELAYER_PRIORITYID,
 		CAP_FLAG_OUTPUT_PORT},
+
+	{IR_TYPE, ENC, H264 | HEVC,
+		V4L2_CID_MPEG_VIDEO_INTRA_REFRESH_PERIOD_TYPE_RANDOM,
+		V4L2_CID_MPEG_VIDEO_INTRA_REFRESH_PERIOD_TYPE_RANDOM,
+		BIT(V4L2_CID_MPEG_VIDEO_INTRA_REFRESH_PERIOD_TYPE_RANDOM),
+		V4L2_CID_MPEG_VIDEO_INTRA_REFRESH_PERIOD_TYPE_RANDOM,
+		V4L2_CID_MPEG_VIDEO_INTRA_REFRESH_PERIOD_TYPE,
+		0,
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{IR_PERIOD, ENC, H264|HEVC,
 		0, INT_MAX, 1, 0,
@@ -1077,7 +1097,7 @@ static struct msm_platform_inst_capability instance_cap_data_shikra[] = {
 		V4L2_MPEG_VIDEO_H264_LEVEL_4_2,
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{LEVEL, DEC, HEVC|HEIC,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
@@ -1107,7 +1127,7 @@ static struct msm_platform_inst_capability instance_cap_data_shikra[] = {
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1,
 		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
 		HFI_PROP_LEVEL,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	/* TODO: Bring the VP9 Level upstream GKI change, and level cap here:
 	 *	go/videogki
@@ -2202,6 +2222,7 @@ static const u32 shikra_vdec_output_properties_vp9[] = {
 static const u32 shikra_venc_input_prop[] = {
        HFI_PROP_COLOR_FORMAT,
        HFI_PROP_RAW_RESOLUTION,
+       HFI_PROP_CROP_OFFSETS,
        HFI_PROP_LINEAR_STRIDE_SCANLINE,
        HFI_PROP_SIGNAL_COLOR_INFO,
 };

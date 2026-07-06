@@ -523,6 +523,36 @@ static int handle_session_drain(struct msm_vidc_inst *inst,
 	return rc;
 }
 
+static void msm_vidc_store_picture_type(struct msm_vidc_inst *inst, u32 picture_type)
+{
+	struct msm_vidc_picture_type_q *q;
+	u32 index, pre_index;
+	u32 frame_num = 0;
+
+	if (!inst || inst->codec != MSM_VIDC_AV1)
+		return;
+
+	q = &inst->picture_type_q;
+	index = q->head % PICTURE_TYPE_SIZE;
+	/* frame_num is increased frame by frame*/
+	if (q->count != 0) {
+		pre_index = (index + PICTURE_TYPE_SIZE - 1) % PICTURE_TYPE_SIZE;
+		frame_num = q->entries[pre_index].frame_num + 1;
+	}
+	/* store frame_num and picture type in circular queue*/
+	q->entries[index].frame_num = frame_num;
+	q->entries[index].picture_type = picture_type;
+	/* head: place that next time will write to*/
+	q->head = (index + 1) % PICTURE_TYPE_SIZE;
+	/* count: how many frames stored in the queue*/
+	if (q->count < PICTURE_TYPE_SIZE)
+		q->count++;
+
+	i_vpr_l(inst,
+		"%s: av1 frame_num %u picture_type %#x stored at index %u, valid count %u\n",
+		__func__, frame_num, picture_type, index, q->count);
+}
+
 static int get_driver_buffer_flags(struct msm_vidc_inst *inst, u32 hfi_flags)
 {
 	u32 driver_flags = 0;
@@ -2025,6 +2055,7 @@ static int handle_property_with_payload(struct msm_vidc_inst *inst,
 		break;
 	case HFI_PROP_PICTURE_TYPE:
 		inst->hfi_frame_info.picture_type = payload_ptr[0];
+		msm_vidc_store_picture_type(inst, inst->hfi_frame_info.picture_type);
 		if (inst->hfi_frame_info.picture_type & HFI_PICTURE_B)
 			inst->has_bframe = true;
 		if (inst->hfi_frame_info.picture_type & HFI_PICTURE_IDR)
