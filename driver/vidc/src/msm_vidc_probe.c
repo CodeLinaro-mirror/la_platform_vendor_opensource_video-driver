@@ -392,6 +392,10 @@ static int msm_vidc_setup_context_bank(struct msm_vidc_core *core,
 	/* populate dev & domain field */
 	cb->dev = dev;
 	cb->domain = iommu_get_domain_for_dev(cb->dev);
+	if (!cb->domain) {
+		d_vpr_e("%s: Failed to get iommu domain for %s\n", __func__, dev_name(dev));
+		return -EIO;
+	}
 	/* update context bank address and size only for nordau */
 #if defined(CONFIG_MSM_VIDC_NORDAU)
 	prop = of_get_property(dev->of_node, "qcom,iommu-geometry", &len);
