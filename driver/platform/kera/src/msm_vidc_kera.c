@@ -285,13 +285,13 @@ static struct msm_platform_core_capability core_data_kera_v0[] = {
 	/* {type, value} */
 	{ENC_CODECS, H264 | HEVC | HEIC},
 	{DEC_CODECS, H264 | HEVC | VP9 | AV1 | HEIC},
-	{MAX_SESSION_COUNT, 16},
-	{MAX_NUM_720P_SESSIONS, 16},
-	{MAX_NUM_1080P_SESSIONS, 8},
+	{MAX_SESSION_COUNT, 24},
+	{MAX_NUM_720P_SESSIONS, 24},
+	{MAX_NUM_1080P_SESSIONS, 24},
 	{MAX_NUM_4K_SESSIONS, 2},
 	{MAX_SECURE_SESSION_COUNT, 3},
 	{MAX_RT_MBPF, 69632}, /* (2 * ((4096x2176)/256))*/
-	{MAX_MBPF, 104448}, /* (3 * ((4096x2176)/256))*/
+	{MAX_MBPF, 195840}, /* (24 * ((1920x1088)/256))*/
 	 /* Concurrency: UHD@30 decode + 1080p@30 encode */
 	{MAX_MBPS, 2088960}, /* max_load 4096x2176@60fps*/
 	{MAX_IMAGE_MBPF, 1048576}, /* (16384x16384)/256 */
