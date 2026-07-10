@@ -54,6 +54,14 @@ ddk_headers(
 )
 
 ddk_headers(
+    name = "bengal-le_headers",
+    hdrs = glob([
+      "driver/platform/khaje/inc/*.h",
+    ]),
+    includes = ["driver/platform/khaje/inc"]
+)
+
+ddk_headers(
     name = "ar50lt_headers",
     hdrs = glob([
       "driver/variant/ar50lt/inc/*.h",
