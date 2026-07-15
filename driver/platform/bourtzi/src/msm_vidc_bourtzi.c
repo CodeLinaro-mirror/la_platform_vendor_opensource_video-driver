@@ -2251,6 +2251,7 @@ static const u32 bourtzi_vdec_output_properties_vp9[] = {
 static const u32 bourtzi_venc_input_prop[] = {
 	HFI_PROP_COLOR_FORMAT,
 	HFI_PROP_RAW_RESOLUTION,
+	HFI_PROP_CROP_OFFSETS,
 	HFI_PROP_LINEAR_STRIDE_SCANLINE,
 	HFI_PROP_SIGNAL_COLOR_INFO,
 };
