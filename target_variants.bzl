@@ -19,7 +19,8 @@ le_targets = [
     "sdxkova",
     "sdxkova.cpe.wkk",
     "sun-allyes",
-    "vienna-le"
+    "vienna-le",
+    "bengal-le"
 ]
 
 le_variants = [

@@ -69,6 +69,21 @@ def define_vienna_le(t,v):
         config_options = [
             "CONFIG_MSM_VIDC_VIENNA",
             "CONFIG_MSM_VIDC_AR50LT",
+            "CONFIG_MSM_VIDC_VIENNA_LE",
+        ],
+    )
+
+def define_bengal_le(t,v):
+    define_target_variant_modules(
+        target = t,
+        variant = v,
+        registry = video_driver_modules,
+        modules = [
+            "msm_video",
+        ],
+        config_options = [
+            "CONFIG_MSM_VIDC_KHAJE",
+            "CONFIG_MSM_VIDC_AR50LT",
         ],
     )
 
@@ -84,3 +99,5 @@ def define_target_modules():
             define_vienna(t, v)
         elif t == "vienna-le":
             define_vienna_le(t, v)
+        elif t == "bengal-le":
+            define_bengal_le(t, v)

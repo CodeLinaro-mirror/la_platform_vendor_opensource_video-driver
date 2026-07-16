@@ -45,7 +45,11 @@ static struct msm_platform_core_capability core_data_vienna[] = {
 	/* {type, value} */
 	{ENC_CODECS, H264|HEVC|HEIC},
 	{DEC_CODECS, H264|HEVC|VP9|HEIC},
+#ifdef CONFIG_MSM_VIDC_VIENNA_LE
+	{MAX_SESSION_COUNT, 8},
+#else
 	{MAX_SESSION_COUNT, 16},
+#endif
 	{MAX_NUM_720P_SESSIONS, 4},
 	{MAX_NUM_1080P_SESSIONS, 2},
 	{MAX_NUM_4K_SESSIONS, 0},
