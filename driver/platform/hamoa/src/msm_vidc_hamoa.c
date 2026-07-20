@@ -2875,6 +2875,7 @@ static const struct msm_vidc_platform_data hamoa_data = {
 	.dev_reg_tbl_size = ARRAY_SIZE(hamoa_device_region_table),
 	.clock_source_scaling_ratio = 3,
 	.fwname = "vpu30_4v",
+	.vpu_ver = VPU_VERSION_IRIS3_4P,
 	.pas_id = 9,
 	.supports_mmrm = 0,
 
