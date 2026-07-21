@@ -65,7 +65,8 @@ static inline bool is_video_device(struct device *dev)
 		of_device_is_compatible(dev->of_node, "qcom,msm-vidc-ravelin") ||
 		of_device_is_compatible(dev->of_node, "qcom,msm-vidc-bourtzi") ||
 		of_device_is_compatible(dev->of_node, "qcom,malabar-vidc") ||
-		of_device_is_compatible(dev->of_node, "qcom,msm-vidc-shikra"));
+		of_device_is_compatible(dev->of_node, "qcom,msm-vidc-shikra") ||
+		of_device_is_compatible(dev->of_node, "qcom,mahua-vidc"));
 }
 
 static inline bool is_video_context_bank_device_node(struct device_node *of_node)
@@ -168,6 +169,7 @@ static const struct of_device_id msm_vidc_dt_match[] = {
 	{.compatible = "qcom,msm-vidc-bourtzi"},
 	{.compatible = "qcom,malabar-vidc"},
 	{.compatible = "qcom,msm-vidc-shikra"},
+	{.compatible = "qcom,mahua-vidc"},
 	{.compatible = "qcom,vidc,cb-ns-pxl"},
 	{.compatible = "qcom,vidc,cb-ns"},
 	{.compatible = "qcom,vidc,cb-ns-bitstream"},
