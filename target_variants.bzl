@@ -6,6 +6,7 @@ targets = [
     "gen3auto",
     "shikra",
     "sun",
+    "waipio",
     "seraph",
     "vienna",
     "malabar",

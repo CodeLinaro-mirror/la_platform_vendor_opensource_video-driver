@@ -35,12 +35,16 @@ ifneq ($(TARGET_BOARD_PLATFORM),shikra)
 ifneq ($(TARGET_BOARD_PLATFORM),hamoa_la)
 ifneq ($(TARGET_BOARD_PLATFORM),mahua)
 ifneq ($(TARGET_BOARD_PLATFORM),parrot)
+ifneq ($(TARGET_BOARD_PLATFORM),taro)
 KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS+=$(shell pwd)/$(call intermediates-dir-for,DLKM,hw-fence-module-symvers)/Module.symvers
+endif
 endif
 ifneq ($(TARGET_BOARD_PLATFORM), gen5)
 KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(shell pwd)/$(call intermediates-dir-for,DLKM,mmrm-module-symvers)/Module.symvers
 ifneq ($(TARGET_BOARD_PLATFORM),parrot)
+ifneq ($(TARGET_BOARD_PLATFORM),taro)
 KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS+=$(shell pwd)/$(call intermediates-dir-for,DLKM,synx-driver-symvers)/synx-driver-symvers
+endif
 endif
 endif
 else
@@ -78,16 +82,22 @@ ifneq ($(TARGET_BOARD_PLATFORM),shikra)
 ifneq ($(TARGET_BOARD_PLATFORM),hamoa_la)
 ifneq ($(TARGET_BOARD_PLATFORM),mahua)
 ifneq ($(TARGET_BOARD_PLATFORM),parrot)
+ifneq ($(TARGET_BOARD_PLATFORM),taro)
 LOCAL_REQUIRED_MODULES    += hw-fence-module-symvers
+endif
 endif
 ifneq ($(TARGET_BOARD_PLATFORM), gen5)
 LOCAL_REQUIRED_MODULES    := mmrm-module-symvers
 ifneq ($(TARGET_BOARD_PLATFORM),parrot)
+ifneq ($(TARGET_BOARD_PLATFORM),taro)
 LOCAL_REQUIRED_MODULES    += synx-driver-symvers
+endif
 endif
 LOCAL_ADDITIONAL_DEPENDENCIES := $(call intermediates-dir-for,DLKM,mmrm-module-symvers)/Module.symvers
 ifneq ($(TARGET_BOARD_PLATFORM),parrot)
+ifneq ($(TARGET_BOARD_PLATFORM),taro)
 LOCAL_ADDITIONAL_DEPENDENCIES += $(call intermediates-dir-for,DLKM,synx-driver-symvers)/synx-driver-symvers
+endif
 endif
 else
 ifeq ($(ENABLE_HYP), true)
@@ -96,7 +106,9 @@ LOCAL_ADDITIONAL_DEPENDENCIES += $(call intermediates-dir-for,DLKM,virtio-video-
 endif
 endif
 ifneq ($(TARGET_BOARD_PLATFORM),parrot)
+ifneq ($(TARGET_BOARD_PLATFORM),taro)
 LOCAL_ADDITIONAL_DEPENDENCIES += $(call intermediates-dir-for,DLKM,hw-fence-module-symvers)/Module.symvers
+endif
 endif
 endif
 endif

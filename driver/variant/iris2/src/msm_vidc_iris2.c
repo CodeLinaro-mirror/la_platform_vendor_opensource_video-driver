@@ -252,7 +252,6 @@ static bool is_iris2_hw_power_collapsed(struct msm_vidc_core *core)
 	if (rc)
 		return false;
 
-	// if (1), CORE_SS(0) power is on and if (0), CORE_ss(0) power is off
 	pwr_status = value & BIT(1);
 
 	return pwr_status ? false : true;
@@ -349,12 +348,13 @@ disable_power:
 		rc = 0;
 	}
 
+	/* video_mvs0_axi_clk (GCC_VIDEO_AXI1) is only used by IRIS2_1P; skip for IRIS2_4P */
 	if (core->platform->data.vpu_ver == VPU_VERSION_IRIS2_1P) {
-	rc = call_res_op(core, clk_disable, core, "video_mvs0_axi_clk");
-	if (rc) {
-		d_vpr_e("%s: disable unprepare video_mvs0_axi_clk failed\n", __func__);
-		rc = 0;
-	}
+		rc = call_res_op(core, clk_disable, core, "video_mvs0_axi_clk");
+		if (rc) {
+			d_vpr_e("%s: disable unprepare video_mvs0_axi_clk failed\n", __func__);
+			rc = 0;
+		}
 	}
 
 
@@ -364,11 +364,9 @@ disable_power:
 static int __power_off_iris2_controller(struct msm_vidc_core *core)
 {
 	int rc = 0;
-
-	/*
-	 * mask fal10_veto QLPAC error since fal10_veto can go 1
-	 * when pwwait == 0 and clamped to 0 -> HPG 6.1.2
-	 */
+	const char *axi_clk_name =
+		(core->platform->data.vpu_ver == VPU_VERSION_IRIS2_4P) ?
+		"gcc_video_axi0" : "video_ctl_axi_clk";
 	rc = __write_register(core, CPU_CS_X2RPMh_IRIS2, 0x3);
 	if (rc)
 		return rc;
@@ -387,7 +385,8 @@ static int __power_off_iris2_controller(struct msm_vidc_core *core)
 	if (rc)
 		d_vpr_h("%s: AON_WRAPPER_MVP_NOC_LPI_CONTROL failed\n", __func__);
 
-	if (core->platform->data.vpu_ver != VPU_VERSION_IRIS33)
+	if (core->platform->data.vpu_ver != VPU_VERSION_IRIS33 &&
+	    core->platform->data.vpu_ver != VPU_VERSION_IRIS2_4P)
 		goto skip_cpu_noc;
 
 	/* Set Iris CPU NoC to Low power */
@@ -438,9 +437,9 @@ skip_aon_mvp_noc:
 		rc = 0;
 	}
 
-	rc = call_res_op(core, clk_disable, core, "video_ctl_axi_clk");
+	rc = call_res_op(core, clk_disable, core, axi_clk_name);
 	if (rc) {
-		d_vpr_e("%s: disable unprepare video_ctl_axi_clk failed\n", __func__);
+		d_vpr_e("%s: disable unprepare %s failed\n", __func__, axi_clk_name);
 		rc = 0;
 	}
 
@@ -503,6 +502,9 @@ static int __power_off_iris2(struct msm_vidc_core *core)
 static int __power_on_iris2_controller(struct msm_vidc_core *core)
 {
 	int rc = 0;
+	const char *axi_clk_name =
+		(core->platform->data.vpu_ver == VPU_VERSION_IRIS2_4P) ?
+		"gcc_video_axi0" : "video_ctl_axi_clk";
 
 	if (!core) {
 		d_vpr_e("%s: invalid params\n", __func__);
@@ -524,7 +526,7 @@ static int __power_on_iris2_controller(struct msm_vidc_core *core)
 		goto fail_clk_axi;
 	}
 
-	rc = call_res_op(core, clk_enable, core, "video_ctl_axi_clk");
+	rc = call_res_op(core, clk_enable, core, axi_clk_name);
 	if (rc)
 		goto fail_clk_axi;
 
@@ -548,7 +550,7 @@ static int __power_on_iris2_controller(struct msm_vidc_core *core)
 fail_iface_clk:
 	call_res_op(core, clk_disable, core, "core_clk");
 fail_clk_controller:
-	call_res_op(core, clk_disable, core, "video_ctl_axi_clk");
+	call_res_op(core, clk_disable, core, axi_clk_name);
 fail_clk_axi:
 fail_reset_ahb2axi:
 	call_res_op(core, gdsc_off, core, "iris-ctl");
@@ -570,12 +572,14 @@ static int __power_on_iris2_hardware(struct msm_vidc_core *core)
 	if (rc)
 		goto fail_regulator;
 
-	if (core->platform && core->platform->data.vpu_ver == VPU_VERSION_IRIS2_1P) {
+	rc = call_res_op(core, gdsc_sw_ctrl, core);
+	if (rc) {
+		d_vpr_e("%s: gdsc_sw_ctrl failed\n", __func__);
+		goto fail_sw_ctrl;
+	}
 
-		rc = call_res_op(core, gdsc_sw_ctrl, core);
-		if (rc)
-			goto fail_sw_ctrl;
 
+	if (core->platform->data.vpu_ver == VPU_VERSION_IRIS2_1P) {
 		rc = call_res_op(core, clk_enable, core, "video_mvs0_axi_clk");
 		if (rc)
 			goto fail_clk_axi;
@@ -641,8 +645,6 @@ static int __power_on_iris2(struct msm_vidc_core *core)
 		d_vpr_e("%s: failed to power on iris2 hardware\n", __func__);
 		goto fail_power_on_hardware;
 	}
-	/* video controller and hardware powered on successfully */
-
 	idx = core->power.clk_freq_idx ? core->power.clk_freq_idx : 0;
 
 	rc = call_res_op(core, set_clks, core, idx);
@@ -1066,6 +1068,9 @@ exit:
 
 static int __hw_ctrl_gdsc_iris2(struct msm_vidc_core *core)
 {
+	if (core->platform->data.vpu_ver == VPU_VERSION_IRIS2_4P)
+		return 0;
+
 	return call_res_op(core, gdsc_hw_ctrl, core);
 }
 

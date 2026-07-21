@@ -30,6 +30,11 @@
 #include "msm_vidc_iris2.h"
 #endif
 
+#if defined(CONFIG_MSM_VIDC_WAIPIO)
+#include "msm_vidc_waipio.h"
+#include "msm_vidc_iris2.h"
+#endif
+
 #if defined(CONFIG_MSM_VIDC_SUN)
 #include "msm_vidc_sun.h"
 #include "msm_vidc_iris35.h"
@@ -354,6 +359,14 @@ static const struct msm_vidc_compat_handle compat_handle[] = {
 		.compat                     = "qcom,chora-vidc",
 		.get_platform_data          = msm_vidc_get_platform_data_chora,
 		.init_platform              = msm_vidc_init_platform_chora,
+		.init_vpu                   = msm_vidc_init_iris2,
+	},
+#endif
+#if defined(CONFIG_MSM_VIDC_WAIPIO)
+	{
+		.compat                     = "qcom,sm8450-vidc",
+		.get_platform_data          = msm_vidc_get_platform_data_waipio,
+		.init_platform              = msm_vidc_init_platform_waipio,
 		.init_vpu                   = msm_vidc_init_iris2,
 	},
 #endif

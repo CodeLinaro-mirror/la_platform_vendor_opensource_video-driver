@@ -698,6 +698,11 @@ enum msm_vidc_core_capability_type {
 	NUM_VPU,
 	SKIP_DELAYED_UNMAP,
 	CACHE_OPS_REQUIRED,
+<<<<<<< HEAD   (6aa0d2 Merge 33c582bd8614aff9a0d4d6074794668f4251c913 on remote bra)
+=======
+	OVERRIDE_QUEUE_SIZE,
+	MMRM,
+>>>>>>> CHANGE (e67ae6 video-driver: Add the capability file for taro)
 	CORE_CAP_MAX,
 };
 
@@ -714,6 +719,7 @@ enum msm_vidc_inst_capability_flags {
 	CAP_FLAG_VOLATILE                = BIT(6),
 	CAP_FLAG_META                    = BIT(7),
 	CAP_FLAG_BLOB                    = BIT(8),
+	CAP_FLAG_ROOT                    = BIT(9),
 };
 
 struct msm_vidc_inst_cap {
