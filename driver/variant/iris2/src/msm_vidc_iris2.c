@@ -252,6 +252,7 @@ static bool is_iris2_hw_power_collapsed(struct msm_vidc_core *core)
 	if (rc)
 		return false;
 
+	// if (1), CORE_SS(0) power is on and if (0), CORE_ss(0) power is off
 	pwr_status = value & BIT(1);
 
 	return pwr_status ? false : true;
@@ -348,7 +349,6 @@ disable_power:
 		rc = 0;
 	}
 
-	/* video_mvs0_axi_clk (GCC_VIDEO_AXI1) is only used by IRIS2_1P; skip for IRIS2_4P */
 	if (core->platform->data.vpu_ver == VPU_VERSION_IRIS2_1P) {
 		rc = call_res_op(core, clk_disable, core, "video_mvs0_axi_clk");
 		if (rc) {
@@ -367,6 +367,10 @@ static int __power_off_iris2_controller(struct msm_vidc_core *core)
 	const char *axi_clk_name =
 		(core->platform->data.vpu_ver == VPU_VERSION_IRIS2_4P) ?
 		"gcc_video_axi0" : "video_ctl_axi_clk";
+	/*
+	 * mask fal10_veto QLPAC error since fal10_veto can go 1
+	 * when pwwait == 0 and clamped to 0 -> HPG 6.1.2
+	 */
 	rc = __write_register(core, CPU_CS_X2RPMh_IRIS2, 0x3);
 	if (rc)
 		return rc;
@@ -385,8 +389,7 @@ static int __power_off_iris2_controller(struct msm_vidc_core *core)
 	if (rc)
 		d_vpr_h("%s: AON_WRAPPER_MVP_NOC_LPI_CONTROL failed\n", __func__);
 
-	if (core->platform->data.vpu_ver != VPU_VERSION_IRIS33 &&
-	    core->platform->data.vpu_ver != VPU_VERSION_IRIS2_4P)
+	if (core->platform->data.vpu_ver != VPU_VERSION_IRIS33)
 		goto skip_cpu_noc;
 
 	/* Set Iris CPU NoC to Low power */
@@ -645,6 +648,8 @@ static int __power_on_iris2(struct msm_vidc_core *core)
 		d_vpr_e("%s: failed to power on iris2 hardware\n", __func__);
 		goto fail_power_on_hardware;
 	}
+	/* video controller and hardware powered on successfully */
+
 	idx = core->power.clk_freq_idx ? core->power.clk_freq_idx : 0;
 
 	rc = call_res_op(core, set_clks, core, idx);
