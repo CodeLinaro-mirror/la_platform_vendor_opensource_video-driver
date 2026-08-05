@@ -797,6 +797,7 @@ static struct msm_vidc_session_ops msm_session_ops = {
 	.decide_work_mode = msm_vidc_decide_work_mode_ar50lt,
 	.decide_quality_mode = NULL,
 	.decide_scaling = NULL,
+	.decide_slice_max_mb = msm_vidc_encoder_decide_slice_max_mb_ar50lt,
 };
 
 int msm_vidc_init_ar50lt(struct msm_vidc_core *core)
