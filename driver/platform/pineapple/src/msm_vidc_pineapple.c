@@ -1007,7 +1007,7 @@ static struct msm_platform_inst_capability instance_cap_data_pineapple[] = {
 		CAP_FLAG_OUTPUT_PORT},
 
 	{VBV_DELAY, ENC, H264 | HEVC,
-		34, 300, 1, 300,
+		34, 1000, 1, 300,
 		V4L2_CID_MPEG_VIDEO_VBV_DELAY,
 		HFI_PROP_VBV_DELAY,
 		CAP_FLAG_OUTPUT_PORT},
