@@ -4932,7 +4932,11 @@ int msm_vidc_trigger_ssr(struct msm_vidc_core *core,
 	struct msm_vidc_ssr *ssr;
 	u32 ssr_type;
 
-	ssr = &core->ssr;
+	if (!core) {
+		d_vpr_e("%s: invalid params\n", __func__);
+		return -EINVAL;
+	}
+
 	/*
 	 * <test_addr><sub_client_id><ssr_type>
 	 * ssr_type: 0-3 bits
@@ -4946,16 +4950,26 @@ int msm_vidc_trigger_ssr(struct msm_vidc_core *core,
 	ssr_type = (trigger_ssr_val &
 		(unsigned long)SSR_TYPE) >> SSR_TYPE_SHIFT;
 
+	core_lock(core, __func__);
+	if (!is_core_state(core, MSM_VIDC_CORE_INIT)) {
+		d_vpr_e("%s: core not initialized\n", __func__);
+		core_unlock(core, __func__);
+		return -EINVAL;
+	}
+
 	if (!is_ssr_type_allowed(core, ssr_type)) {
 		d_vpr_h("SSR Type %#x is not allowed\n", ssr_type);
+		core_unlock(core, __func__);
 		return 0;
 	}
 
+	ssr = &core->ssr;
 	ssr->ssr_type = ssr_type;
 	ssr->sub_client_id = (trigger_ssr_val &
 			(unsigned long)SSR_SUB_CLIENT_ID) >> SSR_SUB_CLIENT_ID_SHIFT;
 	ssr->test_addr = (trigger_ssr_val &
 			(unsigned long)SSR_ADDR_ID) >> SSR_ADDR_SHIFT;
+	core_unlock(core, __func__);
 	schedule_work(&core->ssr_work);
 	return 0;
 }
