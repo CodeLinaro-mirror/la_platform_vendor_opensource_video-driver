@@ -41,6 +41,7 @@ module_entry(
             "driver/variant/iris3/src/msm_vidc_power_iris3.c",
             "driver/variant/iris3/src/msm_vidc_iris3.c",
             "driver/platform/hamoa/src/msm_vidc_hamoa.c",
+            "driver/platform/purwa/src/msm_vidc_purwa.c",
         ],
         "CONFIG_MSM_VIDC_NIOBE" : [
             "driver/variant/iris3/src/msm_vidc_buffer_iris3.c",
@@ -171,6 +172,7 @@ module_entry(
     config_srcs = {
         "CONFIG_MSM_VIDC_HAMOA" : [
             "driver/platform/hamoa/src/hamoa.c",
+            "driver/platform/purwa/src/purwa.c",
             "driver/variant/iris3/src/msm_vidc_buffer_iris3.c",
             "driver/variant/iris3/src/msm_vidc_power_iris3.c",
             "driver/variant/iris3/src/msm_vidc_bus_iris3.c",
