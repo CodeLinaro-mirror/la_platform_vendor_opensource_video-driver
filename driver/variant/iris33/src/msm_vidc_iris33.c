@@ -1595,7 +1595,38 @@ adjust:
 	return 0;
 }
 
+int msm_vidc_adjust_chroma_qp_index_offset_iris33(void *instance, struct v4l2_ctrl *ctrl)
+{
+	s32 adjusted_value;
+	s8 chroma_cr_qp, chroma_cb_qp;
+	struct msm_vidc_inst *inst = (struct msm_vidc_inst *)instance;
 
+	adjusted_value = ctrl ? ctrl->val :
+		inst->capabilities[CHROMA_QP_INDEX_OFFSET].value;
+
+	if (adjusted_value > MAX_CHROMA_QP_OFFSET) {
+		chroma_cr_qp = adjusted_value & 0xFF;
+		chroma_cb_qp = (adjusted_value & 0xFF00) >> 8;
+
+		i_vpr_h(inst, "%s: unpacked %#x into cr(%d) cb(%d)\n",
+			__func__, adjusted_value, chroma_cr_qp, chroma_cb_qp);
+
+		if (chroma_cr_qp != chroma_cb_qp) {
+			i_vpr_h(inst, "%s: cr(%d) and cb(%d) must match, ignoring\n",
+				__func__, chroma_cr_qp, chroma_cb_qp);
+			chroma_cr_qp = MAX_CHROMA_QP_OFFSET;
+		}
+
+		adjusted_value = chroma_cr_qp;
+	}
+
+	if (adjusted_value != MIN_CHROMA_QP_OFFSET)
+		adjusted_value = MAX_CHROMA_QP_OFFSET;
+
+	msm_vidc_update_cap_value(inst, CHROMA_QP_INDEX_OFFSET, adjusted_value, __func__);
+
+	return 0;
+}
 
 static struct msm_vidc_venus_ops iris33_ops = {
 	.boot_firmware = __boot_firmware_iris33,

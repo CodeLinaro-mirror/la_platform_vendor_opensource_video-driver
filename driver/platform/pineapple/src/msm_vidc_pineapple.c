@@ -1587,7 +1587,7 @@ static struct msm_platform_inst_capability instance_cap_data_pineapple[] = {
 		CAP_FLAG_OUTPUT_PORT},
 
 	{CHROMA_QP_INDEX_OFFSET, ENC, HEVC,
-		MIN_CHROMA_QP_OFFSET, MAX_CHROMA_QP_OFFSET,
+		MIN_CHROMA_QP_OFFSET, MAX_CHROMA_QP_OFFSET_MASK,
 		1, MAX_CHROMA_QP_OFFSET,
 		V4L2_CID_MPEG_VIDEO_H264_CHROMA_QP_INDEX_OFFSET,
 		HFI_PROP_CHROMA_QP_OFFSET,
@@ -2508,7 +2508,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_pine
 
 	{CHROMA_QP_INDEX_OFFSET, ENC, HEVC,
 		{0},
-		msm_vidc_adjust_chroma_qp_index_offset,
+		msm_vidc_adjust_chroma_qp_index_offset_iris33,
 		msm_vidc_set_chroma_qp_index_offset},
 
 	{DISPLAY_DELAY_ENABLE, DEC, H264 | HEVC | VP9 | AV1,
