@@ -1369,6 +1369,8 @@ int msm_vidc_change_core_state(struct msm_vidc_core *core,
 int msm_vidc_change_inst_state(struct msm_vidc_inst *inst,
 	enum msm_vidc_inst_state request_state, const char *func)
 {
+	u32 port;
+
 	if (!inst) {
 		d_vpr_e("%s: invalid params\n", __func__);
 		return -EINVAL;
@@ -1397,6 +1399,15 @@ int msm_vidc_change_inst_state(struct msm_vidc_inst *inst,
 			state_name(request_state));
 
 	inst->state = request_state;
+
+	if (request_state == MSM_VIDC_ERROR) {
+		wake_up_all(&inst->event_handler.wait);
+		for (port = 0; port < MAX_PORT; port++) {
+			if (port == PORT_NONE)
+				continue;
+		wake_up_all(&inst->vb2q[port].done_wq);
+		}
+	}
 
 	return 0;
 }
