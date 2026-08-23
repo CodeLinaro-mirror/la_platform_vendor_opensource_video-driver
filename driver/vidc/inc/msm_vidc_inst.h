@@ -110,6 +110,7 @@ struct msm_vidc_inst {
 	struct msm_vidc_timestamps         ts_reorder; /* struct msm_vidc_timestamp */
 	struct msm_vidc_subscription_params       subcr_params[MAX_PORT];
 	struct msm_vidc_hfi_frame_info     hfi_frame_info;
+	struct msm_vidc_picture_type_q     picture_type_q;
 	struct msm_vidc_decode_batch       decode_batch;
 	struct msm_vidc_decode_vpp_delay   decode_vpp_delay;
 	struct msm_vidc_session_idle       session_idle;
