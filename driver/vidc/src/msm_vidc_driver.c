@@ -4393,7 +4393,6 @@ int msm_vidc_init_instance_caps(struct msm_vidc_core *core)
 			msm_vidc_devm_free_inst_caps,
 			core->inst_caps)) {
 		d_vpr_e("%s: add action or reset failed for instance caps\n", __func__);
-		kvfree(core->inst_caps);
 		core->inst_caps = NULL;
 		rc = -ENOMEM;
 		goto error;
