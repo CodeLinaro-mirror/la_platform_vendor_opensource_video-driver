@@ -2712,7 +2712,7 @@ static const struct clk_table hamoa_clk_table[] = {
 	{ "core",                     VIDEO_CC_MVS0C_CLK,     0 },
 	{ "vcodec0_core",             VIDEO_CC_MVS0_CLK,      0 },
 	{ "video_cc_mvs0_clk_src", VIDEO_CC_MVS0_CLK_SRC,  1,
-	 (u64[]) {481000000, 444000000, 366000000, 338000000, 240000000, 192000000}, 6},
+	 (u64[]) {481000000, 444000000, 366000000, 338000000, 240000000}, 5},
 };
 
 /* name, exclusive_release */
