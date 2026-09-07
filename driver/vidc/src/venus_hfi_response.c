@@ -1439,24 +1439,6 @@ static bool validate_property_payload_info(struct msm_vidc_inst *inst,
 		expected = HFI_PAYLOAD_NONE;
 		break;
 	/*
-	 * FENCE carries a 64-bit fence ID (payload[0] = lower 32 bits,
-	 * payload[1] = upper 32 bits), so payload_info is HFI_PAYLOAD_U64.
-	 * When EarlyNotify is active, firmware may send an array of 64-bit
-	 * fence IDs, in which case payload_info is HFI_PAYLOAD_U64_ARRAY.
-	 * code uses Fence ID as U32 so accepting HFI_PAYLOAD_U32 as well
-	 */
-	case HFI_PROP_FENCE:
-		if (pkt->payload_info != HFI_PAYLOAD_U64 &&
-		    pkt->payload_info != HFI_PAYLOAD_U64_ARRAY &&
-		    pkt->payload_info != HFI_PAYLOAD_U32) {
-			i_vpr_e(inst,
-				"%s: invalid payloadinfo %#x for property %#x, expected %#x or %#x or %#x\n",
-				__func__, pkt->payload_info, pkt->type,
-				HFI_PAYLOAD_U64, HFI_PAYLOAD_U64_ARRAY, HFI_PAYLOAD_U32);
-			return false;
-		}
-		return true;
-	/*
 	 * HFI doc currently specifies HFI_PAYLOAD_U32 for PICTURE_TYPE and
 	 * carries a FIXME that it should be HFI_PAYLOAD_U32_ENUM. Accept both
 	 * for compatibility with firmware revisions.
