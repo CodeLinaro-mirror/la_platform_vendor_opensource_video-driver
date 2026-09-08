@@ -177,6 +177,7 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
             "CONFIG_MSM_VIDC_MINIDUMP",
             "CONFIG_MSM_VIDC_RAVELIN",
             "CONFIG_MSM_VIDC_WAIPIO",
+            "CONFIG_MSM_VIDC_DIWALI",
             "CONFIG_MSM_VIDC_{}".format(lunch_target.upper()),
             "CONFIG_MSM_VIDC_SYNX",
         ]
@@ -236,6 +237,7 @@ def define_lunch_target_variant_modules(target, variant, registry, modules, lunc
             "CONFIG_MSM_VIDC_ANDROID",
             "CONFIG_MSM_VIDC_MINIDUMP",
             "CONFIG_MSM_VIDC_WAIPIO",
+            "CONFIG_MSM_VIDC_DIWALI",
         ]
         modules = [m for m in modules if m != "video"]	
     else:

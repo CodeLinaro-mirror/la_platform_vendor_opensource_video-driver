@@ -47,6 +47,7 @@ static inline bool is_video_device(struct device *dev)
 		of_device_is_compatible(dev->of_node, "qcom,sm8550-vidc-v2") ||
 		of_device_is_compatible(dev->of_node, "qcom,sa8255-vidc") ||
 		of_device_is_compatible(dev->of_node, "qcom,sm8650-vidc") ||
+		of_device_is_compatible(dev->of_node, "qcom,diwali-vidc") ||
 		of_device_is_compatible(dev->of_node, "qcom,sm8650-vidc-v2") ||
 		of_device_is_compatible(dev->of_node, "qcom,cliffs-vidc") ||
 		of_device_is_compatible(dev->of_node, "qcom,volcano-vidc") ||
@@ -178,6 +179,7 @@ static const struct of_device_id msm_vidc_dt_match[] = {
 	{.compatible = "qcom,vidc,cb-sec-non-pxl"},
 	{.compatible = "qcom,vidc,cb-sec-bitstream"},
 	{.compatible = "qcom,vidc,cb-sec-pxl"},
+	{.compatible = "qcom,diwali-vidc"},
 	MSM_VIDC_EMPTY_BRACE
 };
 MODULE_DEVICE_TABLE(of, msm_vidc_dt_match);
