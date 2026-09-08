@@ -1190,6 +1190,19 @@ static int msm_vidc_pm_resume(struct device *dev)
 		return -EINVAL;
 	}
 
+	/*
+	 * Avoid deadlock: when core is not in CORE_INIT state, the fw loading
+	 * thread holds core->lock while blocked in request_firmware() waiting
+	 * for a usermode helper that is frozen during suspend. pm_suspend was
+	 * skipped in this case (hardware was not powered up), so there is
+	 * nothing to resume. Skip pm_resume to avoid blocking on core->lock
+	 * and triggering the DPM watchdog.
+	 */
+	if (!is_core_state(core, MSM_VIDC_CORE_INIT)) {
+		d_vpr_h("%s: fw loading in progress, skip pm resume\n", __func__);
+		return 0;
+	}
+
 	d_vpr_h("%s\n", __func__);
 	if (is_deepsleep_supported(core)) {
 		d_vpr_h("%s: resuming from deepsleep\n", __func__);
