@@ -698,11 +698,8 @@ enum msm_vidc_core_capability_type {
 	NUM_VPU,
 	SKIP_DELAYED_UNMAP,
 	CACHE_OPS_REQUIRED,
-<<<<<<< HEAD   (6aa0d2 Merge 33c582bd8614aff9a0d4d6074794668f4251c913 on remote bra)
-=======
 	OVERRIDE_QUEUE_SIZE,
 	MMRM,
->>>>>>> CHANGE (e67ae6 video-driver: Add the capability file for taro)
 	CORE_CAP_MAX,
 };
 
