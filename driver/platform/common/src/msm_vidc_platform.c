@@ -2173,14 +2173,24 @@ int msm_vidc_adjust_vbv_delay(void *instance, struct v4l2_ctrl *ctrl)
 	}
 	adjusted_value = ctrl ? ctrl->val :
 		inst->capabilities[VBV_DELAY].value;
+	/*
+	Only [34 to 100], 200, 300, 500 and 1000 are valid payloads.
+	500 and 1000 are supported by IRIS3.3 onwards, so the upper
+	values are gated by the platform capability max.
+	*/
 	// Check for invalid values & adjust accordingly
-	if(adjusted_value < 34 || adjusted_value > 300) {
+	if(adjusted_value < 34 ||
+		adjusted_value > inst->capabilities[VBV_DELAY].max) {
 		// Set the default value
 		adjusted_value = inst->capabilities[VBV_DELAY].value;
 	}else if(adjusted_value > 100 && adjusted_value < 200){
 		adjusted_value = 200;
 	}else if(adjusted_value > 200 && adjusted_value < 300){
 		adjusted_value = 300;
+	}else if(adjusted_value > 300 && adjusted_value < 500){
+		adjusted_value = 500;
+	}else if(adjusted_value > 500 && adjusted_value < 1000){
+		adjusted_value = 1000;
 	}
 	msm_vidc_update_cap_value(inst, VBV_DELAY,
 		adjusted_value, __func__);
