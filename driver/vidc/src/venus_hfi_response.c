@@ -298,6 +298,10 @@ static bool check_for_packet_payload(struct msm_vidc_inst *inst,
 		/* array of 32-bit elements: require at least one element */
 		payload_size = sizeof(u32);
 		break;
+	case HFI_PAYLOAD_U64_ARRAY:
+		/* array of 64-bit elements: require at least one element */
+		payload_size = sizeof(u64);
+		break;
 	default:
 		i_vpr_e(inst,
 			"%s: unsupported payload_info %#x for packet %#x\n",
