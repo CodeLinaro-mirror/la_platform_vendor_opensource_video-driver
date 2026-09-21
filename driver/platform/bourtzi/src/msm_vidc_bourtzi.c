@@ -1775,7 +1775,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_bour
 
 	{IR_PERIOD, ENC, H264|HEVC,
 		{0},
-		msm_vidc_adjust_ir_period, msm_vidc_set_u32},
+		msm_vidc_adjust_ir_period, msm_vidc_set_ir_period},
 
 	{AU_DELIMITER, ENC, H264|HEVC,
 		{0},
