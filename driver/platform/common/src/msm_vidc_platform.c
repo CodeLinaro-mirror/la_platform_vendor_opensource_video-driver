@@ -40,6 +40,7 @@
 #endif
 #if defined(CONFIG_MSM_VIDC_HAMOA)
 #include "msm_vidc_hamoa.h"
+#include "msm_vidc_purwa.h"
 #include "msm_vidc_iris3.h"
 #endif
 #if defined(CONFIG_MSM_VIDC_MAHUA)
@@ -375,6 +376,12 @@ static const struct msm_vidc_compat_handle compat_handle[] = {
 		.compat                     = "qcom,x1e80100-vidc",
 		.get_platform_data          = msm_vidc_get_platform_data_hamoa,
 		.init_platform              = msm_vidc_init_platform_hamoa,
+		.init_vpu                  = msm_vidc_init_iris3,
+	},
+	{
+		.compat                     = "qcom,x1p42100-vidc",
+		.get_platform_data          = msm_vidc_get_platform_data_purwa,
+		.init_platform              = msm_vidc_init_platform_purwa,
 		.init_vpu                  = msm_vidc_init_iris3,
 	},
 #endif

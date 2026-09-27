@@ -80,6 +80,13 @@ static struct codec_info codec_data_canoe[] = {
 		.vidc_codec  = MSM_VIDC_VP9,
 		.pixfmt_name = "VP9",
 	},
+#ifdef V4L2_PIX_FMT_VIDC_AV1
+	{
+		.v4l2_codec  = V4L2_PIX_FMT_VIDC_AV1,
+		.vidc_codec  = MSM_VIDC_AV1,
+		.pixfmt_name = "AV1",
+	},
+#endif
 	{
 		.v4l2_codec  = V4L2_PIX_FMT_AV1,
 		.vidc_codec  = MSM_VIDC_AV1,
@@ -2921,7 +2928,7 @@ static struct msm_platform_inst_capability instance_cap_data_canoe_sku_v3[] = {
 
 	{LEVEL, DEC, H264,
 		V4L2_MPEG_VIDEO_H264_LEVEL_1_0,
-		V4L2_MPEG_VIDEO_H264_LEVEL_5_2,
+		V4L2_MPEG_VIDEO_H264_LEVEL_6_0,
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_0) |
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1B) |
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_1_1) |
@@ -2938,7 +2945,8 @@ static struct msm_platform_inst_capability instance_cap_data_canoe_sku_v3[] = {
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_4_2) |
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_0) |
 		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_1) |
-		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_2),
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_5_2) |
+		BIT(V4L2_MPEG_VIDEO_H264_LEVEL_6_0),
 		V4L2_MPEG_VIDEO_H264_LEVEL_5_2,
 		V4L2_CID_MPEG_VIDEO_H264_LEVEL,
 		HFI_PROP_LEVEL,
@@ -2946,7 +2954,7 @@ static struct msm_platform_inst_capability instance_cap_data_canoe_sku_v3[] = {
 
 	{LEVEL, DEC, HEVC | HEIC,
 		V4L2_MPEG_VIDEO_HEVC_LEVEL_1,
-		V4L2_MPEG_VIDEO_HEVC_LEVEL_5_1,
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_6,
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_1) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_2) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_2_1) |
@@ -2955,8 +2963,10 @@ static struct msm_platform_inst_capability instance_cap_data_canoe_sku_v3[] = {
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_4_1) |
 		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5) |
-		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5_1),
-		V4L2_MPEG_VIDEO_HEVC_LEVEL_5_1,
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5_1) |
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_5_2) |
+		BIT(V4L2_MPEG_VIDEO_HEVC_LEVEL_6),
+		V4L2_MPEG_VIDEO_HEVC_LEVEL_5_2,
 		V4L2_CID_MPEG_VIDEO_HEVC_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
@@ -2981,7 +2991,7 @@ static struct msm_platform_inst_capability instance_cap_data_canoe_sku_v3[] = {
 
 	{LEVEL, DEC, AV1,
 		V4L2_MPEG_VIDC_AV1_LEVEL_2_0,
-		V4L2_MPEG_VIDC_AV1_LEVEL_5_1,
+		V4L2_MPEG_VIDC_AV1_LEVEL_6_0,
 		BIT(V4L2_MPEG_VIDC_AV1_LEVEL_2_0) |
 		BIT(V4L2_MPEG_VIDC_AV1_LEVEL_2_1) |
 		BIT(V4L2_MPEG_VIDC_AV1_LEVEL_2_2) |
@@ -2995,8 +3005,11 @@ static struct msm_platform_inst_capability instance_cap_data_canoe_sku_v3[] = {
 		BIT(V4L2_MPEG_VIDC_AV1_LEVEL_4_2) |
 		BIT(V4L2_MPEG_VIDC_AV1_LEVEL_4_3) |
 		BIT(V4L2_MPEG_VIDC_AV1_LEVEL_5_0) |
-		BIT(V4L2_MPEG_VIDC_AV1_LEVEL_5_1),
-		V4L2_MPEG_VIDC_AV1_LEVEL_5_1,
+		BIT(V4L2_MPEG_VIDC_AV1_LEVEL_5_1) |
+		BIT(V4L2_MPEG_VIDC_AV1_LEVEL_5_2) |
+		BIT(V4L2_MPEG_VIDC_AV1_LEVEL_5_3) |
+		BIT(V4L2_MPEG_VIDC_AV1_LEVEL_6_0),
+		V4L2_MPEG_VIDC_AV1_LEVEL_6_0,
 		V4L2_CID_MPEG_VIDC_AV1_LEVEL,
 		HFI_PROP_LEVEL,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},

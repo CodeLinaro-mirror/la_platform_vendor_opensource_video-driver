@@ -118,6 +118,7 @@ endif
 
 ifeq ($(CONFIG_MSM_VIDC_HAMOA), y)
 LINUXINCLUDE   += -I$(VIDEO_DRIVER_ABS_PATH)/platform/hamoa/inc \
+                  -I$(VIDEO_DRIVER_ABS_PATH)/platform/purwa/inc \
                   -I$(VIDEO_DRIVER_ABS_PATH)/variant/iris3/inc
 endif
 
@@ -217,6 +218,7 @@ endif
 
 ifeq ($(CONFIG_MSM_VIDC_HAMOA), y)
 video-objs +=     $(VIDEO_DRIVER_REL_PATH)/platform/hamoa/src/hamoa.o \
+                  $(VIDEO_DRIVER_REL_PATH)/platform/purwa/src/purwa.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/iris3/src/msm_vidc_buffer_iris3.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/iris3/src/msm_vidc_power_iris3.o \
                   $(VIDEO_DRIVER_REL_PATH)/variant/iris3/src/msm_vidc_bus_iris3.o \

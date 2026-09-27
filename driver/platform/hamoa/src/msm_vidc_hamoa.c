@@ -66,6 +66,13 @@ static struct codec_info codec_data_hamoa[] = {
 		.vidc_codec  = MSM_VIDC_VP9,
 		.pixfmt_name = "VP9",
 	},
+#ifdef V4L2_PIX_FMT_VIDC_AV1
+	{
+		.v4l2_codec  = V4L2_PIX_FMT_VIDC_AV1,
+		.vidc_codec  = MSM_VIDC_AV1,
+		.pixfmt_name = "AV1",
+	},
+#endif
 	{
 		.v4l2_codec  = V4L2_PIX_FMT_AV1,
 		.vidc_codec  = MSM_VIDC_AV1,
@@ -1448,7 +1455,7 @@ static struct msm_platform_inst_capability instance_cap_data_hamoa[] = {
 		V4L2_MPEG_VIDEO_HEVC_TIER_HIGH,
 		V4L2_CID_MPEG_VIDEO_HEVC_TIER,
 		HFI_PROP_TIER,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{HEVC_TIER, ENC | DEC, HEIC,
 		V4L2_MPEG_VIDEO_HEVC_TIER_MAIN,
@@ -1457,7 +1464,7 @@ static struct msm_platform_inst_capability instance_cap_data_hamoa[] = {
 		V4L2_MPEG_VIDEO_HEVC_TIER_MAIN,
 		V4L2_CID_MPEG_VIDEO_HEVC_TIER,
 		HFI_PROP_TIER,
-		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
+		CAP_FLAG_VOLATILE | CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
 	{LF_MODE, ENC, H264,
 		V4L2_MPEG_VIDEO_H264_LOOP_FILTER_MODE_ENABLED,
@@ -2875,6 +2882,7 @@ static const struct msm_vidc_platform_data hamoa_data = {
 	.dev_reg_tbl_size = ARRAY_SIZE(hamoa_device_region_table),
 	.clock_source_scaling_ratio = 3,
 	.fwname = "vpu30_4v",
+	.vpu_ver = VPU_VERSION_IRIS3_4P,
 	.pas_id = 9,
 	.supports_mmrm = 0,
 
