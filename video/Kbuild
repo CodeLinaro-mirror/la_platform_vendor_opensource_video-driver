@@ -83,7 +83,7 @@ endif
 
 ifeq ($(CONFIG_MSM_VIDC_MAHUA), y)
 LINUXINCLUDE   += -I$(VIDEO_DRIVER_ABS_PATH)/platform/mahua/inc \
-                  -I$(VIDEO_DRIVER_ABS_PATH)/variant/iris33/inc
+                  -I$(VIDEO_DRIVER_ABS_PATH)/variant/iris39/inc
 endif
 
 ifeq ($(CONFIG_MSM_VIDC_CHORA), y)
@@ -165,11 +165,11 @@ video-objs +=     $(VIDEO_DRIVER_REL_PATH)/platform/pineapple/src/pineapple.o \
 endif
 ifeq ($(CONFIG_MSM_VIDC_MAHUA), y)
 video-objs +=     $(VIDEO_DRIVER_REL_PATH)/platform/mahua/src/mahua.o \
-                  $(VIDEO_DRIVER_REL_PATH)/variant/iris33/src/msm_vidc_buffer_iris33.o \
-                  $(VIDEO_DRIVER_REL_PATH)/variant/iris33/src/msm_vidc_power_iris33.o \
-                  $(VIDEO_DRIVER_REL_PATH)/variant/iris33/src/msm_vidc_bus_iris33.o \
-                  $(VIDEO_DRIVER_REL_PATH)/variant/iris33/src/msm_vidc_clock_iris33.o \
-                  $(VIDEO_DRIVER_REL_PATH)/variant/iris33/src/msm_vidc_iris33.o
+                  $(VIDEO_DRIVER_REL_PATH)/variant/iris39/src/msm_vidc_buffer_iris39.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/iris39/src/msm_vidc_power_iris39.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/iris39/src/msm_vidc_bus_iris39.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/iris39/src/msm_vidc_clock_iris39.o \
+                  $(VIDEO_DRIVER_REL_PATH)/variant/iris39/src/msm_vidc_iris39.o
 endif
 ifeq ($(CONFIG_MSM_VIDC_CHORA), y)
 video-objs +=     $(VIDEO_DRIVER_REL_PATH)/platform/chora/src/chora.o \
