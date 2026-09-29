@@ -28,6 +28,12 @@
 /* HEIC encoder and decoder */
 #define V4L2_PIX_FMT_HEIC                       v4l2_fourcc('H', 'E', 'I', 'C')
 /* AV1 */
+/*
+ * bionic uapi videodev2.h defines V4L2_PIX_FMT_AV1 with a different fourcc
+ * ('A','V','0','1'); vidc intentionally keeps its own value. #undef the
+ * prior (bionic) definition to avoid -Werror=macro-redefined.
+ */
+#undef V4L2_PIX_FMT_AV1
 #define V4L2_PIX_FMT_AV1                        v4l2_fourcc('A', 'V', '1', '0')
 /* start of vidc specific colorspace definitions */
 /*
