@@ -338,7 +338,7 @@ static struct msm_platform_inst_capability instance_cap_data_lahaina_v0[] = {
 
 	{FRAME_WIDTH, ENC, CODECS_ALL, 128, 8192, 2, 1920},
 
-	{FRAME_WIDTH, ENC, HEIC, 512, 16384, 2, 16384},
+	{FRAME_WIDTH, ENC, HEIC, 128, 16384, 2, 16384},
 
 	{LOSSLESS_FRAME_WIDTH, ENC, H264|HEVC, 128, 4096, 2, 1920},
 
@@ -350,7 +350,7 @@ static struct msm_platform_inst_capability instance_cap_data_lahaina_v0[] = {
 
 	{FRAME_HEIGHT, ENC, CODECS_ALL, 128, 8192, 2, 1080},
 
-	{FRAME_HEIGHT, ENC, HEIC, 512, 16384, 2, 16384},
+	{FRAME_HEIGHT, ENC, HEIC, 128, 16384, 2, 16384},
 
 	{LOSSLESS_FRAME_HEIGHT, ENC, H264|HEVC, 128, 4096, 2, 1080},
 
@@ -431,6 +431,8 @@ static struct msm_platform_inst_capability instance_cap_data_lahaina_v0[] = {
 	{SECURE_MBPF, DEC, CODECS_ALL, 36, 36864, 1, 36864},
 
 	{SECURE_MBPF, DEC, CODECS_ALL, 64, 36864, 1, 36864},
+
+	{SECURE_MBPF, ENC, H264 | HEVC, 64, 36864, 1, 36864},
 
 	{FRAME_RATE, ENC, CODECS_ALL,
 		(MINIMUM_FPS << 16), (MAXIMUM_FPS_ENC_V0 << 16),
@@ -668,7 +670,7 @@ static struct msm_platform_inst_capability instance_cap_data_lahaina_v0[] = {
 		HFI_PROP_RATE_CONTROL,
 		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_MENU},
 
-	{CABAC_MAX_BITRATE, ENC, H264, 1,
+	{CABAC_MAX_BITRATE, ENC, H264 | HEVC, 1,
 		160000000, 1, 20000000},
 
 	{CAVLC_MAX_BITRATE, ENC, H264, 0,
