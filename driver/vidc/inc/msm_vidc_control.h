@@ -11,6 +11,22 @@
 #include "msm_vidc_inst.h"
 #include "msm_vidc_internal.h"
 
+struct h264_level_table {
+	u64 level;
+	u64 max_mbsps;
+	u64 max_frame_size;
+	u64 max_bit_rate;
+	u64 max_dpb_mbs;
+};
+
+struct h265_level_table {
+	u64 level;
+	u64 max_mbsps;
+	u64 max_frame_size;
+	u64 max_br_main_tier;
+	u64 max_br_high_tier;
+};
+
 int msm_vidc_ctrl_handler_init(struct msm_vidc_inst *inst, bool init);
 int msm_vidc_ctrl_handler_deinit(struct msm_vidc_inst *inst);
 int msm_vidc_ctrl_handler_update(struct msm_vidc_inst *inst);
@@ -20,6 +36,7 @@ int msm_vidc_adjust_dynamic_layer_bitrate(void *instance, struct v4l2_ctrl *ctrl
 int msm_vidc_adjust_bitrate_mode(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_entropy_mode(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_profile(void *instance, struct v4l2_ctrl *ctrl);
+int msm_vidc_adjust_level_tier(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_ltr_count(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_use_ltr(void *instance, struct v4l2_ctrl *ctrl);
 int msm_vidc_adjust_mark_ltr(void *instance, struct v4l2_ctrl *ctrl);
