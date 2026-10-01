@@ -73,7 +73,7 @@ module_entry(
             "driver/variant/iris2/src/msm_vidc_iris2.c",
             "driver/platform/chora/src/msm_vidc_chora.c",
         ],
-        "CONFIG_MSM_VIDC_WAIPIO" : [
+	    "CONFIG_MSM_VIDC_WAIPIO" : [
             "driver/variant/iris2/src/msm_vidc_buffer_iris2.c",
             "driver/variant/iris2/src/msm_vidc_power_iris2.c",
             "driver/variant/iris2/src/msm_vidc_iris2.c",
@@ -215,7 +215,7 @@ module_entry(
             "driver/variant/iris2/src/msm_vidc_power_iris2.c",
             "driver/variant/iris2/src/msm_vidc_iris2.c",
         ],
-        "CONFIG_MSM_VIDC_WAIPIO" : [
+	    "CONFIG_MSM_VIDC_WAIPIO" : [
             "driver/platform/waipio/src/waipio.c",
             "driver/variant/iris2/src/msm_vidc_buffer_iris2.c",
             "driver/variant/iris2/src/msm_vidc_power_iris2.c",
