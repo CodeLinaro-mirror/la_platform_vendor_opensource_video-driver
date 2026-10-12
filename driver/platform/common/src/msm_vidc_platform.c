@@ -50,7 +50,7 @@
 #endif
 #if defined(CONFIG_MSM_VIDC_MAHUA)
 #include "msm_vidc_mahua.h"
-#include "msm_vidc_iris33.h"
+#include "msm_vidc_iris39.h"
 #endif
 #if defined(CONFIG_MSM_VIDC_LEMANS)
 #include "msm_vidc_lemans.h"
@@ -500,7 +500,7 @@ static const struct msm_vidc_compat_handle compat_handle[] = {
 		.compat                     = "qcom,mahua-vidc",
 		.get_platform_data          = msm_vidc_get_platform_data_mahua,
 		.init_platform              = msm_vidc_init_platform_mahua,
-		.init_vpu                   = msm_vidc_init_iris33,
+		.init_vpu                   = msm_vidc_init_iris39,
 	},
 #endif
 };
