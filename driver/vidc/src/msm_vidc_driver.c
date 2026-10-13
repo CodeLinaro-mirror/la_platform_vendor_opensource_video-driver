@@ -5021,13 +5021,13 @@ int msm_vidc_core_init(struct msm_vidc_core *core)
 				d_vpr_e("%s: open_gvm failed\n", __func__);
 				goto unlock;
 			}
+			core->is_gvm_open = true;
 #ifdef MSM_VIDC_HW_VIRT
 			core->pvm_event_handler_thread = kthread_run(
 				msm_vidc_pvm_event_handler,
 				core, "msm_vidc_pvm_evt_handler");
 #endif
 		}
-		core->is_gvm_open = true;
 		/* set up core state */
 		msm_vidc_change_core_state(core, MSM_VIDC_CORE_INIT,
 			__func__);
