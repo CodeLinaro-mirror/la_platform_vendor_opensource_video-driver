@@ -41,6 +41,7 @@ module_entry(
             "driver/variant/iris3/src/msm_vidc_power_iris3.c",
             "driver/variant/iris3/src/msm_vidc_iris3.c",
             "driver/platform/hamoa/src/msm_vidc_hamoa.c",
+            "driver/platform/purwa/src/msm_vidc_purwa.c",
         ],
         "CONFIG_MSM_VIDC_NIOBE" : [
             "driver/variant/iris3/src/msm_vidc_buffer_iris3.c",
@@ -51,11 +52,11 @@ module_entry(
             "driver/platform/niobe/src/msm_vidc_niobe.c",
         ],
         "CONFIG_MSM_VIDC_MAHUA" : [
-            "driver/variant/iris33/src/msm_vidc_buffer_iris33.c",
-            "driver/variant/iris33/src/msm_vidc_bus_iris33.c",
-            "driver/variant/iris33/src/msm_vidc_clock_iris33.c",
-            "driver/variant/iris33/src/msm_vidc_power_iris33.c",
-            "driver/variant/iris33/src/msm_vidc_iris33.c",
+            "driver/variant/iris39/src/msm_vidc_buffer_iris39.c",
+            "driver/variant/iris39/src/msm_vidc_bus_iris39.c",
+            "driver/variant/iris39/src/msm_vidc_clock_iris39.c",
+            "driver/variant/iris39/src/msm_vidc_power_iris39.c",
+            "driver/variant/iris39/src/msm_vidc_iris39.c",
             "driver/platform/mahua/src/msm_vidc_mahua.c",
         ],
         "CONFIG_MSM_VIDC_PINEAPPLE" : [
@@ -171,6 +172,7 @@ module_entry(
     config_srcs = {
         "CONFIG_MSM_VIDC_HAMOA" : [
             "driver/platform/hamoa/src/hamoa.c",
+            "driver/platform/purwa/src/purwa.c",
             "driver/variant/iris3/src/msm_vidc_buffer_iris3.c",
             "driver/variant/iris3/src/msm_vidc_power_iris3.c",
             "driver/variant/iris3/src/msm_vidc_bus_iris3.c",
@@ -195,11 +197,11 @@ module_entry(
         ],
         "CONFIG_MSM_VIDC_MAHUA" : [
             "driver/platform/mahua/src/mahua.c",
-            "driver/variant/iris33/src/msm_vidc_buffer_iris33.c",
-            "driver/variant/iris33/src/msm_vidc_power_iris33.c",
-            "driver/variant/iris33/src/msm_vidc_bus_iris33.c",
-            "driver/variant/iris33/src/msm_vidc_clock_iris33.c",
-            "driver/variant/iris33/src/msm_vidc_iris33.c",
+            "driver/variant/iris39/src/msm_vidc_buffer_iris39.c",
+            "driver/variant/iris39/src/msm_vidc_power_iris39.c",
+            "driver/variant/iris39/src/msm_vidc_bus_iris39.c",
+            "driver/variant/iris39/src/msm_vidc_clock_iris39.c",
+            "driver/variant/iris39/src/msm_vidc_iris39.c",
         ],
         "CONFIG_MSM_VIDC_CHORA" : [
             "driver/platform/chora/src/chora.c",
