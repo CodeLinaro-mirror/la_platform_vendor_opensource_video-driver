@@ -385,8 +385,7 @@ static int __power_off_iris2_controller(struct msm_vidc_core *core)
 	if (rc)
 		d_vpr_h("%s: AON_WRAPPER_MVP_NOC_LPI_CONTROL failed\n", __func__);
 
-	if (core->platform->data.vpu_ver != VPU_VERSION_IRIS33 &&
-	    core->platform->data.vpu_ver != VPU_VERSION_IRIS2_4P)
+	if (core->platform->data.vpu_ver != VPU_VERSION_IRIS33)
 		goto skip_cpu_noc;
 
 	/* Set Iris CPU NoC to Low power */
@@ -1068,9 +1067,6 @@ exit:
 
 static int __hw_ctrl_gdsc_iris2(struct msm_vidc_core *core)
 {
-	if (core->platform->data.vpu_ver == VPU_VERSION_IRIS2_4P)
-		return 0;
-
 	return call_res_op(core, gdsc_hw_ctrl, core);
 }
 

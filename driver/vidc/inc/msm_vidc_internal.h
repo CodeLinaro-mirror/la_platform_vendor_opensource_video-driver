@@ -699,7 +699,6 @@ enum msm_vidc_core_capability_type {
 	SKIP_DELAYED_UNMAP,
 	CACHE_OPS_REQUIRED,
 	OVERRIDE_QUEUE_SIZE,
-	MMRM,
 	CORE_CAP_MAX,
 };
 
@@ -716,7 +715,6 @@ enum msm_vidc_inst_capability_flags {
 	CAP_FLAG_VOLATILE                = BIT(6),
 	CAP_FLAG_META                    = BIT(7),
 	CAP_FLAG_BLOB                    = BIT(8),
-	CAP_FLAG_ROOT                    = BIT(9),
 };
 
 struct msm_vidc_inst_cap {
