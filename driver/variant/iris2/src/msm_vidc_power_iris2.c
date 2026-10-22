@@ -10,6 +10,16 @@
 #include "msm_vidc_debug.h"
 #include "resources.h"
 
+/*
+ * Waipio names the vcodec clock source "video_cc_mvs0_clk_src".
+ * All other IRIS2 platforms use "video_cc_iris_clk_src".
+ */
+#ifdef CONFIG_MSM_VIDC_WAIPIO
+#define VCODEC_CLK_SRC  "video_cc_mvs0_clk_src"
+#else
+#define VCODEC_CLK_SRC  "video_cc_iris_clk_src"
+#endif
+
 static int get_clock_corner_index(struct msm_vidc_core *core, u64 freq)
 {
 	struct clock_info *cl;
@@ -21,7 +31,7 @@ static int get_clock_corner_index(struct msm_vidc_core *core, u64 freq)
 		 * keep checking from lowest to highest rate until
 		 * table rate >= requested rate
 		 */
-		if (freq && !strcmp(cl->name, "video_cc_iris_clk_src")) {
+		if (freq && !strcmp(cl->name, VCODEC_CLK_SRC)) {
 			for (idx = cl->freq_count - 1; idx >= 0; idx--) {
 				rate = cl->freq[idx];
 				if (rate >= freq)
@@ -231,11 +241,11 @@ static int msm_vidc_calc_freq_iris2(struct msm_vidc_inst *inst, u32 data_size )
 					MSM_VIDC_STAGE_2 &&
 				inst->capabilities[PIPE].value == 4 &&
 				bitrate > 90000000)
-			vsp_cycles = get_clock_freq(core, "video_cc_iris_clk_src",
+			vsp_cycles = get_clock_freq(core, VCODEC_CLK_SRC,
 				get_max_clock_index(core));
 	} else {
 		i_vpr_e(inst, "%s: Unknown session type\n", __func__);
-		return get_clock_freq(core, "video_cc_iris_clk_src",
+		return get_clock_freq(core, VCODEC_CLK_SRC,
 			get_max_clock_index(core));
 	}
 
@@ -523,7 +533,7 @@ int msm_vidc_scale_clocks_iris2(struct msm_vidc_inst *inst)
 	    is_sub_state(inst, MSM_VIDC_DRC) ||
 	    is_sub_state(inst, MSM_VIDC_DRAIN)) {
 		inst->power.min_freq =
-			get_clock_freq(core, "video_cc_iris_clk_src", get_max_clock_index(core));
+			get_clock_freq(core, VCODEC_CLK_SRC, get_max_clock_index(core));
 		inst->power.dcvs_flags = 0;
 	} else if (msm_vidc_clock_voting) {
 		inst->power.min_freq = msm_vidc_clock_voting;

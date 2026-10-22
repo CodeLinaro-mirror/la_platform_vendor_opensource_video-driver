@@ -2675,7 +2675,7 @@ static const struct msm_vidc_platform_data waipio_data = {
 	/* platform specific resources */
 	.reg_prst_tbl = waipio_reg_preset_table,
 	.reg_prst_tbl_size = ARRAY_SIZE(waipio_reg_preset_table),
-	.clock_source_scaling_ratio = 1,
+	.clock_source_scaling_ratio = 3,
 	.fwname = "vpu20_4v",
 	.pas_id = 9,
 	.supports_mmrm = 1,
