@@ -2125,6 +2125,12 @@ static struct msm_platform_inst_capability instance_cap_data_sun[] = {
 		V4L2_CID_MPEG_VIDC_CAPTURE_DATA_OFFSET,
 		0,
 		CAP_FLAG_NONE},
+
+	{HEIF_TILES, DEC, HEIC,
+		0, INT_MAX, 1, 0,
+		V4L2_CID_MPEG_VIDC_HEIF_TILES,
+		HFI_PROP_HEIF_TILES,
+		CAP_FLAG_OUTPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
 };
 
 static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_sun[] = {
@@ -2764,6 +2770,11 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_sun[
 		{0},
 		msm_vidc_adjust_hdr10_max_rgb_info,
 		NULL},
+
+	{HEIF_TILES, DEC, HEIC,
+		{0},
+		NULL,
+		msm_vidc_set_u32},
 };
 
 /* Default UBWC config for LPDDR5 */

@@ -428,6 +428,7 @@ enum msm_vidc_metadata_bits {
 	CAP(SIGNAL_COLOR_INFO)                    \
 	CAP(OPEN_GOP)                             \
 	CAP(CAPTURE_DATA_OFFSET)                  \
+	CAP(HEIF_TILES)                           \
 	CAP(INST_CAP_MAX)                         \
 }
 
