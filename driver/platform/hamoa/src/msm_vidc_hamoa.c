@@ -905,7 +905,7 @@ static struct msm_platform_inst_capability instance_cap_data_hamoa[] = {
 		0, MAX_BASE_LAYER_PRIORITY_ID, 1, 0,
 		V4L2_CID_MPEG_VIDEO_BASELAYER_PRIORITY_ID,
 		HFI_PROP_BASELAYER_PRIORITYID,
-		CAP_FLAG_OUTPUT_PORT},
+		CAP_FLAG_INPUT_PORT | CAP_FLAG_DYNAMIC_ALLOWED},
 
 	{IR_TYPE, ENC, H264 | HEVC,
 		V4L2_CID_MPEG_VIDEO_INTRA_REFRESH_PERIOD_TYPE_RANDOM,
@@ -2712,7 +2712,7 @@ static const struct clk_table hamoa_clk_table[] = {
 	{ "core",                     VIDEO_CC_MVS0C_CLK,     0 },
 	{ "vcodec0_core",             VIDEO_CC_MVS0_CLK,      0 },
 	{ "video_cc_mvs0_clk_src", VIDEO_CC_MVS0_CLK_SRC,  1,
-	 (u64[]) {481000000, 444000000, 366000000, 338000000, 240000000, 192000000}, 6},
+	 (u64[]) {481000000, 444000000, 366000000, 338000000, 240000000}, 5},
 };
 
 /* name, exclusive_release */

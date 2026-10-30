@@ -18,7 +18,7 @@
 #include "msm_vidc_platform_ext.h"
 #include "msm_vidc_memory_ext.h"
 #include "resources_ext.h"
-#include "msm_vidc_iris3.h"
+#include "msm_vidc_iris39.h"
 #include "hfi_property.h"
 #include "hfi_command.h"
 
@@ -2301,7 +2301,7 @@ static struct msm_platform_inst_cap_dependency instance_cap_dependency_data_mahu
 
 	{BITRATE_BOOST, ENC, H264 | HEVC,
 		{LEVEL},
-		msm_vidc_adjust_bitrate_boost_iris3,
+		msm_vidc_adjust_bitrate_boost_iris39,
 		msm_vidc_set_vbr_related_properties},
 
 	{MIN_QUALITY, ENC, H264,
@@ -2703,22 +2703,28 @@ static const struct bw_table mahua_bw_table[] = {
 
 /* name, hw_trigger, hw_enable */
 static struct pd_table mahua_pd_table[] = {
-	{ "venus",    0,  1 },
-	{ "vcodec0",  1,  1 },
+	{ "iris-ctl",  0,  1 },
+	{ "vcodec",    1,  1 },
 };
 
 /* name, clock id, scaling */
 static const struct clk_table mahua_clk_table[] = {
-	{ "iface",                    GCC_VIDEO_AXI0_CLK,     0 },
-	{ "core",                     VIDEO_CC_MVS0C_CLK,     0 },
-	{ "vcodec0_core",             VIDEO_CC_MVS0_CLK,      0 },
-	{ "video_cc_mvs0_clk_src", VIDEO_CC_MVS0_CLK_SRC,  1,
-	 (u64[]) {481000000, 444000000, 366000000, 338000000, 240000000, 192000000}, 6},
+	{ "gcc_video_axi0c_clk",            GCC_VIDEO_AXI0C_CLK,        0 },
+	{ "video_cc_mvs0c_clk",             VIDEO_CC_MVS0C_CLK,         0 },
+	{ "video_cc_mvs0_clk",              VIDEO_CC_MVS0_CLK,          0 },
+	{ "gcc_video_axi0_clk",             GCC_VIDEO_AXI0_CLK,         0 },
+	{ "video_cc_mvs0c_freerun_clk",     VIDEO_CC_MVS0C_FREERUN_CLK, 0 },
+	{ "video_cc_mvs0_freerun_clk",      VIDEO_CC_MVS0_FREERUN_CLK,  0 },
+	{ "video_cc_mvs0_clk_src",          VIDEO_CC_MVS0_CLK_SRC,     1,
+         (u64[]) {655000000,533330000, 444000000, 366000000, 338000000, 240000000}, 6},
 };
 
 /* name, exclusive_release */
 static const struct clk_rst_table mahua_clk_reset_table[] = {
-	{ "bus",        0  },
+	{ "video_axi0c_reset",    0 },
+	{ "video_axi_reset",      0 },
+	{ "video_mvs0c_reset",    0 },
+	{ "video_mvs0_reset",     0 },
 };
 
 /* name, llcc_id */
@@ -2882,9 +2888,10 @@ static const struct msm_vidc_platform_data mahua_data = {
 	.dev_reg_tbl = mahua_device_region_table,
 	.dev_reg_tbl_size = ARRAY_SIZE(mahua_device_region_table),
 	.clock_source_scaling_ratio = 3,
-	.fwname = "vpu30_4v",
+	.fwname = "vpu36_4v",
 	.pas_id = 9,
 	.supports_mmrm = 0,
+	.vpu_ver = VPU_VERSION_IRIS39,
 
 	/* caps related resorces */
 	.core_data = core_data_mahua,
