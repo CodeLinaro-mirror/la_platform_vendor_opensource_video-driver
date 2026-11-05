@@ -298,6 +298,7 @@ static struct msm_platform_core_capability core_data_nordau[] = {
 	{MAX_MBPS, 17925000},	/* max_load
 				 * 3840x2176@550fps
 				 */
+	{MAX_MBPS_AV1, 15552000},	/* av1 max_load (3840x2160@480fps) */
 	{MAX_IMAGE_MBPF, 1048576},  /* (16384x16384)/256 */
 	{MAX_MBPF_HQ, 3600}, /* ((1280x720)/256) */
 	{MAX_MBPS_HQ, 108000}, /* ((1280x720)/256)@30fps */

@@ -562,6 +562,7 @@ enum msm_vidc_core_capability_type {
 	MAX_RT_MBPF,
 	MAX_MBPF,
 	MAX_MBPS,
+	MAX_MBPS_AV1,
 	MAX_IMAGE_MBPF,
 	MAX_MBPF_HQ,
 	MAX_MBPS_HQ,

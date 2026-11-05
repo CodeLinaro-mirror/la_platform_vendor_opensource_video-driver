@@ -6134,14 +6134,17 @@ static int msm_vidc_print_insts_info(struct msm_vidc_core *core)
 }
 
 bool msm_vidc_ignore_session_load(struct msm_vidc_inst *inst) {
+	struct msm_vidc_core *core = NULL;
 
-	if (!inst) {
+	if (!inst || !inst->core) {
 		d_vpr_e("%s: invalid params\n", __func__);
 		return -EINVAL;
 	}
+	core = inst->core;
 
-	if (!is_realtime_session(inst) || is_thumbnail_session(inst) ||
-			is_image_session(inst))
+	/* ignore thumbnail, image and NRT session, except NRT for hw virtualization */
+	if (is_thumbnail_session(inst) || is_image_session(inst) ||
+		(!is_realtime_session(inst) && !core->is_hw_virt))
 		return true;
 
 	return false;
@@ -6150,7 +6153,8 @@ bool msm_vidc_ignore_session_load(struct msm_vidc_inst *inst) {
 int msm_vidc_check_core_mbps(struct msm_vidc_inst *inst)
 {
 	u32 mbps = 0, total_mbps = 0, enc_mbps = 0;
-	u32 critical_mbps = 0;
+	u32 critical_mbps = 0, max_mbps = 0;
+	bool has_av1 = false;
 	struct msm_vidc_core *core;
 	struct msm_vidc_inst *instance;
 
@@ -6194,10 +6198,17 @@ int msm_vidc_check_core_mbps(struct msm_vidc_inst *inst)
 
 		mbps = msm_vidc_get_inst_load(instance);
 		total_mbps += mbps;
+		if (is_decode_session(instance) && instance->codec == MSM_VIDC_AV1)
+			has_av1 = true;
 		if (is_encode_session(instance))
 			enc_mbps += mbps;
 	}
 	core_unlock(core, __func__);
+
+	/* hw virtualization: av1 session lowers the load budget of the core */
+	max_mbps = core->capabilities[MAX_MBPS].value;
+	if (core->is_hw_virt && has_av1 && core->capabilities[MAX_MBPS_AV1].value)
+		max_mbps = min(max_mbps, core->capabilities[MAX_MBPS_AV1].value);
 
 	if (is_encode_session(inst)) {
 		/* reject encoder if all encoders mbps is greater than MAX_MBPS */
@@ -6210,7 +6221,13 @@ int msm_vidc_check_core_mbps(struct msm_vidc_inst *inst)
 		 * if total_mbps is greater than max_mbps then reduce all decoders
 		 * priority by 1 to allow this encoder
 		 */
-		if (total_mbps > core->capabilities[MAX_MBPS].value) {
+		if (total_mbps > max_mbps) {
+			/* reject session for hw virtualization, instead of priority adjust */
+			if (core->is_hw_virt) {
+				i_vpr_e(inst, "%s: Hardware overloaded. needed %u, max %u",
+					__func__, total_mbps, max_mbps);
+				return -ENOMEM;
+			}
 			core_lock(core, __func__);
 			list_for_each_entry(instance, &core->instances, list) {
 				/* reduce realtime decode sessions priority */
@@ -6223,7 +6240,13 @@ int msm_vidc_check_core_mbps(struct msm_vidc_inst *inst)
 			core_unlock(core, __func__);
 		}
 	} else if (is_decode_session(inst)){
-		if (total_mbps > core->capabilities[MAX_MBPS].value) {
+		if (total_mbps > max_mbps) {
+			/* reject session for hw virtualization, instead of priority adjust */
+			if (core->is_hw_virt) {
+				i_vpr_e(inst, "%s: Hardware overloaded. needed %u, max %u",
+					__func__, total_mbps, max_mbps);
+				return -ENOMEM;
+			}
 			inst->adjust_priority = RT_DEC_DOWN_PRORITY_OFFSET;
 			i_vpr_h(inst, "%s: pending adjust priority by %d\n",
 				__func__, inst->adjust_priority);
@@ -6231,7 +6254,7 @@ int msm_vidc_check_core_mbps(struct msm_vidc_inst *inst)
 	}
 
 	i_vpr_h(inst, "%s: HW load needed %u is within max %u", __func__,
-			total_mbps, core->capabilities[MAX_MBPS].value);
+			total_mbps, max_mbps);
 
 	return 0;
 }

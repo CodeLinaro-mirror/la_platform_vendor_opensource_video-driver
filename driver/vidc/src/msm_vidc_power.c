@@ -114,16 +114,19 @@ u64 msm_vidc_max_freq(struct msm_vidc_inst *inst)
 
 int msm_vidc_get_inst_load(struct msm_vidc_inst *inst)
 {
+	struct msm_vidc_core *core = NULL;
 	u32 mbpf, fps;
 	u32 frame_rate, operating_rate, input_rate, timestamp_rate;
 
-	if (!inst || !inst->capabilities) {
+	if (!inst || !inst->capabilities || !inst->core) {
 		d_vpr_e("%s: invalid params\n", __func__);
 		return -EINVAL;
 	}
+	core = inst->core;
 
-	/* return zero load for thumbnail and NRT session */
-	if (is_thumbnail_session(inst) || !is_realtime_session(inst))
+	/* return zero load for thumbnail and NRT session, except NRT for hw virtualization */
+	if (is_thumbnail_session(inst) ||
+		(!is_realtime_session(inst) && !core->is_hw_virt))
 		return 0;
 
 	/* calculate load for RT session */
