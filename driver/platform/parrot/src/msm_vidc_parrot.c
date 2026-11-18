@@ -68,6 +68,7 @@ static struct msm_platform_core_capability core_data_parrot_v0[] = {
 	{MAX_MBPF_B_FRAME, 8160},/* ((1920x1088)/256) */
 	{MAX_MBPS_B_FRAME, 489600}, /* ((1920x1088)/256) MBs@60fps */
 	{MAX_MBPS_ALL_INTRA, 489600}, /* ((1920x1088)/256)@60fps */
+	{MAX_MBPS_RETURN_ENOMEM, 1},
 	{MAX_ENH_LAYER_COUNT, 5},
 	{NUM_VPP_PIPE, 1},
 	{SW_PC, 1},
@@ -120,6 +121,7 @@ static struct msm_platform_core_capability core_data_parrot_v1[] = {
 	{MAX_MBPF_B_FRAME, 8160},/* ((1920x1088)/256) */
 	{MAX_MBPS_B_FRAME, 489600}, /* ((1920x1088)/256) MBs@60fps */
 	{MAX_MBPS_ALL_INTRA, 489600}, /* ((1920x1088)/256)@60fps */
+	{MAX_MBPS_RETURN_ENOMEM, 1},
 	{MAX_ENH_LAYER_COUNT, 5},
 	{NUM_VPP_PIPE, 1},
 	{SW_PC, 1},
@@ -172,6 +174,7 @@ static struct msm_platform_core_capability core_data_parrot_v2[] = {
 	{MAX_MBPF_B_FRAME, 8160},/* ((1920x1088)/256) */
 	{MAX_MBPS_B_FRAME, 489600}, /* ((1920x1088)/256) MBs@60fps */
 	{MAX_MBPS_ALL_INTRA, 489600}, /* ((1920x1088)/256)@60fps */
+	{MAX_MBPS_RETURN_ENOMEM, 1},
 	{MAX_ENH_LAYER_COUNT, 5},
 	{NUM_VPP_PIPE, 1},
 	{SW_PC, 1},
@@ -224,6 +227,7 @@ static struct msm_platform_core_capability core_data_parrot_v3[] = {
 	{MAX_MBPF_B_FRAME, 8160},/* ((1920x1088)/256) */
 	{MAX_MBPS_B_FRAME, 489600}, /* ((1920x1088)/256) MBs@60fps */
 	{MAX_MBPS_ALL_INTRA, 489600}, /* ((1920x1088)/256)@60fps */
+	{MAX_MBPS_RETURN_ENOMEM, 1},
 	{MAX_ENH_LAYER_COUNT, 5},
 	{NUM_VPP_PIPE, 1},
 	{SW_PC, 1},

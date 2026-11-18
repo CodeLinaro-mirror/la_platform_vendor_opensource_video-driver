@@ -5847,7 +5847,10 @@ int msm_vidc_check_core_mbps(struct msm_vidc_inst *inst)
 	core_unlock(core, __func__);
 
 	if (mbps > core->capabilities[MAX_MBPS].value) {
-		rc = num_inactive_sessions ? -ENOMEM : -EAGAIN;
+		if (core->capabilities[MAX_MBPS_RETURN_ENOMEM].value)
+			rc = -ENOMEM;
+		else
+			rc = num_inactive_sessions ? -ENOMEM : -EAGAIN;
 		i_vpr_e(inst, "%s: Hardware overloaded. needed %u, max %u", __func__,
 			mbps, core->capabilities[MAX_MBPS].value);
 		return rc;
